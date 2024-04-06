@@ -1,0 +1,23 @@
+{
+	"$schema": "https://json.schemastore.org/lerna",
+	"changelogPreset": "conventional-changelog-conventionalcommits",
+	"command": {
+		"add": {
+			"exact": true
+		},
+		"publish": {
+			"message": "chore: publish"
+		},
+		"run": {
+			"concurrency": 8
+		},
+		"version": {
+			"conventionalCommits": true,
+			"createRelease": "github",
+			"allowBranch": "main"
+		}
+	},
+	"ignoreChanges": ["**/test/**", "**/*.md"],
+	"useNx": false,
+	"version": "independent"
+}

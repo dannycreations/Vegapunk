@@ -1,0 +1,34 @@
+{
+	"name": "@vegapunk/core",
+	"version": "1.0.1",
+	"description": "",
+	"main": "dist/main.js",
+	"types": "dist/main.d.ts",
+	"author": "Danny Creations",
+	"license": "GPL-3.0",
+	"scripts": {
+		"update:dep": "npx npm-check-updates -u"
+	},
+	"files": [
+		"dist"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/dannycreations/Vegapunk.git",
+		"directory": "packages/core"
+	},
+	"homepage": "https://github.com/dannycreations/Vegapunk",
+	"dependencies": {
+		"@sapphire/pieces": "^4.2.2",
+		"@sapphire/result": "^2.6.6",
+		"@vegapunk/logger": "^1.0.0",
+		"pino": "^8.19.0"
+	},
+	"engines": {
+		"node": ">=16",
+		"npm": ">=8"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
+}
