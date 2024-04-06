@@ -1,0 +1,33 @@
+{
+	"name": "@vegapunk/logger",
+	"version": "1.0.0",
+	"description": "",
+	"main": "dist/main.js",
+	"types": "dist/main.d.ts",
+	"author": "Danny Creations",
+	"license": "GPL-3.0",
+	"scripts": {
+		"update:dep": "npx npm-check-updates -u"
+	},
+	"files": [
+		"dist"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/dannycreations/Vegapunk.git",
+		"directory": "packages/logger"
+	},
+	"homepage": "https://github.com/dannycreations/Vegapunk",
+	"dependencies": {
+		"moment-timezone": "^0.5.45",
+		"pino": "^8.19.0",
+		"pino-pretty": "^11.0.0"
+	},
+	"engines": {
+		"node": ">=16",
+		"npm": ">=8"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
+}
