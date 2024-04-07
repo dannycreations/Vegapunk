@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/utilities",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "",
 	"main": "dist/main.js",
 	"types": "dist/main.d.ts",
@@ -20,11 +20,13 @@
 	},
 	"homepage": "https://github.com/dannycreations/Vegapunk",
 	"dependencies": {
-		"@types/humanize-duration": "^3.27.4",
 		"got": "11.8.6",
 		"humanize-duration": "^3.32.0",
 		"jsonc-parser": "^3.2.1",
 		"nanoid": "3.3.7"
+	},
+	"devDependencies": {
+		"@types/humanize-duration": "^3.27.4"
 	},
 	"engines": {
 		"node": ">=16",
