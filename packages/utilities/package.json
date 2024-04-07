@@ -20,7 +20,9 @@
 	},
 	"homepage": "https://github.com/dannycreations/Vegapunk",
 	"dependencies": {
+		"@types/humanize-duration": "^3.27.4",
 		"got": "11.8.6",
+		"humanize-duration": "^3.32.0",
 		"jsonc-parser": "^3.2.1",
 		"nanoid": "3.3.7"
 	},
