@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/logger",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "",
 	"main": "dist/main.js",
 	"types": "dist/main.d.ts",
@@ -20,7 +20,7 @@
 	"homepage": "https://github.com/dannycreations/Vegapunk",
 	"dependencies": {
 		"moment-timezone": "^0.5.45",
-		"pino": "^8.19.0",
+		"pino": "^9.1.0",
 		"pino-pretty": "^11.0.0"
 	},
 	"engines": {
