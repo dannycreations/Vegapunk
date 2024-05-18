@@ -1,8 +1,7 @@
 import { Store, StoreRegistry, container } from '@sapphire/pieces'
 import { Result } from '@sapphire/result'
-import { logger } from '@vegapunk/logger'
+import { Logger, logger } from '@vegapunk/logger'
 import { EventEmitter } from 'node:events'
-import type { Logger } from 'pino'
 import { ListenerStore } from './structures/ListenerStore'
 import { TaskStore } from './structures/TaskStore'
 
