@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/core",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "",
 	"main": "dist/main.js",
 	"types": "dist/main.d.ts",
@@ -21,8 +21,10 @@
 	"dependencies": {
 		"@sapphire/pieces": "^4.2.2",
 		"@sapphire/result": "^2.6.6",
-		"@vegapunk/logger": "^1.0.0",
-		"pino": "^8.19.0"
+		"@vegapunk/logger": "^1.0.1"
+	},
+	"devDependencies": {
+		"pino": "^9.1.0"
 	},
 	"engines": {
 		"node": ">=16",

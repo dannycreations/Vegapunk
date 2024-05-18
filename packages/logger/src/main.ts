@@ -20,7 +20,6 @@ export function logger(level?: Level) {
 			level,
 			stream: _PinoPretty({
 				sync: true,
-				colorize: true,
 				singleLine: process.env.NODE_ENV === 'production',
 				customPrettifiers: {
 					time: () => `[${getTimezoneDate().format('HH:mm:ss')}]`,

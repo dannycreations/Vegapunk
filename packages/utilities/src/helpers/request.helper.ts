@@ -4,7 +4,7 @@ import { sleep } from './sleep.helper'
 export * from 'got'
 export const request = got
 
-export async function requestTimeout<T>(options: Options & TimeoutRequestOptions) {
+export async function requestTimeout<T = string>(options: Options & TimeoutRequestOptions) {
 	const { initialTimeout = 10 * 1000, transmissionTimeout = 30 * 1000, totalTimeout = 60 * 1000 } = options
 
 	const instance = got({ retry: 0, ...options }) as CancelableRequest<Response<T>>
@@ -33,6 +33,7 @@ export function waitForConnection(options: Options & TimeoutRequestOptions = {})
 		const wait = async () => {
 			try {
 				const res = await requestTimeout({
+					method: 'HEAD',
 					url: 'https://google.com',
 					totalTimeout,
 					...options,
