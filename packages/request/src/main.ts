@@ -3,22 +3,59 @@ import { setTimeout as sleep } from 'node:timers/promises'
 import _UserAgent from 'user-agents'
 
 export * from 'got'
-export const request = got
 export const UserAgent = _UserAgent
 
-export async function requestTimeout<T = string>(options: Options & TimeoutRequestOptions) {
-	const { initialTimeout = 10 * 1000, transmissionTimeout = 30 * 1000, totalTimeout = 60 * 1000 } = options
+export async function request<T>(options: Options) {
+	return got(options) as Promise<Response<T>>
+}
 
-	const instance = got({ retry: 0, ...options }) as CancelableRequest<Response<T>>
+const userAgent = new UserAgent({ deviceCategory: 'desktop' })
+export async function requestDefault<T>(options: RequestOptions) {
+	options.timeout = {
+		initial: 10_000,
+		transmission: 30_000,
+		total: 60_000,
+		...options.timeout,
+	}
+
+	const instance = got({
+		...options,
+		headers: {
+			'user-agent': userAgent.toString(),
+			...options.headers,
+		},
+		retry: {
+			limit: options.retry ?? 3,
+			statusCodes: [408, 413, 429, 500, 502, 503, 504, 521, 522, 524],
+			errorCodes: [
+				'ETIMEDOUT',
+				'ECONNRESET',
+				'EADDRINUSE',
+				'ECONNREFUSED',
+				'EPIPE',
+				'ENOTFOUND',
+				'ENETUNREACH',
+				'EAI_AGAIN',
+				'ECONNABORTED',
+				'ERR_CANCELED',
+			],
+		},
+		timeout: undefined,
+	}) as CancelableRequest<Response<T>>
 
 	const cancel = () => instance.cancel()
-	const _totalTimeout = setTimeout(cancel, totalTimeout)
-	let _initialTimeout = setTimeout(cancel, initialTimeout)
+	const _totalTimeout = setTimeout(cancel, options.timeout.total)
+	let _initialTimeout = setTimeout(cancel, options.timeout.initial)
 
-	instance.on('downloadProgress', () => {
-		clearTimeout(_initialTimeout)
-		_initialTimeout = setTimeout(cancel, transmissionTimeout)
-	})
+	instance
+		.on('uploadProgress', () => {
+			clearTimeout(_initialTimeout)
+			_initialTimeout = setTimeout(cancel, options.timeout.transmission)
+		})
+		.on('downloadProgress', () => {
+			clearTimeout(_initialTimeout)
+			_initialTimeout = setTimeout(cancel, options.timeout.transmission)
+		})
 
 	try {
 		return await instance
@@ -28,23 +65,25 @@ export async function requestTimeout<T = string>(options: Options & TimeoutReque
 	}
 }
 
-export function waitForConnection(options: Options & TimeoutRequestOptions = {}) {
+export function waitForConnection(options: RequestOptions = {}) {
 	return new Promise<boolean>((resolve) => {
-		const { totalTimeout = 10 * 1000 } = options
+		options.timeout = {
+			total: 10_000,
+			...options.timeout,
+		}
 
 		const wait = async () => {
 			try {
-				const res = await requestTimeout({
+				const res = await requestDefault({
 					method: 'HEAD',
 					url: 'https://google.com',
-					totalTimeout,
 					...options,
 				})
 				if (res.statusCode === 200) {
 					return resolve(true)
 				}
 			} catch {
-				await sleep(totalTimeout)
+				await sleep(options.timeout.total)
 			}
 
 			return wait()
@@ -54,8 +93,11 @@ export function waitForConnection(options: Options & TimeoutRequestOptions = {})
 	})
 }
 
-interface TimeoutRequestOptions {
-	initialTimeout?: number
-	transmissionTimeout?: number
-	totalTimeout?: number
+export interface RequestOptions extends Omit<Options, 'retry' | 'timeout'> {
+	retry?: number
+	timeout?: Partial<{
+		initial: number
+		transmission: number
+		total: number
+	}>
 }

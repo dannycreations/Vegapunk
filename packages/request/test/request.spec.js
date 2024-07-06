@@ -1,20 +1,21 @@
-const { requestTimeout } = require('../../utilities/dist/main')
+const { requestDefault } = require('../')
 
 const { expect } = chai
 
 describe('request', function () {
 	it('should statusCode 200', (done) => {
-		requestTimeout({ url: 'https://google.com' }).then((res) => {
+		requestDefault({ url: 'https://google.com' }).then((res) => {
 			expect(res.statusCode).equal(200)
 			done()
 		})
 	})
-	it('should Promise was canceled', (done) => {
-		requestTimeout({
+	it('should ERR_CANCELED', (done) => {
+		requestDefault({
 			url: 'https://github.com/json-iterator/test-data/raw/master/large-file.json',
-			totalTimeout: 2000,
+			retry: 0,
+			timeout: { total: 2000 },
 		}).catch((err) => {
-			expect(err.message).equal('Promise was canceled')
+			expect(err.code).equal('ERR_CANCELED')
 			done()
 		})
 	})
