@@ -2,6 +2,20 @@ import got, { CancelableRequest, Options, Response } from 'got'
 import { setTimeout as sleep } from 'node:timers/promises'
 import _UserAgent from 'user-agents'
 
+export const ERROR_CODES = [
+	'ETIMEDOUT',
+	'ECONNRESET',
+	'EADDRINUSE',
+	'ECONNREFUSED',
+	'EPIPE',
+	'ENOTFOUND',
+	'ENETUNREACH',
+	'EAI_AGAIN',
+	'ECONNABORTED',
+	'ERR_CANCELED',
+]
+export const ERROR_STATUS_CODES = [408, 413, 429, 500, 502, 503, 504, 521, 522, 524]
+
 export * from 'got'
 export const UserAgent = _UserAgent
 
@@ -26,19 +40,8 @@ export async function requestDefault<T>(options: RequestOptions) {
 		},
 		retry: {
 			limit: options.retry ?? 3,
-			statusCodes: [408, 413, 429, 500, 502, 503, 504, 521, 522, 524],
-			errorCodes: [
-				'ETIMEDOUT',
-				'ECONNRESET',
-				'EADDRINUSE',
-				'ECONNREFUSED',
-				'EPIPE',
-				'ENOTFOUND',
-				'ENETUNREACH',
-				'EAI_AGAIN',
-				'ECONNABORTED',
-				'ERR_CANCELED',
-			],
+			statusCodes: ERROR_STATUS_CODES,
+			errorCodes: ERROR_CODES,
 		},
 		timeout: undefined,
 	}) as CancelableRequest<Response<T>>

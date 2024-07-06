@@ -7,6 +7,6 @@ export const chalk = _chalk
 export const lodash = _lodash
 export const humanizeDuration = _humanizeDuration
 
-export function parseJsonc(text: string, errors?: ParseError[], options?: ParseOptions) {
-	return parse(text, errors, options)
+export function parseJsonc<T>(text: string, errors?: ParseError[], options?: ParseOptions) {
+	return parse(text, errors, options) as T
 }
