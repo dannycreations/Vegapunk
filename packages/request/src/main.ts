@@ -1,8 +1,10 @@
 import got, { CancelableRequest, Options, Response } from 'got'
-import { sleep } from './sleep.helper'
+import { setTimeout as sleep } from 'node:timers/promises'
+import _UserAgent from 'user-agents'
 
 export * from 'got'
 export const request = got
+export const UserAgent = _UserAgent
 
 export async function requestTimeout<T = string>(options: Options & TimeoutRequestOptions) {
 	const { initialTimeout = 10 * 1000, transmissionTimeout = 30 * 1000, totalTimeout = 60 * 1000 } = options

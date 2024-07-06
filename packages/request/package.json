@@ -1,13 +1,14 @@
 {
-	"name": "@vegapunk/utilities",
-	"version": "1.0.5",
+	"name": "@vegapunk/request",
+	"version": "1.0.0",
 	"main": "dist/main.js",
 	"types": "dist/main.d.ts",
 	"author": "Danny Creations",
 	"license": "GPL-3.0",
 	"scripts": {
 		"build": "tsc -b",
-		"update": "npx npm-check-updates -u -x chalk,nanoid"
+		"test": "mocha \"./test/**/*.spec.js\"",
+		"update": "npx npm-check-updates -u -x got"
 	},
 	"files": [
 		"dist"
@@ -15,19 +16,15 @@
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/dannycreations/Vegapunk.git",
-		"directory": "packages/core"
+		"directory": "packages/request"
 	},
 	"homepage": "https://github.com/dannycreations/Vegapunk",
 	"dependencies": {
-		"chalk": "4.1.2",
-		"humanize-duration": "^3.32.1",
-		"jsonc-parser": "^3.3.1",
-		"lodash": "^4.17.21",
-		"nanoid": "3.3.7"
+		"got": "11.8.6",
+		"user-agents": "^1.1.257"
 	},
 	"devDependencies": {
-		"@types/humanize-duration": "^3.27.4",
-		"@types/lodash": "^4.17.6"
+		"@types/user-agents": "^1.0.4"
 	},
 	"engines": {
 		"node": ">=20",
