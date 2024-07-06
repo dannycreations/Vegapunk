@@ -51,7 +51,7 @@ importers:
         specifier: ^2.6.6
         version: 2.6.6
       '@vegapunk/logger':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../logger
 
   packages/logger:
@@ -81,20 +81,36 @@ importers:
         specifier: ^1.0.1
         version: 1.0.1
       '@vegapunk/core':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../core
 
-  packages/utilities:
+  packages/request:
     dependencies:
       got:
         specifier: 11.8.6
         version: 11.8.6
+      user-agents:
+        specifier: ^1.1.257
+        version: 1.1.257
+    devDependencies:
+      '@types/user-agents':
+        specifier: ^1.0.4
+        version: 1.0.4
+
+  packages/utilities:
+    dependencies:
+      chalk:
+        specifier: 4.1.2
+        version: 4.1.2
       humanize-duration:
         specifier: ^3.32.1
         version: 3.32.1
       jsonc-parser:
         specifier: ^3.3.1
         version: 3.3.1
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
       nanoid:
         specifier: 3.3.7
         version: 3.3.7
@@ -102,6 +118,9 @@ importers:
       '@types/humanize-duration':
         specifier: ^3.27.4
         version: 3.27.4
+      '@types/lodash':
+        specifier: ^4.17.6
+        version: 4.17.6
 
 packages:
 
@@ -301,6 +320,9 @@ packages:
   '@types/keyv@3.1.4':
     resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
 
+  '@types/lodash@4.17.6':
+    resolution: {integrity: sha512-OpXEVoCKSS3lQqjx9GGGOapBeuW5eUboYHRlHP9urXPX25IKZ6AnP5ZRxtVf63iieUbsHxLn8NQ5Nlftc6yzAA==}
+
   '@types/node@12.20.55':
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}
 
@@ -312,6 +334,9 @@ packages:
 
   '@types/semver@7.5.8':
     resolution: {integrity: sha512-I8EUhyrgfLrcTkzV3TSsGyl1tSuPrEDzr0yd5m90UgNxQkyDXULk3b6MlQqTCpZpNtWe1K0hzclnZkTcLBe2UQ==}
+
+  '@types/user-agents@1.0.4':
+    resolution: {integrity: sha512-AjeFc4oX5WPPflgKfRWWJfkEk7Wu82fnj1rROPsiqFt6yElpdGFg8Srtm/4PU4rA9UiDUZlruGPgcwTMQlwq4w==}
 
   abort-controller@3.0.0:
     resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
@@ -903,6 +928,9 @@ packages:
   locate-path@6.0.0:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
     engines: {node: '>=10'}
+
+  lodash.clonedeep@4.5.0:
+    resolution: {integrity: sha512-H5ZhCF25riFd9uB5UCkVKo61m3S/xZk1x4wA6yp/L3RFP6Z/eHH1ymQcGLo7J3GMPfm0V/7m1tryHuGVxpqEBQ==}
 
   lodash.get@4.4.2:
     resolution: {integrity: sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==}
@@ -1496,6 +1524,9 @@ packages:
     resolution: {integrity: sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==}
     engines: {node: '>= 10.0.0'}
 
+  user-agents@1.1.257:
+    resolution: {integrity: sha512-/mkwF5b5JYzZOLc9dhsBD+kOeBkqk6pg88LMa+tzRwtIjgpX6cdlA2pbAZyjH/IENHJ3KojClXwrg6jhxlFlYw==}
+
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
@@ -1880,6 +1911,8 @@ snapshots:
     dependencies:
       '@types/node': 20.11.30
 
+  '@types/lodash@4.17.6': {}
+
   '@types/node@12.20.55': {}
 
   '@types/node@20.11.30':
@@ -1891,6 +1924,8 @@ snapshots:
       '@types/node': 20.11.30
 
   '@types/semver@7.5.8': {}
+
+  '@types/user-agents@1.0.4': {}
 
   abort-controller@3.0.0:
     dependencies:
@@ -2436,6 +2471,8 @@ snapshots:
   locate-path@6.0.0:
     dependencies:
       p-locate: 5.0.0
+
+  lodash.clonedeep@4.5.0: {}
 
   lodash.get@4.4.2: {}
 
@@ -3006,6 +3043,10 @@ snapshots:
   universalify@0.1.2: {}
 
   universalify@2.0.1: {}
+
+  user-agents@1.1.257:
+    dependencies:
+      lodash.clonedeep: 4.5.0
 
   util-deprecate@1.0.2: {}
 

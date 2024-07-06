@@ -1,4 +1,4 @@
-const { requestTimeout } = require('../')
+const { requestTimeout } = require('../../utilities/dist/main')
 
 const { expect } = chai
 
