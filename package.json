@@ -1,27 +1,21 @@
 {
 	"name": "vegapunk-monorepo",
 	"version": "0.0.0",
-	"description": "",
 	"author": "Danny Creations",
 	"license": "GPL-3.0",
 	"private": true,
 	"scripts": {
+		"start:dev": "npm run build && tsc-watch --onSuccess \"node .\"",
 		"build": "run-s build:*",
-		"build:compile": "tsc -b",
-		"build:workspaces": "lerna run build",
-		"clean": "run-s clean:distfiles clean:workspaces",
-		"clean:dangerously": "run-s clean:workspaces clean:force",
-		"clean:deps": "lerna clean --yes",
+		"build:compile": "turbo run build",
+		"clean": "run-s clean:distfiles",
+		"clean:dangerously": "run-s clean:force",
 		"clean:distfiles": "npx rimraf --glob \"./packages/*/dist\" \"./packages/*/**/*.tsbuildinfo\"",
 		"clean:interactive": "git clean -d -x -i",
 		"clean:force": "git clean -d -x -f",
-		"clean:workspaces": "lerna run clean",
-		"test": "run-s test:unit",
-		"test:unit": "lerna run test:unit",
-		"start:pm2": "pm2 start . --stop-exit-codes 0",
-		"start:dev": "npm run build && tsc-watch --onSuccess \"node .\"",
-		"update": "lerna run update:dep",
-		"update:dep": "npx npm-check-updates -u -x @types/node"
+		"update": "npm run update:dep && npm run update --workspaces",
+		"update:dep": "npx npm-check-updates -u -x @types/node",
+		"publish": "changeset version && npm run build && changeset publish"
 	},
 	"workspaces": [
 		"packages/*"
@@ -32,25 +26,17 @@
 	},
 	"homepage": "https://github.com/dannycreations/Vegapunk",
 	"devDependencies": {
-		"@tsconfig/node16": "^16.1.1",
+		"@changesets/cli": "^2.27.7",
+		"@tsconfig/node20": "^20.1.4",
 		"@types/node": "20.11.30",
-		"chai": "^4.4.1",
-		"chai-as-promised": "^7.1.1",
-		"conventional-changelog-conventionalcommits": "^7.0.2",
-		"lerna": "^8.1.2",
-		"mocha": "^10.3.0",
-		"nodemon": "^3.0.3",
-		"npm-run-all2": "^6.1.2",
+		"chai-as-promised": "^8.0.0",
+		"mocha": "^10.6.0",
+		"npm-run-all2": "^6.2.2",
 		"sinon-chai": "^3.7.0",
 		"ts-node": "^10.9.2",
-		"tsc-watch": "^6.0.4",
-		"typescript": "^5.3.3"
+		"tsc-watch": "^6.2.0",
+		"turbo": "^2.0.6",
+		"typescript": "^5.5.3"
 	},
-	"engines": {
-		"node": ">=16",
-		"npm": ">=8"
-	},
-	"publishConfig": {
-		"access": "public"
-	}
+	"packageManager": "npm@10.7.0"
 }
