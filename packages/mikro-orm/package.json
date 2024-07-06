@@ -1,13 +1,13 @@
 {
 	"name": "@vegapunk/mikro-orm",
-	"version": "1.0.3",
-	"description": "",
+	"version": "1.0.4",
 	"main": "dist/main.js",
 	"types": "dist/main.d.ts",
 	"author": "Danny Creations",
 	"license": "GPL-3.0",
 	"scripts": {
-		"update:dep": "npx npm-check-updates -u"
+		"build": "tsc -b",
+		"update": "npx npm-check-updates -u"
 	},
 	"files": [
 		"dist"
@@ -19,15 +19,15 @@
 	},
 	"homepage": "https://github.com/dannycreations/Vegapunk",
 	"dependencies": {
-		"@mikro-orm/better-sqlite": "^6.2.7",
-		"@mikro-orm/core": "^6.2.7",
-		"@mikro-orm/reflection": "^6.2.7",
+		"@mikro-orm/better-sqlite": "^6.2.9",
+		"@mikro-orm/core": "^6.2.9",
+		"@mikro-orm/reflection": "^6.2.9",
 		"@mikro-orm/sql-highlighter": "^1.0.1",
-		"@vegapunk/core": "^1.0.3"
+		"@vegapunk/core": "*"
 	},
 	"engines": {
-		"node": ">=16",
-		"npm": ">=8"
+		"node": ">=20",
+		"npm": ">=10"
 	},
 	"publishConfig": {
 		"access": "public"
