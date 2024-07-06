@@ -19,12 +19,18 @@ export const ERROR_STATUS_CODES = [408, 413, 429, 500, 502, 503, 504, 521, 522, 
 export * from 'got'
 export const UserAgent = _UserAgent
 
-export async function request<T>(options: Options) {
-	return got(options) as Promise<Response<T>>
+export async function request<T = string>(options: string | Options) {
+	const _options: Options = {}
+	if (typeof options === 'string') {
+		_options.url = options
+	} else if (typeof options === 'object') {
+		Object.assign(_options, options)
+	}
+	return got(_options) as Promise<Response<T>>
 }
 
 const userAgent = new UserAgent({ deviceCategory: 'desktop' })
-export async function requestDefault<T>(options: RequestOptions) {
+export async function requestDefault<T = string>(options: RequestOptions) {
 	options.timeout = {
 		initial: 10_000,
 		transmission: 30_000,
