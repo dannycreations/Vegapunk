@@ -4,6 +4,8 @@ import { container } from '@vegapunk/core'
 export * from './config/better-sqlite.config'
 
 export async function MikroORM(options: Options) {
+	if (!container.logger) throw new Error('logger not found')
+
 	container.orm = await _orm.init(options)
 	container.em = container.orm.em
 

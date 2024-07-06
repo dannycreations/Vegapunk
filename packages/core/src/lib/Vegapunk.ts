@@ -14,11 +14,10 @@ export class Vegapunk extends EventEmitter {
 		container.client = this
 
 		if (!container.logger) {
-			container.logger = this.logger ?? logger()
+			container.logger = logger()
 		}
-		if (!this.logger) {
-			this.logger = container.logger
-		}
+
+		this.logger = container.logger
 		if (this.logger.level === 'trace') {
 			Store.logger = this.logger.trace.bind(this.logger)
 		}
