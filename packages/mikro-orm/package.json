@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/mikro-orm",
-	"version": "1.0.4",
+	"version": "1.0.6",
 	"main": "dist/main.js",
 	"types": "dist/main.d.ts",
 	"author": "Danny Creations",
@@ -23,7 +23,7 @@
 		"@mikro-orm/core": "^6.2.9",
 		"@mikro-orm/reflection": "^6.2.9",
 		"@mikro-orm/sql-highlighter": "^1.0.1",
-		"@vegapunk/core": "*"
+		"@vegapunk/core": "workspace:*"
 	},
 	"engines": {
 		"node": ">=20",

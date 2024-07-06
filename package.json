@@ -14,8 +14,9 @@
 		"clean:interactive": "git clean -d -x -i",
 		"clean:force": "git clean -d -x -f",
 		"update": "npm run update:dep && npm run update --workspaces",
-		"update:dep": "npx npm-check-updates -u -x @types/node",
-		"publish": "changeset version && npm run build && changeset publish"
+		"update:dep": "npx npm-check-updates -u -x chai-as-promised,@types/node",
+		"prepack": "npm run clean && npm run build",
+		"publish": "npm run prepack && changeset version && changeset publish --no-git-tag"
 	},
 	"workspaces": [
 		"packages/*"
@@ -29,7 +30,7 @@
 		"@changesets/cli": "^2.27.7",
 		"@tsconfig/node20": "^20.1.4",
 		"@types/node": "20.11.30",
-		"chai-as-promised": "^8.0.0",
+		"chai-as-promised": "7.1.2",
 		"mocha": "^10.6.0",
 		"npm-run-all2": "^6.2.2",
 		"sinon-chai": "^3.7.0",
@@ -38,5 +39,5 @@
 		"turbo": "^2.0.6",
 		"typescript": "^5.5.3"
 	},
-	"packageManager": "npm@10.7.0"
+	"packageManager": "pnpm@9.4.0"
 }
