@@ -1,9 +1,5 @@
 {
 	"extends": ["@sapphire/ts-config", "@sapphire/ts-config/extra-strict", "@sapphire/ts-config/decorators"],
-	"ts-node": {
-		"transpileOnly": true
-	},
-	"compileOnSave": true,
 	"compilerOptions": {
 		"noEmit": true,
 		"incremental": false,

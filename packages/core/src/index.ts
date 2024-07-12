@@ -25,10 +25,10 @@ export {
 } from '@sapphire/pieces'
 export * from '@sapphire/result'
 
-export * from './lib/Vegapunk'
 export * from './lib/structures/Listener'
 export * from './lib/structures/ListenerLoaderStrategy'
 export * from './lib/structures/ListenerStore'
 export * from './lib/structures/Task'
 export * from './lib/structures/TaskLoaderStrategy'
 export * from './lib/structures/TaskStore'
+export * from './lib/Vegapunk'
