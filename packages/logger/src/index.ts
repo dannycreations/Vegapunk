@@ -1,12 +1,11 @@
-import { Moment, tz } from 'moment-timezone'
+import { tz } from 'moment-timezone'
 import _pino, { Level, StreamEntry } from 'pino'
 import _PinoPretty from 'pino-pretty'
 
 export * from 'pino'
-export const pino = _pino
 export const PinoPretty = _PinoPretty
 
-export function logger(level?: Level) {
+export function logger<T extends string>(level?: Level) {
 	level ||= process.env.NODE_ENV === 'development' ? 'debug' : 'info'
 	const streams: StreamEntry[] = [
 		{
@@ -29,7 +28,7 @@ export function logger(level?: Level) {
 		},
 	]
 
-	return _pino(
+	return _pino<T>(
 		{
 			level,
 			base: undefined,
@@ -39,6 +38,6 @@ export function logger(level?: Level) {
 	)
 }
 
-export function getTimezoneDate(date: Date = new Date(), timezone?: string): Moment {
+export function getTimezoneDate(date: Date = new Date(), timezone?: string) {
 	return tz(date, timezone || process.env.TIMEZONE || Intl.DateTimeFormat().resolvedOptions().timeZone)
 }

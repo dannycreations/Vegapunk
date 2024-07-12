@@ -51,6 +51,7 @@ export class TaskBase<Options extends Task.Options = Task.Options> extends Piece
 			this._isStop = false
 			return true
 		}
+		return false
 	}
 
 	private async _loop(force?: boolean) {
