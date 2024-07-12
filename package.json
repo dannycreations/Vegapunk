@@ -5,18 +5,16 @@
 	"license": "GPL-3.0",
 	"private": true,
 	"scripts": {
-		"start:dev": "run-s build && tsc-watch --onSuccess \"node .\"",
-		"build": "run-s build:*",
-		"build:compile": "turbo run build",
-		"clean": "run-s clean:distfiles",
-		"clean:dangerously": "run-s clean:force",
+		"build": "turbo run build",
+		"clean": "npm run clean:distfiles",
+		"clean:dangerously": "npm run clean:force",
 		"clean:distfiles": "npx rimraf --glob \"./packages/*/dist\" \"./packages/*/**/*.tsbuildinfo\"",
 		"clean:interactive": "git clean -d -x -i",
 		"clean:force": "git clean -d -x -f",
-		"update": "run-s update:dep && run-s update --workspaces",
-		"update:dep": "npx npm-check-updates -u -x chai-as-promised,@types/node",
-		"prepack": "run-s clean && run-s build",
-		"publish": "run-s prepack && changeset version && changeset publish --no-git-tag"
+		"update": "npm run update:dep && npm run update --workspaces",
+		"update:dep": "npx npm-check-updates -u -x chai,chai-as-promised,@types/node",
+		"prepack": "npm run clean && npm run build",
+		"publish": "npm run prepack && changeset version && changeset publish --no-git-tag"
 	},
 	"workspaces": [
 		"packages/*"
@@ -28,16 +26,15 @@
 	"homepage": "https://github.com/dannycreations/Vegapunk",
 	"devDependencies": {
 		"@changesets/cli": "^2.27.7",
-		"@tsconfig/node20": "^20.1.4",
-		"@types/node": "20.11.30",
+		"@sapphire/ts-config": "^5.0.1",
+		"@types/node": "20.14.10",
+		"chai": "4.4.1",
 		"chai-as-promised": "7.1.2",
 		"mocha": "^10.6.0",
-		"npm-run-all2": "^6.2.2",
-		"sinon-chai": "^3.7.0",
 		"ts-node": "^10.9.2",
-		"tsc-watch": "^6.2.0",
+		"tsup": "^8.1.0",
 		"turbo": "^2.0.6",
 		"typescript": "^5.5.3"
 	},
-	"packageManager": "pnpm@9.4.0"
+	"packageManager": "pnpm@9.5.0"
 }

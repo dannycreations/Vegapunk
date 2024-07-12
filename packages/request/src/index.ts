@@ -1,4 +1,5 @@
-import got, { CancelableRequest, Options, Response } from 'got'
+import got, { CancelableRequest, CancelError, Options, Response, TimeoutError } from 'got'
+import { TimeoutError as TimeOutError } from 'got/dist/source/core/utils/timed-out'
 import { setTimeout as sleep } from 'node:timers/promises'
 import _UserAgent from 'user-agents'
 
@@ -59,15 +60,24 @@ export async function requestDefault<T = string>(options: RequestOptions) {
 	instance
 		.on('uploadProgress', () => {
 			clearTimeout(_initialTimeout)
-			_initialTimeout = setTimeout(cancel, options.timeout.transmission)
+			_initialTimeout = setTimeout(cancel, options.timeout!.transmission)
 		})
 		.on('downloadProgress', () => {
 			clearTimeout(_initialTimeout)
-			_initialTimeout = setTimeout(cancel, options.timeout.transmission)
+			_initialTimeout = setTimeout(cancel, options.timeout!.transmission)
 		})
 
 	try {
 		return await instance
+	} catch (error) {
+		if (error instanceof CancelError) {
+			const timeout = new TimeoutError(error as unknown as TimeOutError, error.timings, error.request)
+			timeout.code = 'ETIMEDOUT'
+			timeout.message = 'Request timeout'
+			throw timeout
+		}
+
+		throw error
 	} finally {
 		clearTimeout(_totalTimeout)
 		clearTimeout(_initialTimeout)
@@ -92,7 +102,7 @@ export function waitForConnection(options: RequestOptions = {}) {
 					return resolve(true)
 				}
 			} catch {
-				await sleep(options.timeout.total)
+				await sleep(options.timeout!.total)
 			}
 
 			return wait()

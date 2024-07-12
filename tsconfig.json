@@ -1,17 +1,15 @@
 {
-	"extends": "./tsconfig.base.json",
-	"references": [
-		{
-			"path": "./packages/core"
-		},
-		{
-			"path": "./packages/logger"
-		},
-		{
-			"path": "./packages/mikro-orm"
-		},
-		{
-			"path": "./packages/utilities"
-		}
-	]
+	"extends": ["@sapphire/ts-config", "@sapphire/ts-config/extra-strict", "@sapphire/ts-config/decorators"],
+	"ts-node": {
+		"transpileOnly": true
+	},
+	"compileOnSave": true,
+	"compilerOptions": {
+		"noEmit": true,
+		"incremental": false,
+		"skipLibCheck": true,
+		"removeComments": true,
+		"noImplicitAny": false,
+		"strictNullChecks": false
+	}
 }

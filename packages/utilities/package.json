@@ -1,12 +1,18 @@
 {
 	"name": "@vegapunk/utilities",
-	"version": "1.0.7",
-	"main": "dist/main.js",
-	"types": "dist/main.d.ts",
+	"version": "1.0.8",
 	"author": "Danny Creations",
 	"license": "GPL-3.0",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"exports": {
+		"require": {
+			"default": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
 	"scripts": {
-		"build": "tsc -b",
+		"build": "tsup",
 		"update": "npx npm-check-updates -u -x chalk,nanoid"
 	},
 	"files": [
@@ -15,7 +21,7 @@
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/dannycreations/Vegapunk.git",
-		"directory": "packages/core"
+		"directory": "packages/utilities"
 	},
 	"homepage": "https://github.com/dannycreations/Vegapunk",
 	"dependencies": {
