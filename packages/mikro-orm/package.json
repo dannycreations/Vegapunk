@@ -32,8 +32,8 @@
 		"@vegapunk/core": "workspace:*"
 	},
 	"engines": {
-		"node": ">=20.15.1",
-		"npm": ">=10.8.2"
+		"node": ">=20",
+		"npm": ">=10"
 	},
 	"publishConfig": {
 		"access": "public"
