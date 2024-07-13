@@ -72,8 +72,8 @@ export async function requestDefault<T = string>(options: RequestOptions) {
 	} catch (error) {
 		if (error instanceof CancelError) {
 			const timeout = new TimeoutError(error as unknown as TimeOutError, error.timings, error.request)
-			timeout.code = 'ETIMEDOUT'
 			timeout.message = 'Request timeout'
+			timeout.stack = error.stack
 			throw timeout
 		}
 
