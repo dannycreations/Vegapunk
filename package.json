@@ -28,7 +28,7 @@
 		"@changesets/cli": "^2.27.7",
 		"@sapphire/ts-config": "^5.0.1",
 		"@types/node": "20.14.10",
-		"chai": "4.4.1",
+		"chai": "5.1.1",
 		"chai-as-promised": "7.1.2",
 		"mocha": "^10.6.0",
 		"tsup": "^8.1.0",
