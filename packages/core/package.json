@@ -30,8 +30,8 @@
 		"@vegapunk/logger": "workspace:*"
 	},
 	"engines": {
-		"node": ">=20",
-		"npm": ">=10"
+		"node": ">=20.15.1",
+		"npm": ">=10.8.2"
 	},
 	"publishConfig": {
 		"access": "public"
