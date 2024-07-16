@@ -33,7 +33,7 @@
 	},
 	"devDependencies": {
 		"@types/humanize-duration": "^3.27.4",
-		"@types/lodash": "^4.17.6"
+		"@types/lodash": "^4.17.7"
 	},
 	"engines": {
 		"node": ">=20",
