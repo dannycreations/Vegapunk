@@ -27,7 +27,7 @@
 	"homepage": "https://github.com/dannycreations/Vegapunk",
 	"dependencies": {
 		"got": "11.8.6",
-		"user-agents": "^1.1.266"
+		"user-agents": "^1.1.267"
 	},
 	"devDependencies": {
 		"@types/user-agents": "^1.0.4"
