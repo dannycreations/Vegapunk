@@ -5,8 +5,14 @@ import _PinoPretty from 'pino-pretty'
 export * from 'pino'
 export const PinoPretty = _PinoPretty
 
-export function logger<T extends string>(level?: Level) {
-	level ||= process.env.NODE_ENV === 'development' ? 'debug' : 'info'
+export function logger<T extends string>(options: LoggerOptions = {}) {
+	options = {
+		level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
+		handleException: true,
+		handleRejection: true,
+		...options,
+	}
+
 	const streams: StreamEntry[] = [
 		{
 			level: 'warn',
@@ -16,7 +22,7 @@ export function logger<T extends string>(level?: Level) {
 			}),
 		},
 		{
-			level,
+			level: options.level,
 			stream: _PinoPretty({
 				sync: true,
 				colorize: true,
@@ -28,16 +34,30 @@ export function logger<T extends string>(level?: Level) {
 		},
 	]
 
-	return _pino<T>(
+	const pino = _pino<T>(
 		{
-			level,
+			level: options.level,
 			base: undefined,
 			nestedKey: 'payload',
 		},
 		_pino.multistream(streams),
 	)
+
+	if (options.handleException) {
+		process.on('uncaughtException', (err, origin) => pino.fatal(err, origin))
+	}
+	if (options.handleRejection) {
+		process.on('unhandledRejection', (reason: string, promise) => pino.fatal(promise, reason))
+	}
+	return pino
 }
 
 export function getTimezoneDate(date: Date = new Date(), timezone?: string) {
 	return tz(date, timezone || process.env.TIMEZONE || Intl.DateTimeFormat().resolvedOptions().timeZone)
+}
+
+export interface LoggerOptions {
+	level?: Level
+	handleException?: boolean
+	handleRejection?: boolean
 }
