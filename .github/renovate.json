@@ -12,6 +12,10 @@
 				"enabled": false
 			},
 			{
+				"matchPackageNames": ["@types/node", "chai", "chai-as-promised", "chalk", "got", "nanoid"],
+				"enabled": false
+			},
+			{
 				"matchUpdateTypes": ["patch"],
 				"matchCurrentVersion": "/^0\\./",
 				"automerge": true,
@@ -20,12 +24,6 @@
 			{
 				"matchUpdateTypes": ["minor", "patch"],
 				"matchCurrentVersion": ">=1.0.0",
-				"automerge": true,
-				"platformAutomerge": true
-			},
-			{
-				"matchPackageNames": ["chai", "chai-as-promised", "chalk", "got", "nanoid"],
-				"matchUpdateTypes": ["minor", "patch"],
 				"automerge": true,
 				"platformAutomerge": true
 			}
