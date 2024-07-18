@@ -1,7 +1,7 @@
 {
 	"name": "@vegapunk/utilities",
 	"version": "1.0.8",
-	"author": "Danny Creations",
+	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",

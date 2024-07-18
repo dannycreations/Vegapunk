@@ -1,7 +1,7 @@
 {
 	"name": "vegapunk-monorepo",
 	"version": "0.0.0",
-	"author": "Danny Creations",
+	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"private": true,
 	"scripts": {

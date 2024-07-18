@@ -1,7 +1,7 @@
 {
 	"name": "@vegapunk/mikro-orm",
 	"version": "1.0.7",
-	"author": "Danny Creations",
+	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
