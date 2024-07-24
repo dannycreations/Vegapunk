@@ -4,6 +4,9 @@ import { TaskLoaderStrategy } from './TaskLoaderStrategy'
 
 export class TaskStore extends Store<Task, 'tasks'> {
 	public constructor() {
-		super(Task, { name: 'tasks', strategy: new TaskLoaderStrategy() })
+		super(Task, {
+			name: 'tasks',
+			strategy: new TaskLoaderStrategy(),
+		})
 	}
 }
