@@ -1,8 +1,8 @@
-import { Store } from '@sapphire/pieces'
 import { Listener } from './Listener'
 import { ListenerLoaderStrategy } from './ListenerLoaderStrategy'
+import { StoreBase } from './StoreBase'
 
-export class ListenerStore extends Store<Listener, 'listeners'> {
+export class ListenerStore extends StoreBase<Listener, 'listeners'> {
 	public constructor() {
 		super(Listener, {
 			name: 'listeners',
