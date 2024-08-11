@@ -20,10 +20,7 @@ export abstract class Task<Options extends Task.Options = Task.Options> extends 
 	}
 
 	public constructor(context: Task.LoaderContext, options: Options = {} as Options) {
-		super(context, {
-			...options,
-			name: (options.name ?? context.name).toUpperCase(),
-		})
+		super(context, { ...options, name: options.name ?? context.name })
 
 		this.setDelay(options.delay)
 	}

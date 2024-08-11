@@ -1,5 +1,5 @@
-import got, { CancelableRequest, CancelError, Options, Response, TimeoutError } from 'got'
-import { TimeoutError as TimeOutError } from 'got/dist/source/core/utils/timed-out'
+import got, { CancelableRequest, CancelError, Options, Response } from 'got'
+import { TimeoutError } from 'got/dist/source/core/utils/timed-out'
 import { setTimeout as sleep } from 'node:timers/promises'
 import _UserAgent from 'user-agents'
 
@@ -71,9 +71,8 @@ export async function requestDefault<T = string>(options: RequestOptions) {
 		return await instance
 	} catch (error) {
 		if (error instanceof CancelError) {
-			const timeout = new TimeoutError(error as unknown as TimeOutError, error.timings, error.request)
+			const timeout = new TimeoutError(null, 'request')
 			timeout.message = 'Request timeout'
-			timeout.stack = error.stack
 			throw timeout
 		}
 

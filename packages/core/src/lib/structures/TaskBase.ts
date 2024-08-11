@@ -1,5 +1,6 @@
 import { Piece } from '@sapphire/pieces'
 import { Result } from '@sapphire/result'
+import { Events } from '../types/Enum'
 import { Task } from './Task'
 
 export class TaskBase<Options extends Task.Options = Task.Options> extends Piece<Options, 'tasks'> {
@@ -38,7 +39,7 @@ export class TaskBase<Options extends Task.Options = Task.Options> extends Piece
 				await this['runOnInit']()
 			}
 		})
-		result.inspectErr((error) => this.container.logger.error(error, this.location.name))
+		result.inspectErr((error) => this.container.client.emit(Events.ListenerError, error, this))
 
 		this._isRunning = false
 		this.container.logger.trace(`Task End: ${this.options.name}`)

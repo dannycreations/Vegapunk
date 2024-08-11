@@ -8,8 +8,8 @@ export const PinoPretty = _PinoPretty
 export function logger<T extends string>(options: LoggerOptions = {}) {
 	options = {
 		level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
-		handleException: true,
-		handleRejection: true,
+		exceptionHandler: true,
+		rejectionHandler: true,
 		...options,
 	}
 
@@ -43,10 +43,10 @@ export function logger<T extends string>(options: LoggerOptions = {}) {
 		_pino.multistream(streams),
 	)
 
-	if (options.handleException) {
+	if (options.exceptionHandler) {
 		process.on('uncaughtException', (err, origin) => pino.fatal(err, origin))
 	}
-	if (options.handleRejection) {
+	if (options.rejectionHandler) {
 		process.on('unhandledRejection', (reason: string, promise) => pino.fatal(promise, reason))
 	}
 	return pino
@@ -58,6 +58,6 @@ export function getTimezoneDate(date: Date = new Date(), timezone?: string) {
 
 export interface LoggerOptions {
 	level?: Level
-	handleException?: boolean
-	handleRejection?: boolean
+	exceptionHandler?: boolean
+	rejectionHandler?: boolean
 }

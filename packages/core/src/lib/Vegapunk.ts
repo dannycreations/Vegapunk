@@ -1,5 +1,6 @@
+import '../listeners/_load'
+
 import { Store, StoreRegistry, container } from '@sapphire/pieces'
-import { Result } from '@sapphire/result'
 import { Logger, logger } from '@vegapunk/logger'
 import { EventEmitter } from 'node:events'
 import { ListenerStore } from './structures/ListenerStore'
@@ -8,14 +9,23 @@ import { TaskStore } from './structures/TaskStore'
 export class Vegapunk extends EventEmitter {
 	public logger: Logger
 	public stores: StoreRegistry
+	public options: ClientOptions
 
-	public constructor() {
+	public constructor(options: ClientOptions = {}) {
 		super()
 		container.client = this
 
-		if (!container.logger) {
-			container.logger = logger()
+		this.options = {
+			errorCoreHandler: true,
+			errorExceptionHandler: true,
+			errorRejectionHandler: true,
+			...options,
 		}
+
+		container.logger ??= logger({
+			exceptionHandler: false,
+			rejectionHandler: false,
+		})
 
 		this.logger = container.logger
 		if (this.logger.level === 'trace') {
@@ -28,11 +38,14 @@ export class Vegapunk extends EventEmitter {
 	}
 
 	public async start() {
-		const result = await Result.fromAsync(async () => {
-			await Promise.all([...this.stores.values()].map((store) => store.loadAll()))
-		})
-		result.inspectErr((error) => this.logger.error(error))
+		await Promise.all([...this.stores.values()].map((store) => store.loadAll()))
 	}
+}
+
+export interface ClientOptions {
+	errorCoreHandler?: boolean
+	errorExceptionHandler?: boolean
+	errorRejectionHandler?: boolean
 }
 
 declare module '@sapphire/pieces' {
