@@ -1,13 +1,12 @@
 import '../listeners/_load'
 
-import { Store, StoreRegistry, container } from '@sapphire/pieces'
+import { Store, StoreRegistry, container, getRootData } from '@sapphire/pieces'
 import { Logger, logger } from '@vegapunk/logger'
 import { EventEmitter } from 'node:events'
 import { ListenerStore } from './structures/ListenerStore'
 import { TaskStore } from './structures/TaskStore'
 
 export class Vegapunk extends EventEmitter {
-	public logger: Logger
 	public stores: StoreRegistry
 	public options: ClientOptions
 
@@ -16,20 +15,20 @@ export class Vegapunk extends EventEmitter {
 		container.client = this
 
 		this.options = {
+			logger: logger({
+				exceptionHandler: false,
+				rejectionHandler: false,
+			}),
+			baseUserDirectory: getRootData().root,
 			errorCoreHandler: true,
 			errorExceptionHandler: true,
 			errorRejectionHandler: true,
 			...options,
 		}
 
-		container.logger ??= logger({
-			exceptionHandler: false,
-			rejectionHandler: false,
-		})
-
-		this.logger = container.logger
-		if (this.logger.level === 'trace') {
-			Store.logger = this.logger.trace.bind(this.logger)
+		container.logger = options.logger
+		if (container.logger.level === 'trace') {
+			Store.logger = container.logger.trace.bind(container.logger)
 		}
 
 		this.stores = container.stores
@@ -38,11 +37,17 @@ export class Vegapunk extends EventEmitter {
 	}
 
 	public async start() {
+		if (this.options.baseUserDirectory !== null) {
+			this.stores.registerPath(this.options.baseUserDirectory)
+		}
+
 		await Promise.all([...this.stores.values()].map((store) => store.loadAll()))
 	}
 }
 
 export interface ClientOptions {
+	logger?: Logger
+	baseUserDirectory?: URL | string | null
 	errorCoreHandler?: boolean
 	errorExceptionHandler?: boolean
 	errorRejectionHandler?: boolean
