@@ -26,9 +26,9 @@ export class Vegapunk extends EventEmitter {
 			...options,
 		}
 
-		container.logger = options.logger
-		if (container.logger.level === 'trace') {
-			Store.logger = container.logger.trace.bind(container.logger)
+		container.logger = this.options.logger
+		if (this.options.logger.level === 'trace') {
+			Store.logger = this.options.logger.trace.bind(this.options.logger)
 		}
 
 		this.stores = container.stores
