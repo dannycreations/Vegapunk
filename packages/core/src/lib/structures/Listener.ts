@@ -1,6 +1,7 @@
 import { Piece } from '@sapphire/pieces'
 import { Result } from '@sapphire/result'
 import { EventEmitter } from 'node:events'
+import { Events } from '../types/Enum'
 
 export abstract class Listener<Options extends Listener.Options = Listener.Options> extends Piece<Options, 'listeners'> {
 	public readonly emitter: EventEmitter | null
@@ -31,7 +32,7 @@ export abstract class Listener<Options extends Listener.Options = Listener.Optio
 		this.container.logger.trace(`Listener Run: ${this.options.event!.toString()}`)
 
 		const result = await Result.fromAsync(() => this.run(...args))
-		result.inspectErr((error) => this.container.logger.error(error, this.location.name))
+		result.inspectErr((error) => this.container.client.emit(Events.ListenerError, error, this))
 
 		this.container.logger.trace(`Listener End: ${this.options.event!.toString()}`)
 	}
