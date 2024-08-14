@@ -11,7 +11,7 @@ export class ExceptionListener extends Listener {
 	}
 
 	public run(error: unknown) {
-		this.container.logger.fatal(error, 'Encountered error on event uncaughtException')
+		this.container.logger.fatal(error, 'Encountered error on event "uncaughtException"')
 	}
 }
 

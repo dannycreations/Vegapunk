@@ -39,17 +39,25 @@ export async function requestDefault<T = string>(options: RequestOptions) {
 		...options.timeout,
 	}
 
-	const instance = got({
-		...options,
+	const requestOptions: Options = {
 		headers: {
 			'user-agent': userAgent.toString(),
 			...options.headers,
 		},
-		retry: {
+	}
+	if (options.retry === -1) {
+		requestOptions.retry = 0
+	} else {
+		requestOptions.retry = {
 			limit: options.retry ?? 3,
 			statusCodes: ERROR_STATUS_CODES,
 			errorCodes: ERROR_CODES,
-		},
+		}
+	}
+
+	const instance = got({
+		...options,
+		...requestOptions,
 		timeout: undefined,
 	}) as CancelableRequest<Response<T>>
 
@@ -70,6 +78,13 @@ export async function requestDefault<T = string>(options: RequestOptions) {
 	try {
 		return await instance
 	} catch (error) {
+		if (
+			options.retry === -1 &&
+			(ERROR_CODES.includes(error.code) || ('response' in error && ERROR_STATUS_CODES.includes(error.response.statusCode)))
+		) {
+			return requestDefault(options)
+		}
+
 		if (error instanceof CancelError) {
 			const timeout = new TimeoutError(null, 'request')
 			timeout.message = 'Request timeout'

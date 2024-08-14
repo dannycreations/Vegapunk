@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/request",
-	"version": "1.0.5",
+	"version": "1.0.6",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"main": "dist/index.js",

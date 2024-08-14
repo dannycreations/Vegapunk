@@ -11,7 +11,7 @@ export class CoreListener extends Listener {
 	}
 
 	public run(error: unknown, context: Piece) {
-		this.container.logger.error(error, `Encountered error on event ${context.name}`)
+		this.container.logger.error(error, `Encountered error on event "${context.name}"`)
 	}
 }
 
