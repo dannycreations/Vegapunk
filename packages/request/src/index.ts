@@ -31,55 +31,57 @@ export async function request<T = string>(options: string | Options) {
 }
 
 const userAgent = new UserAgent({ deviceCategory: 'desktop' })
-export async function requestDefault<T = string>(options: RequestOptions) {
-	options.timeout = {
+export async function requestDefault<T = string>(options: string | DefaultOptions) {
+	const _options: DefaultOptions = {}
+	if (typeof options === 'string') {
+		_options.url = options
+	} else if (typeof options === 'object') {
+		Object.assign(_options, options)
+	}
+
+	_options.headers = {
+		'user-agent': userAgent.toString(),
+		..._options.headers,
+	}
+	_options.timeout = {
 		initial: 10_000,
 		transmission: 30_000,
 		total: 60_000,
-		...options.timeout,
-	}
-
-	const requestOptions: Options = {
-		headers: {
-			'user-agent': userAgent.toString(),
-			...options.headers,
-		},
-	}
-	if (options.retry === -1) {
-		requestOptions.retry = 0
-	} else {
-		requestOptions.retry = {
-			limit: options.retry ?? 3,
-			statusCodes: ERROR_STATUS_CODES,
-			errorCodes: ERROR_CODES,
-		}
+		..._options.timeout,
 	}
 
 	const instance = got({
-		...options,
-		...requestOptions,
+		..._options,
+		retry:
+			_options.retry === -1
+				? 0
+				: {
+						limit: _options.retry ?? 3,
+						statusCodes: ERROR_STATUS_CODES,
+						errorCodes: ERROR_CODES,
+				  },
 		timeout: undefined,
 	}) as CancelableRequest<Response<T>>
 
 	const cancel = () => instance.cancel()
-	const _totalTimeout = setTimeout(cancel, options.timeout.total)
-	let _initialTimeout = setTimeout(cancel, options.timeout.initial)
+	const _totalTimeout = setTimeout(cancel, _options.timeout.total)
+	let _initialTimeout = setTimeout(cancel, _options.timeout.initial)
 
 	instance
 		.on('uploadProgress', () => {
 			clearTimeout(_initialTimeout)
-			_initialTimeout = setTimeout(cancel, options.timeout!.transmission)
+			_initialTimeout = setTimeout(cancel, _options.timeout.transmission)
 		})
 		.on('downloadProgress', () => {
 			clearTimeout(_initialTimeout)
-			_initialTimeout = setTimeout(cancel, options.timeout!.transmission)
+			_initialTimeout = setTimeout(cancel, _options.timeout.transmission)
 		})
 
 	try {
 		return await instance
 	} catch (error) {
 		if (
-			options.retry === -1 &&
+			_options.retry === -1 &&
 			(ERROR_CODES.includes(error.code) || ('response' in error && ERROR_STATUS_CODES.includes(error.response.statusCode)))
 		) {
 			return requestDefault(options)
@@ -98,7 +100,7 @@ export async function requestDefault<T = string>(options: RequestOptions) {
 	}
 }
 
-export function waitForConnection(options: RequestOptions = {}) {
+export function waitForConnection(options: DefaultOptions = {}) {
 	return new Promise<boolean>((resolve) => {
 		options.timeout = {
 			total: 10_000,
@@ -116,7 +118,7 @@ export function waitForConnection(options: RequestOptions = {}) {
 					return resolve(true)
 				}
 			} catch {
-				await sleep(options.timeout!.total)
+				await sleep(options.timeout.total)
 			}
 
 			return wait()
@@ -126,7 +128,7 @@ export function waitForConnection(options: RequestOptions = {}) {
 	})
 }
 
-export interface RequestOptions extends Omit<Options, 'retry' | 'timeout'> {
+export interface DefaultOptions extends Omit<Options, 'retry' | 'timeout'> {
 	retry?: number
 	timeout?: Partial<{
 		initial: number
