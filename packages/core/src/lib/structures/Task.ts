@@ -1,4 +1,4 @@
-import { Piece } from '@sapphire/pieces'
+import { VirtualPath, type Piece } from '@sapphire/pieces'
 import { TaskBase } from './TaskBase'
 
 export abstract class Task<Options extends Task.Options = Task.Options> extends TaskBase<Options> {
@@ -7,8 +7,8 @@ export abstract class Task<Options extends Task.Options = Task.Options> extends 
 			Object.assign(options, { name: options.name.toUpperCase() })
 		}
 
-		const uniq = `#${Date.now()}`
-		const context = { root: uniq, path: uniq, name: uniq, store: null }
+		const id = `${VirtualPath}${Date.now()}`
+		const context = { root: id, path: id, name: id, store: null }
 		const task = new TaskBase(context, options)
 
 		if (typeof initTask === 'function') task['runOnInit'] = initTask.bind(initTask)
@@ -16,7 +16,7 @@ export abstract class Task<Options extends Task.Options = Task.Options> extends 
 		task.setDelay(options.delay)
 
 		task['_run'](true).then(() => task['_loop']())
-		return task
+		return task as Task
 	}
 
 	public constructor(context: Task.LoaderContext, options: Options = {} as Options) {

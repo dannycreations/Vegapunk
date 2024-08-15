@@ -1,6 +1,6 @@
-import got, { CancelableRequest, CancelError, Options, Response } from 'got'
+import { sleep } from '@vegapunk/utilities'
+import got, { type CancelableRequest, CancelError, type Options, type Response } from 'got'
 import { TimeoutError } from 'got/dist/source/core/utils/timed-out'
-import { setTimeout as sleep } from 'node:timers/promises'
 import _UserAgent from 'user-agents'
 
 export const ERROR_CODES = [
@@ -100,7 +100,7 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 	}
 }
 
-export function waitForConnection(options: DefaultOptions = {}) {
+export async function waitForConnection(options: DefaultOptions = {}) {
 	return new Promise<boolean>((resolve) => {
 		options.timeout = {
 			total: 10_000,

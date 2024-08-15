@@ -1,4 +1,4 @@
-import { container, Piece } from '@sapphire/pieces'
+import { container, type Piece } from '@sapphire/pieces'
 import { Listener } from '../../lib/structures/Listener'
 import { Events } from '../../lib/types/Enum'
 

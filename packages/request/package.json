@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/request",
-	"version": "1.0.6",
+	"version": "1.0.7",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"main": "dist/index.js",
@@ -26,8 +26,9 @@
 	},
 	"homepage": "https://github.com/dannycreations/Vegapunk",
 	"dependencies": {
+		"@vegapunk/utilities": "^1.0.9",
 		"got": "<=11",
-		"user-agents": "^1.1.293"
+		"user-agents": "^1.1.297"
 	},
 	"devDependencies": {
 		"@types/user-agents": "^1.0.4"

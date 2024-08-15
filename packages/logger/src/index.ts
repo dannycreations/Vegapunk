@@ -1,9 +1,9 @@
 import { tz } from 'moment-timezone'
-import _pino, { Level, StreamEntry } from 'pino'
-import _PinoPretty from 'pino-pretty'
+import _pino, { type Level, type StreamEntry } from 'pino'
+import _pinoPretty from 'pino-pretty'
 
 export * from 'pino'
-export const PinoPretty = _PinoPretty
+export const pinoPretty = _pinoPretty
 
 export function logger<T extends string>(options: LoggerOptions = {}) {
 	options = {
@@ -23,7 +23,7 @@ export function logger<T extends string>(options: LoggerOptions = {}) {
 		},
 		{
 			level: options.level,
-			stream: _PinoPretty({
+			stream: pinoPretty({
 				sync: true,
 				colorize: true,
 				singleLine: process.env.NODE_ENV === 'production',
