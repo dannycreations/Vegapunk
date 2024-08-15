@@ -1,4 +1,4 @@
-import { EntityManager, Options, MikroORM as _orm } from '@mikro-orm/core'
+import { type EntityManager, type Options, MikroORM as _orm } from '@mikro-orm/core'
 import { container } from '@vegapunk/core'
 
 export * from './config/better-sqlite.config'

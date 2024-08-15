@@ -1,9 +1,9 @@
 import { Piece } from '@sapphire/pieces'
 import { Result } from '@sapphire/result'
 import { Events } from '../types/Enum'
-import { Task } from './Task'
+import { type Task } from './Task'
 
-export class TaskBase<Options extends Task.Options = Task.Options> extends Piece<Options, 'tasks'> {
+export class TaskBase<Options extends Task.Options> extends Piece<Options, 'tasks'> {
 	public get isStatus() {
 		return {
 			idle: this._isIdle,

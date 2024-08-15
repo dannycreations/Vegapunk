@@ -1,6 +1,6 @@
 import _chalk from 'chalk'
 import _humanizeDuration from 'humanize-duration'
-import { ParseError, ParseOptions, parse } from 'jsonc-parser'
+import { type ParseError, type ParseOptions, parse } from 'jsonc-parser'
 import _lodash from 'lodash'
 
 export const chalk = _chalk

@@ -1,4 +1,4 @@
-import { relative, resolve as resolveDir } from 'node:path'
+import { relative, resolve } from 'node:path'
 import { defineConfig, type Options } from 'tsup'
 
 const baseOptions: Options = {
@@ -9,7 +9,7 @@ const baseOptions: Options = {
 	skipNodeModulesBundle: true,
 	sourcemap: true,
 	target: 'es2020',
-	tsconfig: relative(__dirname, resolveDir(process.cwd(), 'tsconfig.json')),
+	tsconfig: relative(__dirname, resolve(process.cwd(), 'tsconfig.json')),
 	keepNames: true,
 	treeshake: true,
 }

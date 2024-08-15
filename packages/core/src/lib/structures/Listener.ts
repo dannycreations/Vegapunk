@@ -1,6 +1,6 @@
 import { Piece } from '@sapphire/pieces'
 import { Result } from '@sapphire/result'
-import { EventEmitter } from 'node:events'
+import { type EventEmitter } from 'node:events'
 import { Events } from '../types/Enum'
 
 export abstract class Listener<Options extends Listener.Options = Listener.Options> extends Piece<Options, 'listeners'> {

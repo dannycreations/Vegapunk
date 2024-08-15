@@ -1,4 +1,4 @@
-import { BetterSqliteDriver, Options } from '@mikro-orm/better-sqlite'
+import { BetterSqliteDriver, type Options } from '@mikro-orm/better-sqlite'
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection'
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter'
 import { join } from 'path'

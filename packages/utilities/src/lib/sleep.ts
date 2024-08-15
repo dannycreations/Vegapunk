@@ -1,4 +1,4 @@
-export function sleep<T = undefined>(ms: number, value?: T, options?: SleepOptions) {
+export async function sleep<T = undefined>(ms: number, value?: T, options?: SleepOptions) {
 	return new Promise<T>((resolve, reject) => {
 		const signal = options?.signal
 		if (signal) {
@@ -20,7 +20,7 @@ export function sleep<T = undefined>(ms: number, value?: T, options?: SleepOptio
 	})
 }
 
-export function sleepUntil(fun: () => boolean, ms: number = 20) {
+export async function sleepUntil(fun: () => boolean, ms: number = 20) {
 	return new Promise<boolean>((resolve) => {
 		const wait = setInterval(() => {
 			if (fun()) {

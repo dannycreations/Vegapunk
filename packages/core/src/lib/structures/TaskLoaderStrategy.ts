@@ -1,6 +1,6 @@
 import { LoaderStrategy } from '@sapphire/pieces'
-import type { Task } from './Task'
-import type { TaskStore } from './TaskStore'
+import { type Task } from './Task'
+import { type TaskStore } from './TaskStore'
 
 export class TaskLoaderStrategy extends LoaderStrategy<Task> {
 	public override onLoad(_store: TaskStore, piece: Task) {
