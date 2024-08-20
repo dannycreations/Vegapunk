@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/request",
-	"version": "1.0.7",
+	"version": "1.0.8",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"main": "dist/index.js",
@@ -33,6 +33,9 @@
 	"devDependencies": {
 		"@types/user-agents": "^1.0.4"
 	},
+	"bundleDependencies": [
+		"@types/user-agents"
+	],
 	"engines": {
 		"node": ">=20",
 		"npm": ">=10"
