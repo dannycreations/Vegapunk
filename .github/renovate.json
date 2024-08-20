@@ -17,14 +17,7 @@
 				"enabled": false
 			},
 			{
-				"matchUpdateTypes": ["patch"],
-				"matchCurrentVersion": "/^0\\./",
-				"automerge": true,
-				"platformAutomerge": true
-			},
-			{
 				"matchUpdateTypes": ["minor", "patch"],
-				"matchCurrentVersion": ">=1.0.0",
 				"automerge": true,
 				"platformAutomerge": true
 			}
