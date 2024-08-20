@@ -4,6 +4,7 @@
 		"noEmit": true,
 		"incremental": false,
 		"skipLibCheck": true,
+		"stripInternal": true,
 		"removeComments": true,
 		"noImplicitAny": false,
 		"strictNullChecks": false,
