@@ -87,8 +87,8 @@ importers:
   packages/request:
     dependencies:
       '@vegapunk/utilities':
-        specifier: ^1.0.9
-        version: 1.0.11
+        specifier: workspace:*
+        version: link:../utilities
       got:
         specifier: 11.x
         version: 11.8.6
@@ -631,14 +631,6 @@ packages:
 
   '@types/user-agents@1.0.4':
     resolution: {integrity: sha512-AjeFc4oX5WPPflgKfRWWJfkEk7Wu82fnj1rROPsiqFt6yElpdGFg8Srtm/4PU4rA9UiDUZlruGPgcwTMQlwq4w==}
-
-  '@vegapunk/utilities@1.0.11':
-    resolution: {integrity: sha512-Q52mDoH1jx422CR0qgSbi0xctKKsOvco6Ui1tMuqAvHA+dNGQ7uT8AvbBuX5+pI60LcQG/V3uFfOI+98w9vr7w==}
-    engines: {node: '>=20', npm: '>=10'}
-    bundledDependencies:
-      - '@types/humanize-duration'
-      - '@types/lodash'
-      - '@types/node'
 
   abort-controller@3.0.0:
     resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
@@ -2486,14 +2478,6 @@ snapshots:
   '@types/semver@7.5.8': {}
 
   '@types/user-agents@1.0.4': {}
-
-  '@vegapunk/utilities@1.0.11':
-    dependencies:
-      chalk: 4.1.2
-      humanize-duration: 3.32.1
-      jsonc-parser: 3.3.1
-      lodash: 4.17.21
-      nanoid: 3.3.7
 
   abort-controller@3.0.0:
     dependencies:

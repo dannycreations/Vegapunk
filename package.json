@@ -7,7 +7,7 @@
 	"scripts": {
 		"build": "turbo run build",
 		"clean": "npm run clean:distfiles",
-		"clean:distfiles": "npx rimraf --glob \"packages/**/dist\" \"packages/**/*.tsbuildinfo\"",
+		"clean:distfiles": "npx rimraf --glob \"packages/*/dist\" \"packages/*/**/*.tsbuildinfo\"",
 		"clean:nodefiles": "npx rimraf --glob \"*-lock.*\" \"node_modules\" \"packages/**/node_modules\"",
 		"clean:dangerously": "npm run clean:force",
 		"clean:interactive": "git clean -d -x -i",
