@@ -44,10 +44,10 @@ export function logger<T extends string>(options: LoggerOptions = {}) {
 	)
 
 	if (options.exceptionHandler) {
-		process.on('uncaughtException', (err, origin) => pino.fatal(err, origin))
+		process.on('uncaughtException', (err, origin) => pino.fatal(err, `Logger: UncaughtException ${origin}`))
 	}
 	if (options.rejectionHandler) {
-		process.on('unhandledRejection', (reason: string, promise) => pino.fatal(promise, reason))
+		process.on('unhandledRejection', (reason: string, promise) => pino.fatal(promise, `Logger: UnhandledRejection ${reason}`))
 	}
 	return pino
 }
