@@ -1,13 +1,13 @@
 import { Piece } from '@sapphire/pieces'
 import { Result } from '@sapphire/result'
-import { Events } from '../types/Enum'
-import { type Task } from './Task'
+import { Events } from '../../types/Enum'
+import { type Task } from '../Task'
 
 export class TaskBase<Options extends Task.Options> extends Piece<Options, 'tasks'> {
 	public get isStatus() {
 		return {
 			idle: this._isIdle,
-			stop: this._isStop,
+			enabled: this._isEnable,
 			running: this._isRunning,
 		}
 	}
@@ -20,23 +20,30 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 	}
 
 	public startTask(force?: boolean) {
-		this._isStop = false
-		this._loop(force)
+		this._isEnable = true
+		process.nextTick(() => this._update(force))
 	}
 
 	public stopTask() {
-		this._isStop = true
+		this._isEnable = false
 	}
 
-	private async _run(init?: boolean) {
+	private async _start() {
 		this.container.logger.trace(`Task Run: ${this.options.name}`)
 		this._isRunning = true
 
 		const result = await Result.fromAsync(async () => {
-			if (!init) {
-				await this['run']()
-			} else if (this['runOnInit']) {
-				await this['runOnInit']()
+			if (typeof this['awake'] === 'function') {
+				await this['awake']()
+				delete this['awake']
+			}
+			if (this._isEnable) {
+				if (typeof this['start'] === 'function') {
+					await this['start']()
+					delete this['start']
+				}
+
+				await this['update']()
 			}
 		})
 		result.inspectErr((error) => this.container.client.emit(Events.ListenerError, error, this))
@@ -45,34 +52,34 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 		this.container.logger.trace(`Task End: ${this.options.name}`)
 	}
 
-	private get _status() {
+	private async _update(force?: boolean) {
+		clearTimeout(this._timeout)
+
+		if (this._isDisable) return
+		if (force) await this._start()
+
+		this._isIdle = true
+		this._timeout = setTimeout(() => {
+			this._isIdle = false
+			if (this._isDisable) return
+
+			this._start().then(() => this._update())
+		}, this._delay)
+	}
+
+	private get _isDisable() {
 		if (this._isRunning) return true
-		if (this._isStop) {
+		if (!this._isEnable) {
 			delete this._timeout
-			this._isStop = false
 			return true
 		}
 		return false
 	}
 
-	private async _loop(force?: boolean) {
-		clearTimeout(this._timeout)
-
-		if (this._status) return
-		if (force) await this._run()
-
-		this._isIdle = true
-		this._timeout = setTimeout(() => {
-			this._isIdle = false
-			if (this._status) return
-
-			this._run().then(() => this._loop())
-		}, this._delay)
-	}
+	private _isIdle: boolean = false
+	private _isEnable: boolean = true
+	private _isRunning: boolean = false
 
 	private _delay: number = 20
-	private _isIdle: boolean = false
-	private _isStop: boolean = false
-	private _isRunning: boolean = false
 	private _timeout?: NodeJS.Timeout
 }

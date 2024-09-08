@@ -1,36 +1,45 @@
-import { VirtualPath, type Piece } from '@sapphire/pieces'
-import { TaskBase } from './TaskBase'
+import { container, VirtualPath, type Piece } from '@sapphire/pieces'
+import { TaskBase } from './internal/TaskBase'
 
 export abstract class Task<Options extends Task.Options = Task.Options> extends TaskBase<Options> {
-	public static createTask(initTask: Function, runTask: Function, options: Task.Options) {
-		if (typeof options.name === 'string') {
-			Object.assign(options, { name: options.name.toUpperCase() })
-		}
+	public static createTask(piece: CreateTask) {
+		const _piece = { ...piece, options: { enabled: true, ...piece.options } }
 
 		const id = `${VirtualPath}${Date.now()}`
-		const context = { root: id, path: id, name: id, store: null }
-		const task = new TaskBase(context, options)
+		const context = { name: id, root: id, path: id, store: null }
+		const task = new TaskBase(context, { ...piece.options, enabled: true }) as Task
 
-		if (typeof initTask === 'function') task['runOnInit'] = initTask.bind(initTask)
-		if (typeof runTask === 'function') task['run'] = runTask.bind(runTask)
-		task.setDelay(options.delay)
+		if (typeof _piece.awake === 'function') task['awake'] = _piece.awake.bind(_piece.awake)
+		if (typeof _piece.start === 'function') task['start'] = _piece.start.bind(_piece.start)
+		if (typeof _piece.update === 'function') task['update'] = _piece.update.bind(_piece.update)
+		if (typeof _piece.options.delay === 'number') task.setDelay(_piece.options.delay)
+		if (_piece.options.enabled) task['_isEnable'] = _piece.options.enabled
+		container.stores.get('tasks').set(task.name, task)
 
-		task['_run'](true).then(() => task['_loop']())
-		return task as Task
+		task['_update'](true)
+		return task
 	}
 
 	public constructor(context: Task.LoaderContext, options: Options = {} as Options) {
 		super(context, { ...options, name: options.name ?? context.name })
 
-		this.setDelay(options.delay)
+		if (typeof options.delay === 'number') this.setDelay(options.delay)
 	}
 
-	public runOnInit?(): unknown
-	public abstract run(...args: unknown[]): unknown
+	public awake?(): unknown
+	public start?(): unknown
+	public abstract update(): unknown
+}
+
+export interface CreateTask {
+	awake?(): unknown
+	start?(): unknown
+	update(): unknown
+	options?: Task.Options
 }
 
 export interface TaskOptions extends Piece.Options {
-	readonly delay: number
+	readonly delay?: number
 }
 
 export namespace Task {
