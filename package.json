@@ -26,9 +26,9 @@
 	},
 	"homepage": "https://github.com/dannycreations/Vegapunk",
 	"devDependencies": {
-		"@changesets/cli": "^2.27.7",
+		"@changesets/cli": "^2.27.8",
 		"@sapphire/ts-config": "^5.0.1",
-		"@swc/core": "^1.7.22",
+		"@swc/core": "^1.7.23",
 		"@types/node": "20.x",
 		"chai": "4.x",
 		"chai-as-promised": "7.x",

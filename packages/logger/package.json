@@ -26,7 +26,7 @@
 	"homepage": "https://github.com/dannycreations/Vegapunk",
 	"dependencies": {
 		"moment-timezone": "^0.5.45",
-		"pino": "^9.3.2",
+		"pino": "^9.4.0",
 		"pino-pretty": "^11.2.2"
 	},
 	"engines": {
