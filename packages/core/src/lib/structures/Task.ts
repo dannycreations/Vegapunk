@@ -6,7 +6,8 @@ export abstract class Task<Options extends Task.Options = Task.Options> extends 
 	public static createTask(task: CreateTask) {
 		const _task = { ...task, options: { enabled: true, ...task.options } }
 
-		const context = { name: `${HookPath}${Date.now()}`, root: HookPath, path: HookPath, store: null }
+		const taskStores = container.stores.get('tasks')
+		const context = { name: `${HookPath}${Date.now()}`, root: HookPath, path: HookPath, store: taskStores }
 		const piece = new TaskBase(context, { ..._task.options, enabled: true }) as Task
 
 		if (typeof _task.awake === 'function') piece['awake'] = _task.awake.bind(_task.awake)
@@ -14,7 +15,7 @@ export abstract class Task<Options extends Task.Options = Task.Options> extends 
 		if (typeof _task.update === 'function') piece['update'] = _task.update.bind(_task.update)
 		if (typeof _task.options.delay === 'number') piece.setDelay(_task.options.delay)
 		if (typeof _task.options.enabled === 'boolean') piece['_isEnable'] = _task.options.enabled
-		container.stores.get('tasks').set(piece.name, piece)
+		taskStores.set(piece.name, piece)
 
 		piece['_start'](true).then(() => piece['_update']())
 		return piece
