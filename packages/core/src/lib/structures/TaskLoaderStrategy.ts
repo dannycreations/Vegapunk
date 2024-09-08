@@ -4,7 +4,7 @@ import { type TaskStore } from './TaskStore'
 
 export class TaskLoaderStrategy extends LoaderStrategy<Task> {
 	public override onLoad(_store: TaskStore, piece: Task) {
-		piece['_update'](true)
+		piece['_start'](true).then(() => piece['_update']())
 	}
 
 	public override onUnload(_store: TaskStore, piece: Task) {

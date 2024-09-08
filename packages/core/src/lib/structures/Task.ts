@@ -1,23 +1,23 @@
-import { container, VirtualPath, type Piece } from '@sapphire/pieces'
+import { container, type Piece } from '@sapphire/pieces'
+import { HookPath } from './internal/StoreBase'
 import { TaskBase } from './internal/TaskBase'
 
 export abstract class Task<Options extends Task.Options = Task.Options> extends TaskBase<Options> {
-	public static createTask(piece: CreateTask) {
-		const _piece = { ...piece, options: { enabled: true, ...piece.options } }
+	public static createTask(task: CreateTask) {
+		const _task = { ...task, options: { enabled: true, ...task.options } }
 
-		const id = `${VirtualPath}${Date.now()}`
-		const context = { name: id, root: id, path: id, store: null }
-		const task = new TaskBase(context, { ...piece.options, enabled: true }) as Task
+		const context = { name: `${HookPath}${Date.now()}`, root: HookPath, path: HookPath, store: null }
+		const piece = new TaskBase(context, { ..._task.options, enabled: true }) as Task
 
-		if (typeof _piece.awake === 'function') task['awake'] = _piece.awake.bind(_piece.awake)
-		if (typeof _piece.start === 'function') task['start'] = _piece.start.bind(_piece.start)
-		if (typeof _piece.update === 'function') task['update'] = _piece.update.bind(_piece.update)
-		if (typeof _piece.options.delay === 'number') task.setDelay(_piece.options.delay)
-		if (_piece.options.enabled) task['_isEnable'] = _piece.options.enabled
-		container.stores.get('tasks').set(task.name, task)
+		if (typeof _task.awake === 'function') piece['awake'] = _task.awake.bind(_task.awake)
+		if (typeof _task.start === 'function') piece['start'] = _task.start.bind(_task.start)
+		if (typeof _task.update === 'function') piece['update'] = _task.update.bind(_task.update)
+		if (typeof _task.options.delay === 'number') piece.setDelay(_task.options.delay)
+		if (typeof _task.options.enabled === 'boolean') piece['_isEnable'] = _task.options.enabled
+		container.stores.get('tasks').set(piece.name, piece)
 
-		task['_update'](true)
-		return task
+		piece['_start'](true).then(() => piece['_update']())
+		return piece
 	}
 
 	public constructor(context: Task.LoaderContext, options: Options = {} as Options) {
