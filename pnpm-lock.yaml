@@ -53,6 +53,9 @@ importers:
       '@vegapunk/logger':
         specifier: workspace:*
         version: link:../logger
+      '@vegapunk/utilities':
+        specifier: workspace:*
+        version: link:../utilities
 
   packages/logger:
     dependencies:
@@ -102,6 +105,9 @@ importers:
 
   packages/utilities:
     dependencies:
+      '@sapphire/snowflake':
+        specifier: ^3.5.3
+        version: 3.5.3
       '@sapphire/utilities':
         specifier: ^3.17.0
         version: 3.17.0
@@ -506,6 +512,10 @@ packages:
 
   '@sapphire/result@2.6.6':
     resolution: {integrity: sha512-QCjj7X/QlY0QUCeAaZQmnrsMH/b2BMQYee3F1Y5iF17JagUQqO3KZlG7vfXWQU3SRAJX5OgZZynBjixUH+nNGg==}
+    engines: {node: '>=v14.0.0', npm: '>=7.0.0'}
+
+  '@sapphire/snowflake@3.5.3':
+    resolution: {integrity: sha512-jjmJywLAFoWeBi1W7994zZyiNWPIiqRRNAmSERxyg93xRGzNYvGjlZ0gR6x0F4gPRi2+0O6S71kOZYyr3cxaIQ==}
     engines: {node: '>=v14.0.0', npm: '>=7.0.0'}
 
   '@sapphire/ts-config@5.0.1':
@@ -2322,6 +2332,8 @@ snapshots:
       tslib: 2.7.0
 
   '@sapphire/result@2.6.6': {}
+
+  '@sapphire/snowflake@3.5.3': {}
 
   '@sapphire/ts-config@5.0.1':
     dependencies:

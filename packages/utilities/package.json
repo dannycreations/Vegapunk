@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/utilities",
-	"version": "1.0.13",
+	"version": "1.0.14",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"main": "dist/index.js",
@@ -26,6 +26,7 @@
 	},
 	"homepage": "https://github.com/dannycreations/Vegapunk",
 	"dependencies": {
+		"@sapphire/snowflake": "^3.5.3",
 		"@sapphire/utilities": "^3.17.0",
 		"chalk": "4.x",
 		"humanize-duration": "^3.32.1",
