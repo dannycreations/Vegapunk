@@ -26,6 +26,7 @@
 	},
 	"homepage": "https://github.com/dannycreations/Vegapunk",
 	"dependencies": {
+		"@sapphire/utilities": "^3.17.0",
 		"chalk": "4.x",
 		"humanize-duration": "^3.32.1",
 		"jsonc-parser": "^3.3.1",

@@ -2,7 +2,7 @@ import { type Piece, type StoreRegistryKey, Store, VirtualPath } from '@sapphire
 
 export class StoreBase<T extends Piece, StoreName extends StoreRegistryKey> extends Store<T, StoreName> {
 	public override async load(root: string, path: string) {
-		if (root === VirtualPath) return []
+		if (!!~root.indexOf(VirtualPath)) return []
 		return super.load(root, path)
 	}
 }

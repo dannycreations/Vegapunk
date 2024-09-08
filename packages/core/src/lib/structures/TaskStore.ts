@@ -1,4 +1,4 @@
-import { StoreBase } from './StoreBase'
+import { StoreBase } from './internal/StoreBase'
 import { Task } from './Task'
 import { TaskLoaderStrategy } from './TaskLoaderStrategy'
 
