@@ -28,7 +28,7 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 		this._isEnable = false
 	}
 
-	private async _start() {
+	private async _start(init?: boolean) {
 		this.container.logger.trace(`Task Run: ${this.options.name}`)
 		this._isRunning = true
 
@@ -41,9 +41,9 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 				if (typeof this['start'] === 'function') {
 					await this['start']()
 					delete this['start']
+				} else if (typeof this['update'] === 'function' && !init) {
+					await this['update']()
 				}
-
-				await this['update']()
 			}
 		})
 		result.inspectErr((error) => this.container.client.emit(Events.ListenerError, error, this))
