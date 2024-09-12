@@ -29,12 +29,12 @@ export abstract class Listener<Options extends Listener.Options = Listener.Optio
 	public abstract run(...args: unknown[]): unknown
 
 	private async _run(...args: unknown[]) {
-		this.container.logger.trace(`Listener Run: ${this.options.event!.toString()}`)
+		this.container.logger.trace(`Listener Run: ${this.event.toString()}`)
 
 		const result = await Result.fromAsync(() => this.run(...args))
 		result.inspectErr((error) => this.container.client.emit(Events.ListenerError, error, this))
 
-		this.container.logger.trace(`Listener End: ${this.options.event!.toString()}`)
+		this.container.logger.trace(`Listener End: ${this.event.toString()}`)
 	}
 
 	private async _runOnce(...args: unknown[]) {
