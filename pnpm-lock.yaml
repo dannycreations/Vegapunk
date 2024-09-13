@@ -133,9 +133,6 @@ importers:
       '@types/lodash':
         specifier: ^4.17.7
         version: 4.17.7
-      '@types/node':
-        specifier: 20.x
-        version: 20.16.5
 
 packages:
 

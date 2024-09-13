@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/utilities",
-	"version": "1.0.14",
+	"version": "1.0.15",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"main": "dist/index.js",
@@ -14,7 +14,7 @@
 	"scripts": {
 		"build": "tsup",
 		"build:include-types": "tsx scripts/include-types.ts",
-		"update": "npx npm-check-updates -u -x chalk,nanoid,@types/node"
+		"update": "npx npm-check-updates -u -x chalk,nanoid"
 	},
 	"files": [
 		"dist"
@@ -36,13 +36,11 @@
 	},
 	"devDependencies": {
 		"@types/humanize-duration": "^3.27.4",
-		"@types/lodash": "^4.17.7",
-		"@types/node": "20.x"
+		"@types/lodash": "^4.17.7"
 	},
 	"bundleDependencies": [
 		"@types/humanize-duration",
-		"@types/lodash",
-		"@types/node"
+		"@types/lodash"
 	],
 	"engines": {
 		"node": "20.x",
