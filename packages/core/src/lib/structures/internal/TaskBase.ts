@@ -33,15 +33,15 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 		this._isRunning = true
 
 		const result = await Result.fromAsync(async () => {
-			if (typeof this['awake'] === 'function') {
+			if (!this.#lockAwake && typeof this['awake'] === 'function') {
+				this.#lockAwake = true
 				await this['awake']()
-				delete this['awake']
 			}
 			if (this._isEnable) {
-				if (typeof this['start'] === 'function') {
+				if (!this.#lockStart && typeof this['start'] === 'function') {
+					this.#lockStart = true
 					await this['start']()
-					delete this['start']
-				} else if (typeof this['update'] === 'function' && !init) {
+				} else if (!init && typeof this['update'] === 'function') {
 					await this['update']()
 				}
 			}
@@ -70,7 +70,7 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 	private get _isDisable() {
 		if (this._isRunning) return true
 		if (!this._isEnable) {
-			delete this._timeout
+			this._timeout = undefined
 			return true
 		}
 		return false
@@ -82,4 +82,7 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 
 	private _delay: number = 20
 	private _timeout?: NodeJS.Timeout
+
+	#lockAwake: boolean = false
+	#lockStart: boolean = false
 }
