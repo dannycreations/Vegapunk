@@ -15,21 +15,14 @@ export abstract class Task<Options extends Task.Options = Task.Options> extends 
 		const previous = taskStores.get(piece.name)
 		if (previous) await previous.unload()
 
+		piece['_isEnable'] = _task.options.enabled
 		if (typeof _task.awake === 'function') piece['awake'] = _task.awake.bind(_task.awake)
 		if (typeof _task.start === 'function') piece['start'] = _task.start.bind(_task.start)
 		if (typeof _task.update === 'function') piece['update'] = _task.update.bind(_task.update)
-		if (typeof _task.options.delay === 'number') piece.setDelay(_task.options.delay)
-		if (typeof _task.options.enabled === 'boolean') piece['_isEnable'] = _task.options.enabled
 		await taskStores.strategy.onLoad(taskStores, piece)
 
 		taskStores.set(piece.name, piece)
 		return piece
-	}
-
-	public constructor(context: Task.LoaderContext, options: Options = {} as Options) {
-		super(context, { ...options, name: options.name ?? context.name })
-
-		if (typeof options.delay === 'number') this.setDelay(options.delay)
 	}
 
 	public awake?(): unknown
