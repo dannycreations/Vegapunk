@@ -1,4 +1,4 @@
-import { sleep } from '@vegapunk/utilities'
+import { sleep, sleepUntil } from '@vegapunk/utilities'
 import got, { type CancelableRequest, CancelError, type Options, type Response } from 'got'
 import { TimeoutError } from 'got/dist/source/core/utils/timed-out'
 import _UserAgent from 'user-agents'
@@ -101,30 +101,25 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 }
 
 export async function waitForConnection(options: DefaultOptions = {}) {
-	return new Promise<boolean>((resolve) => {
-		options.timeout = {
-			total: 10_000,
-			...options.timeout,
-		}
+	options.timeout = {
+		total: 10_000,
+		...options.timeout,
+	}
 
-		const wait = async () => {
+	return new Promise<void>((resolve) => {
+		sleepUntil(async () => {
 			try {
 				const res = await requestDefault({
 					method: 'HEAD',
 					url: 'https://google.com',
 					...options,
 				})
-				if (res.statusCode === 200) {
-					return resolve(true)
-				}
+				return res.statusCode === 200
 			} catch {
 				await sleep(options.timeout.total)
+				return false
 			}
-
-			return wait()
-		}
-
-		return wait()
+		}).then(() => resolve())
 	})
 }
 
