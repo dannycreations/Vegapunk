@@ -8,13 +8,13 @@ const MaxTaskDelay = 2147483647
 
 export class TaskBase<Options extends Task.Options> extends Piece<Options, 'tasks'> {
 	public constructor(context: Task.LoaderContext, options: Options) {
-		super(context, { ...options, name: options.name ?? context.name })
+		super(context, options)
 
 		this._isIdle = false
 		this._isRunning = false
 		this._lockAwake = false
 		this._lockStart = false
-		this._isEnable = options.enabled
+		this._isEnable = typeof options.enabled === 'boolean' ? options.enabled : true
 		this.setDelay(typeof options.delay === 'number' ? options.delay : MinTaskDelay)
 	}
 
@@ -41,7 +41,7 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 	}
 
 	private async _start(init?: boolean) {
-		this.container.logger.trace(`Task Run: ${this.options.name}`)
+		this.container.logger.trace(`Task Run: ${this.name}`)
 		this._isRunning = true
 
 		const result = await Result.fromAsync(async () => {
@@ -61,7 +61,7 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 		result.inspectErr((error) => this.container.client.emit(Events.ListenerError, error, this))
 
 		this._isRunning = false
-		this.container.logger.trace(`Task End: ${this.options.name}`)
+		this.container.logger.trace(`Task End: ${this.name}`)
 	}
 
 	private async _update(force?: boolean) {
