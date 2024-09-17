@@ -69,6 +69,7 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 		if (force) await this._start()
 
 		this._isIdle = true
+		clearTimeout(this._timeout)
 		this._timeout = setTimeout(() => {
 			this._isIdle = false
 			if (this._isDisable) return
