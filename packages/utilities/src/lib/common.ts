@@ -12,13 +12,11 @@ export function parseJsonc<T>(text: string, errors?: ParseError[], options?: Par
 
 export async function sleepUntil(callback: () => Awaitable<boolean>) {
 	return new Promise<void>((resolve) => {
-		const waiting = () => {
-			const timeout = setTimeout(async () => {
-				clearTimeout(timeout)
+		const waiting = () =>
+			setTimeout(async () => {
 				if (await callback()) resolve()
 				else waiting()
 			}, 10)
-		}
 		waiting()
 	})
 }
