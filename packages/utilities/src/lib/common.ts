@@ -21,4 +21,4 @@ export async function sleepUntil(callback: SleepUntilCallback, delay: number = 1
 	})
 }
 
-export type SleepUntilCallback = (resolve: () => void, i: number) => Awaitable<true>
+export type SleepUntilCallback = (resolve: () => void, i: number) => Awaitable<boolean>
