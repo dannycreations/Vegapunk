@@ -10,13 +10,15 @@ export function parseJsonc<T>(text: string, errors?: ParseError[], options?: Par
 	return parse(text, errors, options) as T
 }
 
-export async function sleepUntil(callback: () => Awaitable<boolean>) {
-	return new Promise<void>((resolve) => {
-		const waiting = () =>
-			setTimeout(async () => {
-				if (await callback()) resolve()
-				else waiting()
-			}, 10)
-		waiting()
+export async function sleepUntil(callback: SleepUntilCallback, delay: number = 10) {
+	return new Promise<void>(async (resolve) => {
+		let i = 1
+		const waiting = async () => {
+			if (await callback(resolve, i++)) resolve()
+			else setTimeout(waiting, delay)
+		}
+		await waiting()
 	})
 }
+
+export type SleepUntilCallback = (resolve: () => void, i: number) => Awaitable<true>
