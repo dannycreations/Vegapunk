@@ -106,20 +106,20 @@ export async function waitForConnection(options: DefaultOptions = {}) {
 		...options.timeout,
 	}
 
-	return new Promise<void>((resolve) => {
-		sleepUntil(async () => {
-			try {
-				const res = await requestDefault({
-					method: 'HEAD',
-					url: 'https://google.com',
-					...options,
-				})
-				return res.statusCode === 200
-			} catch {
-				await sleep(options.timeout.total)
-				return false
-			}
-		}).then(() => resolve())
+	let statusCode = 0
+	await sleepUntil(async () => {
+		try {
+			const res = await requestDefault({
+				method: 'HEAD',
+				url: 'https://google.com',
+				...options,
+			})
+			statusCode = res.statusCode
+		} catch {
+			await sleep(options.timeout.total)
+		} finally {
+			return statusCode === 200
+		}
 	})
 }
 
