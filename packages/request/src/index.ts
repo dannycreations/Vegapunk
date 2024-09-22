@@ -3,7 +3,7 @@ import got, { type CancelableRequest, CancelError, type Options, type Response }
 import { TimeoutError } from 'got/dist/source/core/utils/timed-out'
 import _UserAgent from 'user-agents'
 
-export const ERROR_CODES = [
+export const ErrorCodes = [
 	'ETIMEDOUT',
 	'ECONNRESET',
 	'EADDRINUSE',
@@ -15,7 +15,7 @@ export const ERROR_CODES = [
 	'ECONNABORTED',
 	'ERR_CANCELED',
 ]
-export const ERROR_STATUS_CODES = [408, 413, 429, 500, 502, 503, 504, 521, 522, 524]
+export const ErrorStatusCodes = [408, 413, 429, 500, 502, 503, 504, 521, 522, 524]
 
 export * from 'got'
 export const UserAgent = _UserAgent
@@ -57,8 +57,8 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 				? 0
 				: {
 						limit: _options.retry ?? 3,
-						statusCodes: ERROR_STATUS_CODES,
-						errorCodes: ERROR_CODES,
+						statusCodes: ErrorStatusCodes,
+						errorCodes: ErrorCodes,
 				  },
 		timeout: undefined,
 	}) as CancelableRequest<Response<T>>
@@ -80,10 +80,7 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 	try {
 		return await instance
 	} catch (error) {
-		if (
-			_options.retry === -1 &&
-			(ERROR_CODES.includes(error.code) || ('response' in error && ERROR_STATUS_CODES.includes(error.response.statusCode)))
-		) {
+		if (_options.retry === -1 && (ErrorCodes.includes(error.code) || ('response' in error && ErrorStatusCodes.includes(error.response.statusCode)))) {
 			return requestDefault(options)
 		}
 
