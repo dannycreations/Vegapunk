@@ -11,7 +11,7 @@ export class RejectionListener extends Listener {
 	}
 
 	public run(error: unknown) {
-		this.container.logger.fatal(error, 'Encountered error on event "unhandledRejection"')
+		this.container.logger.fatal(error, `Encountered error on event "${this.event.toString()}"`)
 	}
 }
 

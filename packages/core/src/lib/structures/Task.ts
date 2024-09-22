@@ -2,12 +2,18 @@ import { container, type Piece } from '@sapphire/pieces'
 import { VegapunkSnowflake } from '@vegapunk/utilities'
 import { HookPath } from './internal/StoreBase'
 import { TaskBase } from './internal/TaskBase'
+import { TaskStore } from './TaskStore'
 
 export abstract class Task<Options extends Task.Options = Task.Options> extends TaskBase<Options> {
 	public static async createTask(task: CreateTask) {
 		const _task = { ...task, options: { enabled: true, ...task.options } }
 
-		const taskStores = container.stores.get('tasks')
+		let taskStores = container.stores.get('tasks')
+		if (!taskStores) {
+			container.stores.register(new TaskStore())
+			taskStores = container.stores.get('tasks')
+		}
+
 		const uniq = VegapunkSnowflake.generate({ processId: BigInt(taskStores.size) })
 		const context = { name: `${HookPath}${uniq}`, root: HookPath, path: HookPath, store: taskStores }
 		const piece = new TaskBase(context, { ..._task.options, enabled: true }) as Task
