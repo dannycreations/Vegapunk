@@ -24,8 +24,8 @@ export function logger<T extends string>(options: LoggerOptions = {}) {
 		{
 			level: options.level,
 			stream: pinoPretty({
-				sync: true,
 				colorize: true,
+				sync: process.env.NODE_ENV === 'development',
 				singleLine: process.env.NODE_ENV === 'production',
 				customPrettifiers: {
 					time: () => `[${getTimezoneDate().format('HH:mm:ss')}]`,
