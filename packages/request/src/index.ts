@@ -64,17 +64,17 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 	}) as CancelableRequest<Response<T>>
 
 	const cancel = () => instance.cancel()
-	const _totalTimeout = setTimeout(cancel, _options.timeout.total)
-	let _initialTimeout = setTimeout(cancel, _options.timeout.initial)
+	const _totalTimeout = setTimeout(cancel, _options.timeout.total).unref()
+	let _initialTimeout = setTimeout(cancel, _options.timeout.initial).unref()
 
 	instance
 		.on('uploadProgress', () => {
 			clearTimeout(_initialTimeout)
-			_initialTimeout = setTimeout(cancel, _options.timeout.transmission)
+			_initialTimeout = setTimeout(cancel, _options.timeout.transmission).unref()
 		})
 		.on('downloadProgress', () => {
 			clearTimeout(_initialTimeout)
-			_initialTimeout = setTimeout(cancel, _options.timeout.transmission)
+			_initialTimeout = setTimeout(cancel, _options.timeout.transmission).unref()
 		})
 
 	try {

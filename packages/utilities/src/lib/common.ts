@@ -15,7 +15,7 @@ export async function sleepUntil(callback: SleepUntilCallback, delay: number = 1
 		let i = 1
 		const waiting = async () => {
 			if (await callback(resolve, i++)) resolve()
-			else setTimeout(waiting, delay)
+			else setTimeout(waiting, delay).unref()
 		}
 		await waiting()
 	})

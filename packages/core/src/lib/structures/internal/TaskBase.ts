@@ -15,7 +15,7 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 		this._lockAwake = false
 		this._lockStart = false
 		this._isEnable = typeof options.enabled === 'boolean' ? options.enabled : true
-		this.setDelay(typeof options.delay === 'number' ? options.delay : MinTaskDelay)
+		this.setDelay(options.delay)
 	}
 
 	public get isStatus() {
@@ -27,6 +27,7 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 	}
 
 	public setDelay(delay: number) {
+		delay = typeof delay === 'number' ? delay : MinTaskDelay
 		this._delay = Math.min(Math.max(Math.trunc(delay), MinTaskDelay), MaxTaskDelay)
 	}
 
@@ -76,7 +77,7 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 
 			this._timeout = undefined
 			this._start().then(() => this._update())
-		}, this._delay)
+		}, this._delay).unref()
 	}
 
 	private get _isDisable() {

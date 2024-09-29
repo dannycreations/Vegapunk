@@ -1,7 +1,8 @@
 import { type EntityManager, type Options, MikroORM as _orm } from '@mikro-orm/core'
 import { container } from '@vegapunk/core'
 
-export * from './config/better-sqlite.config'
+export * from '@mikro-orm/core'
+export * as BetterSqlite from './config/better-sqlite.config'
 
 export async function MikroORM(options: Options) {
 	container.orm = await _orm.init(options)
@@ -16,12 +17,10 @@ export async function MikroORM(options: Options) {
 		await generator.updateSchema()
 	}
 
-	if (container.logger) {
-		container.logger.info('MikroORM successfully connected.')
-	}
+	container.logger?.info('MikroORM successfully connected.')
 }
 
-declare module '@vegapunk/core' {
+declare module '@sapphire/pieces' {
 	interface Container {
 		orm: _orm
 		em: EntityManager
