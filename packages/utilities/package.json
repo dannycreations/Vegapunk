@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/utilities",
-	"version": "1.0.18",
+	"version": "1.0.19",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"main": "dist/index.js",

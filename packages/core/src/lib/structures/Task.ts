@@ -45,6 +45,7 @@ export interface CreateTask {
 
 export interface TaskOptions extends Piece.Options {
 	readonly delay?: number
+	readonly ref?: boolean
 }
 
 export namespace Task {
