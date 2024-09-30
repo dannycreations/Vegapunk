@@ -77,7 +77,11 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 
 			this._timeout = undefined
 			this._start().then(() => this._update())
-		}, this._delay).unref()
+		}, this._delay)
+
+		if (!this.options.ref) {
+			this._timeout.unref()
+		}
 	}
 
 	private get _isDisable() {
