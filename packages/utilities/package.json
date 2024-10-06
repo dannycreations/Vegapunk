@@ -37,7 +37,7 @@
 	},
 	"devDependencies": {
 		"@types/humanize-duration": "^3.27.4",
-		"@types/lodash": "^4.17.9"
+		"@types/lodash": "^4.17.10"
 	},
 	"bundleDependencies": [
 		"@types/humanize-duration",
