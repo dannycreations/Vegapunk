@@ -14,7 +14,7 @@ export class Vegapunk extends EventEmitter {
 		super()
 		container.client = this
 
-		this.options = {
+		const _options: Required<ClientOptions> = {
 			logger: logger({
 				exceptionHandler: false,
 				rejectionHandler: false,
@@ -26,9 +26,10 @@ export class Vegapunk extends EventEmitter {
 			...options,
 		}
 
-		container.logger = this.options.logger
-		if (this.options.logger.level === 'trace') {
-			Store.logger = this.options.logger.trace.bind(this.options.logger)
+		this.options = _options
+		container.logger = _options.logger
+		if (_options.logger.level === 'trace') {
+			Store.logger = _options.logger.trace.bind(_options.logger)
 		}
 
 		this.stores = container.stores

@@ -5,6 +5,9 @@ import { TaskBase } from './internal/TaskBase'
 import { TaskStore } from './TaskStore'
 
 export abstract class Task<Options extends Task.Options = Task.Options> extends TaskBase<Options> {
+	public static readonly MinDelay = 20
+	public static readonly MaxDelay = 2147483647
+
 	public static async createTask(task: CreateTask) {
 		const _task = { ...task, options: { enabled: true, ...task.options } }
 
@@ -22,18 +25,16 @@ export abstract class Task<Options extends Task.Options = Task.Options> extends 
 		if (previous) await previous.unload()
 
 		piece['_isEnable'] = _task.options.enabled
-		if (typeof _task.awake === 'function') piece['awake'] = _task.awake.bind(_task.awake)
-		if (typeof _task.start === 'function') piece['start'] = _task.start.bind(_task.start)
-		if (typeof _task.update === 'function') piece['update'] = _task.update.bind(_task.update)
+		if (typeof _task.awake === 'function') piece.awake = _task.awake.bind(_task.awake)
+		if (typeof _task.start === 'function') piece.start = _task.start.bind(_task.start)
+		if (typeof _task.update === 'function') piece.update = _task.update.bind(_task.update)
 		await taskStores.strategy.onLoad(taskStores, piece)
 
 		taskStores.set(piece.name, piece)
 		return piece
 	}
 
-	public awake?(): unknown
-	public start?(): unknown
-	public abstract update(): unknown
+	public abstract override update(): unknown
 }
 
 export interface CreateTask {

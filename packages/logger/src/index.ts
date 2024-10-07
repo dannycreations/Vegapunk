@@ -1,4 +1,3 @@
-import { tz } from 'moment-timezone'
 import _pino, { type Level, type StreamEntry } from 'pino'
 import _pinoPretty from 'pino-pretty'
 
@@ -25,11 +24,9 @@ export function logger<T extends string>(options: LoggerOptions = {}) {
 			level: options.level,
 			stream: pinoPretty({
 				colorize: true,
+				translateTime: 'SYS:HH:MM:ss',
 				sync: process.env.NODE_ENV === 'development',
 				singleLine: process.env.NODE_ENV === 'production',
-				customPrettifiers: {
-					time: () => `[${getTimezoneDate().format('HH:mm:ss')}]`,
-				},
 			}),
 		},
 	]
@@ -50,10 +47,6 @@ export function logger<T extends string>(options: LoggerOptions = {}) {
 		process.on('unhandledRejection', (reason: string, promise) => pino.fatal(promise, `Logger: UnhandledRejection ${reason}`))
 	}
 	return pino
-}
-
-export function getTimezoneDate(date: Date = new Date(), timezone?: string) {
-	return tz(date, timezone || process.env.TIMEZONE || Intl.DateTimeFormat().resolvedOptions().timeZone)
 }
 
 export interface LoggerOptions {
