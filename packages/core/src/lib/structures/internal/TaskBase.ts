@@ -1,22 +1,19 @@
 import { Piece } from '@sapphire/pieces'
 import { Result } from '@sapphire/result'
 import { Events } from '../../types/Enum'
-import { type Task } from '../Task'
-
-const MinTaskDelay = 20
-const MaxTaskDelay = 2147483647
+import { Task } from '../Task'
 
 export class TaskBase<Options extends Task.Options> extends Piece<Options, 'tasks'> {
 	public constructor(context: Task.LoaderContext, options: Options) {
 		super(context, options)
 
-		this._isIdle = false
-		this._isRunning = false
-		this._lockAwake = false
-		this._lockStart = false
 		this._isEnable = typeof options.enabled === 'boolean' ? options.enabled : true
-		this.setDelay(options.delay)
+		this.setDelay(options.delay as number)
 	}
+
+	public awake?(): unknown
+	public start?(): unknown
+	public update?(): unknown
 
 	public get isStatus() {
 		return {
@@ -27,8 +24,8 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 	}
 
 	public setDelay(delay: number) {
-		delay = typeof delay === 'number' ? delay : MinTaskDelay
-		this._delay = Math.min(Math.max(Math.trunc(delay), MinTaskDelay), MaxTaskDelay)
+		delay = typeof delay === 'number' ? delay : Task.MinDelay
+		this._delay = Math.min(Math.max(Math.trunc(delay), Task.MinDelay), Task.MaxDelay)
 	}
 
 	public startTask(force?: boolean) {
@@ -47,16 +44,16 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 		this._isRunning = true
 
 		const result = await Result.fromAsync(async () => {
-			if (!this._lockAwake && typeof this['awake'] === 'function') {
-				this._lockAwake = true
-				await this['awake']()
+			if (!this._isAwakeOnce && typeof this.awake === 'function') {
+				this._isAwakeOnce = true
+				await this.awake()
 			}
 			if (this._isEnable) {
-				if (!this._lockStart && typeof this['start'] === 'function') {
-					this._lockStart = true
-					await this['start']()
-				} else if (!init && typeof this['update'] === 'function') {
-					await this['update']()
+				if (!this._isStartOnce && typeof this.start === 'function') {
+					this._isStartOnce = true
+					await this.start()
+				} else if (!init && typeof this.update === 'function') {
+					await this.update()
 				}
 			}
 		})
@@ -90,11 +87,12 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 		return false
 	}
 
-	private _delay: number
-	private _isIdle: boolean
+	private _isIdle = false
+	private _isRunning = false
+	private _isAwakeOnce = false
+	private _isStartOnce = false
+
 	private _isEnable: boolean
-	private _isRunning: boolean
-	private _lockAwake: boolean
-	private _lockStart: boolean
-	private _timeout: NodeJS.Timeout
+	private _delay = Task.MinDelay
+	private _timeout?: NodeJS.Timeout
 }

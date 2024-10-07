@@ -7,12 +7,11 @@ export async function sleepUntil(callback: SleepUntilCallback, options?: SleepUn
 	let delay = typeof options?.delay === 'number' ? options.delay : MinSleepDelay
 	delay = Math.min(Math.max(Math.trunc(delay), MinSleepDelay), MaxSleepDelay)
 	return new Promise<void>(async (resolve) => {
-		let i = 1
+		let i = 0
+		const done = () => (i = -1)
 		const waiting = async () => {
-			if (await callback(resolve, i++)) {
-				resolve()
-				return
-			}
+			if (await callback(done, ++i)) done()
+			if (i <= 0) return resolve()
 
 			const timer = setTimeout(waiting, delay)
 			if (!options?.ref) timer.unref()
@@ -21,7 +20,7 @@ export async function sleepUntil(callback: SleepUntilCallback, options?: SleepUn
 	})
 }
 
-export type SleepUntilCallback = (resolve: () => void, i: number) => Awaitable<boolean>
+export type SleepUntilCallback = (resolve: () => void, i: number) => Awaitable<boolean | void>
 export interface SleepUntilOptions {
 	readonly delay?: number
 	readonly ref?: boolean

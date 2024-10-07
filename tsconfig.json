@@ -6,8 +6,6 @@
 		"skipLibCheck": true,
 		"stripInternal": true,
 		"removeComments": true,
-		"noImplicitAny": false,
-		"strictNullChecks": false,
 		"useUnknownInCatchVariables": false
 	}
 }

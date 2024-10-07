@@ -1,6 +1,7 @@
-import { sleep, sleepUntil } from '@vegapunk/utilities'
+import { _, DeepRequired, sleep, sleepUntil } from '@vegapunk/utilities'
 import got, { type CancelableRequest, CancelError, type Options, type Response } from 'got'
 import { TimeoutError } from 'got/dist/source/core/utils/timed-out'
+import { lookup } from 'node:dns/promises'
 import _UserAgent from 'user-agents'
 
 export const ErrorCodes = [
@@ -21,34 +22,32 @@ export * from 'got'
 export const UserAgent = _UserAgent
 
 export async function request<T = string>(options: string | Options) {
-	const _options: Options = {}
-	if (typeof options === 'string') {
-		_options.url = options
-	} else if (typeof options === 'object') {
-		Object.assign(_options, options)
+	const _options: Options = {
+		url: typeof options === 'string' ? options : undefined,
+		...(typeof options === 'object' ? options : {}),
 	}
 	return got(_options) as Promise<Response<T>>
 }
 
 const userAgent = new UserAgent({ deviceCategory: 'desktop' })
 export async function requestDefault<T = string>(options: string | DefaultOptions) {
-	const _options: DefaultOptions = {}
-	if (typeof options === 'string') {
-		_options.url = options
-	} else if (typeof options === 'object') {
-		Object.assign(_options, options)
-	}
-
-	_options.headers = {
-		'user-agent': userAgent.toString(),
-		..._options.headers,
-	}
-	_options.timeout = {
-		initial: 10_000,
-		transmission: 30_000,
-		total: 60_000,
-		..._options.timeout,
-	}
+	const _options: DeepRequired<DefaultOptions> = _.defaultsDeep(
+		{},
+		{
+			url: typeof options === 'string' ? options : undefined,
+			...(typeof options === 'object' ? options : {}),
+			headers: typeof options === 'object' && typeof options.headers === 'object' ? options.headers : {},
+		},
+		{
+			headers: { 'user-agent': userAgent.toString() },
+			http2: true,
+			timeout: {
+				initial: 10_000,
+				transmission: 30_000,
+				total: 60_000,
+			},
+		},
+	)
 
 	const instance = got({
 		..._options,
@@ -80,16 +79,14 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 	try {
 		return await instance
 	} catch (error) {
-		if (_options.retry === -1 && (ErrorCodes.includes(error.code) || ('response' in error && ErrorStatusCodes.includes(error.response.statusCode)))) {
-			return requestDefault(options)
-		}
-
+		const flagOne = ErrorCodes.includes(error.code)
+		const flagTwo = typeof error.response === 'object' && ErrorStatusCodes.includes(error.response.statusCode)
+		if (_options.retry === -1 && (flagOne || flagTwo)) return requestDefault(options)
 		if (error instanceof CancelError) {
-			const timeout = new TimeoutError(null, 'request')
+			const timeout = new TimeoutError(0, 'request')
 			timeout.message = 'Request timeout'
 			throw timeout
 		}
-
 		throw error
 	} finally {
 		clearTimeout(_totalTimeout)
@@ -97,30 +94,33 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 	}
 }
 
-export async function waitForConnection(options: DefaultOptions = {}) {
-	options.timeout = {
-		total: 10_000,
-		...options.timeout,
+export async function waitForConnection(options: Pick<DefaultOptions, 'timeout'> = {}) {
+	const _options: DeepRequired<DefaultOptions> = _.defaultsDeep({}, options, {
+		timeout: { total: 10_000 },
+	})
+
+	const checkGoogle = async (resolve: () => void) => {
+		return lookup('google.com').then(resolve)
+	}
+	const checkApple = async (resolve: () => void) => {
+		return requestDefault({
+			url: 'https://captive.apple.com/hotspot-detect.html',
+			headers: { 'user-agent': 'CaptiveNetworkSupport/1.0 wispr' },
+			resolveBodyOnly: true,
+			timeout: _options.timeout,
+		}).then(resolve)
 	}
 
-	let statusCode = 0
-	await sleepUntil(async () => {
+	await sleepUntil(async (resolve) => {
 		try {
-			const res = await requestDefault({
-				method: 'HEAD',
-				url: 'https://google.com',
-				...options,
-			})
-			statusCode = res.statusCode
+			await Promise.race([checkGoogle(resolve), checkApple(resolve)])
 		} catch {
-			await sleep(options.timeout.total)
-		} finally {
-			return statusCode === 200
+			await sleep(_options.timeout.total)
 		}
 	})
 }
 
-export interface DefaultOptions extends Omit<Options, 'retry' | 'timeout'> {
+export interface DefaultOptions extends Omit<Options, 'prefixUrl' | 'retry' | 'timeout'> {
 	retry?: number
 	timeout?: Partial<{
 		initial: number
