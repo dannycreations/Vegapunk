@@ -1,19 +1,15 @@
 {
 	"name": "@vegapunk/utilities",
-	"version": "1.0.19",
+	"version": "1.0.20",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
-	"main": "dist/index.js",
-	"types": "dist/index.d.ts",
 	"exports": {
-		"require": {
-			"types": "./dist/index.d.ts",
-			"default": "./dist/index.js"
-		}
+		"types": "./dist/index.d.ts",
+		"default": "./dist/index.js"
 	},
 	"scripts": {
 		"build": "tsup",
-		"build:include-types": "tsx scripts/include-types.ts",
+		"build:type": "tsx scripts/type.build.ts",
 		"test": "mocha \"./test/**/*.spec.js\"",
 		"update": "npx npm-check-updates -u -x chalk,nanoid"
 	},
@@ -27,26 +23,22 @@
 	},
 	"homepage": "https://github.com/dannycreations/Vegapunk",
 	"dependencies": {
-		"@sapphire/snowflake": "^3.5.3",
-		"@sapphire/utilities": "^3.17.0",
 		"chalk": "4.x",
+		"es-toolkit": "^1.24.0",
 		"humanize-duration": "^3.32.1",
 		"jsonc-parser": "^3.3.1",
-		"lodash": "^4.17.21",
 		"moment-timezone": "^0.5.46",
 		"nanoid": "3.x"
 	},
 	"devDependencies": {
-		"@types/humanize-duration": "^3.27.4",
-		"@types/lodash": "^4.17.10"
+		"@types/humanize-duration": "^3.27.4"
 	},
 	"bundleDependencies": [
-		"@types/humanize-duration",
-		"@types/lodash"
+		"@types/humanize-duration"
 	],
 	"engines": {
-		"node": "20.x",
-		"npm": "10.x"
+		"node": ">=20",
+		"npm": ">=10"
 	},
 	"publishConfig": {
 		"access": "public"

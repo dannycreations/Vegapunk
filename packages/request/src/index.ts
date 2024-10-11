@@ -1,8 +1,8 @@
-import { _, DeepRequired, sleep, sleepUntil } from '@vegapunk/utilities'
+import { DeepRequired, defaultsDeep, sleep, sleepUntil } from '@vegapunk/utilities'
 import got, { type CancelableRequest, CancelError, type Options, type Response } from 'got'
 import { TimeoutError } from 'got/dist/source/core/utils/timed-out'
 import { lookup } from 'node:dns/promises'
-import _UserAgent from 'user-agents'
+import UserAgent from 'user-agents'
 
 export const ErrorCodes = [
 	'ETIMEDOUT',
@@ -19,37 +19,30 @@ export const ErrorCodes = [
 export const ErrorStatusCodes = [408, 413, 429, 500, 502, 503, 504, 521, 522, 524]
 
 export * from 'got'
-export const UserAgent = _UserAgent
+export { UserAgent }
 
-export async function request<T = string>(options: string | Options) {
-	const _options: Options = {
-		url: typeof options === 'string' ? options : undefined,
-		...(typeof options === 'object' ? options : {}),
-	}
-	return got(_options) as Promise<Response<T>>
-}
+export const request = got.bind(got)
 
 const userAgent = new UserAgent({ deviceCategory: 'desktop' })
 export async function requestDefault<T = string>(options: string | DefaultOptions) {
-	const _options: DeepRequired<DefaultOptions> = _.defaultsDeep(
+	const _options = defaultsDeep(
 		{},
 		{
 			url: typeof options === 'string' ? options : undefined,
 			...(typeof options === 'object' ? options : {}),
-			headers: typeof options === 'object' && typeof options.headers === 'object' ? options.headers : {},
 		},
 		{
 			headers: { 'user-agent': userAgent.toString() },
-			http2: true,
 			timeout: {
 				initial: 10_000,
 				transmission: 30_000,
 				total: 60_000,
 			},
+			http2: true,
 		},
-	)
+	) as DeepRequired<DefaultOptions>
 
-	const instance = got({
+	const instance = request({
 		..._options,
 		retry:
 			_options.retry === -1
@@ -60,20 +53,21 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 						errorCodes: ErrorCodes,
 				  },
 		timeout: undefined,
-	}) as CancelableRequest<Response<T>>
+		resolveBodyOnly: undefined,
+	} as Options) as CancelableRequest<Response<T>>
 
 	const cancel = () => instance.cancel()
-	const _totalTimeout = setTimeout(cancel, _options.timeout.total).unref()
-	let _initialTimeout = setTimeout(cancel, _options.timeout.initial).unref()
+	const totalTimeout = setTimeout(() => cancel(), _options.timeout.total).unref()
+	let initialTimeout = setTimeout(() => cancel(), _options.timeout.initial).unref()
 
 	instance
 		.on('uploadProgress', () => {
-			clearTimeout(_initialTimeout)
-			_initialTimeout = setTimeout(cancel, _options.timeout.transmission).unref()
+			clearTimeout(initialTimeout)
+			initialTimeout = setTimeout(() => cancel(), _options.timeout.transmission).unref()
 		})
 		.on('downloadProgress', () => {
-			clearTimeout(_initialTimeout)
-			_initialTimeout = setTimeout(cancel, _options.timeout.transmission).unref()
+			clearTimeout(initialTimeout)
+			initialTimeout = setTimeout(() => cancel(), _options.timeout.transmission).unref()
 		})
 
 	try {
@@ -83,31 +77,25 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 		const flagTwo = typeof error.response === 'object' && ErrorStatusCodes.includes(error.response.statusCode)
 		if (_options.retry === -1 && (flagOne || flagTwo)) return requestDefault(options)
 		if (error instanceof CancelError) {
-			const timeout = new TimeoutError(0, 'request')
-			timeout.message = 'Request timeout'
-			throw timeout
+			error = new TimeoutError(0, 'request')
+			error.message = 'Request timeout'
 		}
 		throw error
 	} finally {
-		clearTimeout(_totalTimeout)
-		clearTimeout(_initialTimeout)
+		clearTimeout(totalTimeout)
+		clearTimeout(initialTimeout)
 	}
 }
 
-export async function waitForConnection(options: Pick<DefaultOptions, 'timeout'> = {}) {
-	const _options: DeepRequired<DefaultOptions> = _.defaultsDeep({}, options, {
-		timeout: { total: 10_000 },
-	})
-
-	const checkGoogle = async (resolve: () => void) => {
+export async function waitForConnection(timeout: 10_000) {
+	const checkGoogle = (resolve: () => void) => {
 		return lookup('google.com').then(resolve)
 	}
-	const checkApple = async (resolve: () => void) => {
+	const checkApple = (resolve: () => void) => {
 		return requestDefault({
 			url: 'https://captive.apple.com/hotspot-detect.html',
 			headers: { 'user-agent': 'CaptiveNetworkSupport/1.0 wispr' },
-			resolveBodyOnly: true,
-			timeout: _options.timeout,
+			timeout: { total: timeout },
 		}).then(resolve)
 	}
 
@@ -115,12 +103,13 @@ export async function waitForConnection(options: Pick<DefaultOptions, 'timeout'>
 		try {
 			await Promise.race([checkGoogle(resolve), checkApple(resolve)])
 		} catch {
-			await sleep(_options.timeout.total)
+			await sleep(timeout)
 		}
 	})
 }
 
-export interface DefaultOptions extends Omit<Options, 'prefixUrl' | 'retry' | 'timeout'> {
+type ExcludeOptions = 'prefixUrl' | 'retry' | 'timeout' | 'resolveBodyOnly'
+export interface DefaultOptions extends Omit<Options, ExcludeOptions> {
 	retry?: number
 	timeout?: Partial<{
 		initial: number

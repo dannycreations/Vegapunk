@@ -132,3 +132,4 @@ dist
 .build/
 .turbo/
 .prompts/
+scripts/*.local.ts

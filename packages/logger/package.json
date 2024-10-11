@@ -1,15 +1,11 @@
 {
 	"name": "@vegapunk/logger",
-	"version": "1.0.7",
+	"version": "1.0.8",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
-	"main": "dist/index.js",
-	"types": "dist/index.d.ts",
 	"exports": {
-		"require": {
-			"types": "./dist/index.d.ts",
-			"default": "./dist/index.js"
-		}
+		"types": "./dist/index.d.ts",
+		"default": "./dist/index.js"
 	},
 	"scripts": {
 		"build": "tsup",
@@ -29,8 +25,8 @@
 		"pino-pretty": "^11.2.2"
 	},
 	"engines": {
-		"node": "20.x",
-		"npm": "10.x"
+		"node": ">=20",
+		"npm": ">=10"
 	},
 	"publishConfig": {
 		"access": "public"

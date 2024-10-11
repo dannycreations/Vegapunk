@@ -1,27 +1,56 @@
-import { Awaitable } from '@sapphire/utilities'
+import { Awaitable } from './types'
 
-const MinSleepDelay = 10
-const MaxSleepDelay = 2147483647
+// https://github.com/sapphiredev/utilities/blob/main/packages/utilities/src/lib/sleep.ts
+export function sleep<T = undefined>(ms: number, value?: T, options?: SleepOptions) {
+	return new Promise<T>((resolve, reject) => {
+		const signal = options?.signal
+		if (signal) {
+			if (signal.aborted) {
+				reject(signal.reason)
+				return
+			}
+
+			signal.addEventListener('abort', () => {
+				clearTimeout(timer)
+				reject(signal.reason)
+			})
+		}
+
+		const timer: NodeJS.Timeout | number = setTimeout(() => resolve(value!), ms)
+		if (options?.ref === false && typeof timer === 'object') timer.unref()
+	})
+}
+
+const MinDelay = 10
+const MaxDelay = 2147483647
 
 export async function sleepUntil(callback: SleepUntilCallback, options?: SleepUntilOptions) {
-	let delay = typeof options?.delay === 'number' ? options.delay : MinSleepDelay
-	delay = Math.min(Math.max(Math.trunc(delay), MinSleepDelay), MaxSleepDelay)
-	return new Promise<void>(async (resolve) => {
+	const delay = Math.min(Math.max(Math.trunc(options?.delay || MinDelay), MinDelay), MaxDelay)
+	await new Promise<void>(async (resolve) => {
 		let i = 0
-		const done = () => (i = -1)
+		let done = false
+		let timer: NodeJS.Timeout
+		const cancel = () => ((done = true), clearTimeout(timer))
 		const waiting = async () => {
-			if (await callback(done, ++i)) done()
-			if (i <= 0) return resolve()
+			if (done) return resolve()
+			if (await callback(cancel, i++)) cancel()
+			if (done) return resolve()
 
-			const timer = setTimeout(waiting, delay)
+			timer = setTimeout(waiting, delay)
 			if (!options?.ref) timer.unref()
 		}
 		await waiting()
 	})
 }
 
-export type SleepUntilCallback = (resolve: () => void, i: number) => Awaitable<boolean | void>
-export interface SleepUntilOptions {
-	readonly delay?: number
-	readonly ref?: boolean
+export interface SleepOptions {
+	signal?: AbortSignal | undefined
+	ref?: boolean | undefined
 }
+
+export interface SleepUntilOptions {
+	delay?: number
+	ref?: boolean
+}
+
+export type SleepUntilCallback = (resolve: () => void, i: number) => Awaitable<boolean | void>
