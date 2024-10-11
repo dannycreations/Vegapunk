@@ -1,4 +1,4 @@
-import { DeepRequired, defaultsDeep, sleep, sleepUntil } from '@vegapunk/utilities'
+import { defaultsDeep, sleep, sleepUntil } from '@vegapunk/utilities'
 import got, { type CancelableRequest, CancelError, type Options, type Response } from 'got'
 import { TimeoutError } from 'got/dist/source/core/utils/timed-out'
 import { lookup } from 'node:dns/promises'
@@ -25,7 +25,7 @@ export const request = got.bind(got)
 
 const userAgent = new UserAgent({ deviceCategory: 'desktop' })
 export async function requestDefault<T = string>(options: string | DefaultOptions) {
-	const _options = defaultsDeep(
+	const _options = defaultsDeep<DefaultOptions>(
 		{},
 		{
 			url: typeof options === 'string' ? options : undefined,
@@ -40,7 +40,7 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 			},
 			http2: true,
 		},
-	) as DeepRequired<DefaultOptions>
+	)
 
 	const instance = request({
 		..._options,
