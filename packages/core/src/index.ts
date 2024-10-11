@@ -1,3 +1,5 @@
+export * from '@sapphire/pieces'
+
 export * from './lib/helpers/common.helper'
 export * from './lib/structures/Listener'
 export * from './lib/structures/ListenerLoaderStrategy'

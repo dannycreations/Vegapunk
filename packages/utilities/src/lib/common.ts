@@ -3,7 +3,6 @@ import humanizeDuration from 'humanize-duration'
 import { type ParseError, type ParseOptions, parse } from 'jsonc-parser'
 import { tz } from 'moment-timezone'
 
-export * from 'es-toolkit'
 export { chalk, humanizeDuration }
 
 export function parseJsonc<T>(text: string, errors?: ParseError[], options?: ParseOptions) {
