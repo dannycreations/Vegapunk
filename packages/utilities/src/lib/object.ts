@@ -1,18 +1,35 @@
+import { DeepRequired, NestedKeyOf, NonNullObject, ValueAtPath } from './types'
+
 export function isObject(val: unknown): val is Record<string, unknown> {
 	return val !== null && typeof val === 'object' && !Array.isArray(val)
 }
 
-export function defaultsDeep<T>(target: T, ...sources: Partial<T>[]) {
-	sources.forEach((source) => {
-		if (!isObject(source)) return
-		Object.entries(source).forEach(([key, sourceValue]) => {
-			const targetValue = (target as Record<string, unknown>)[key]
+export function defaultsDeep<A extends NonNullObject, B extends Partial<A> = Partial<A>>(target: A, ...sources: B[]) {
+	for (const source of sources) {
+		if (!isObject(source)) continue
+		for (const [key, sourceValue] of Object.entries(source)) {
+			const targetValue = target[key as keyof A]
 			if (isObject(targetValue) && isObject(sourceValue)) {
-				defaultsDeep(targetValue, sourceValue)
+				defaultsDeep(targetValue as NonNullObject, sourceValue)
 			} else if (targetValue === undefined) {
-				;(target as Record<string, unknown>)[key] = sourceValue
+				target[key as keyof A] = sourceValue as A[keyof A]
 			}
-		})
-	})
-	return target
+		}
+	}
+	return target as DeepRequired<A & B>
+}
+
+export function strictGet<T, V extends NestedKeyOf<T>>(obj: T, key: V, value?: ValueAtPath<T, V>) {
+	let result: unknown = obj
+	const keys = key.split('.')
+	for (const key of keys) {
+		if (result && typeof result === 'object' && key in result) {
+			result = (result as Record<string, unknown>)[key]
+		} else return value
+	}
+	return result === undefined ? value : (result as ValueAtPath<T, V>)
+}
+
+export function strictHas<T>(obj: T, key: NestedKeyOf<T>) {
+	return strictGet(obj, key) !== undefined
 }
