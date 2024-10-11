@@ -1,7 +1,10 @@
-import { Snowflake } from '@sapphire/snowflake'
 import { customAlphabet } from 'nanoid'
 
-export const VegapunkSnowflake = new Snowflake(1668384000000n)
+let idCounter = 0
+
+export function uniqId(prefix?: string) {
+	return `${prefix}${++idCounter}`
+}
 
 export enum Alphabet {
 	L = 'abcdefghijklmnopqrstuvwxyz',

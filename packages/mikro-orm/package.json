@@ -1,15 +1,11 @@
 {
 	"name": "@vegapunk/mikro-orm",
-	"version": "1.0.11",
+	"version": "1.0.12",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
-	"main": "dist/index.js",
-	"types": "dist/index.d.ts",
 	"exports": {
-		"require": {
-			"types": "./dist/index.d.ts",
-			"default": "./dist/index.js"
-		}
+		"types": "./dist/index.d.ts",
+		"default": "./dist/index.js"
 	},
 	"scripts": {
 		"build": "tsup",
@@ -35,8 +31,8 @@
 		"@sapphire/pieces": "^4.3.1"
 	},
 	"engines": {
-		"node": "20.x",
-		"npm": "10.x"
+		"node": ">=20",
+		"npm": ">=10"
 	},
 	"publishConfig": {
 		"access": "public"

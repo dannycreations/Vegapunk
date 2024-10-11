@@ -24,8 +24,7 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 	}
 
 	public setDelay(delay: number) {
-		delay = typeof delay === 'number' ? delay : Task.MinDelay
-		this._delay = Math.min(Math.max(Math.trunc(delay), Task.MinDelay), Task.MaxDelay)
+		this._delay = Math.min(Math.max(Math.trunc(delay || Task.MinDelay), Task.MinDelay), Task.MaxDelay)
 	}
 
 	public startTask(force?: boolean) {
