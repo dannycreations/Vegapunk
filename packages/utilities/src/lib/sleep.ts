@@ -1,7 +1,7 @@
 import { Awaitable } from './types'
 
 // https://github.com/sapphiredev/utilities/blob/main/packages/utilities/src/lib/sleep.ts
-export function sleep<T = void>(ms: number, value?: T, options: SleepOptions = {}) {
+export function sleep<T = undefined>(ms: number, value?: T, options: SleepOptions = {}) {
 	return new Promise<T>((resolve, reject) => {
 		const { signal = null, ref = false } = options
 		if (signal) {
