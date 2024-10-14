@@ -19,9 +19,9 @@ export function defaultsDeep<A extends NonNullObject, B extends Partial<A> = Par
 	return target as DeepRequired<A & B>
 }
 
-export function strictGet<T, V extends NestedKeyOf<T>>(obj: T, key: V, value?: ValueAtPath<T, V>) {
+export function strictGet<T extends NonNullObject, V extends NestedKeyOf<T>>(obj: T, path: V, value?: ValueAtPath<T, V>) {
 	let result: unknown = obj
-	const keys = key.split('.')
+	const keys = path.split('.')
 	for (const key of keys) {
 		if (result && typeof result === 'object' && key in result) {
 			result = (result as Record<string, unknown>)[key]
@@ -30,6 +30,6 @@ export function strictGet<T, V extends NestedKeyOf<T>>(obj: T, key: V, value?: V
 	return result === undefined ? value : (result as ValueAtPath<T, V>)
 }
 
-export function strictHas<T>(obj: T, key: NestedKeyOf<T>) {
+export function strictHas<T extends NonNullObject>(obj: T, key: NestedKeyOf<T>) {
 	return strictGet(obj, key) !== undefined
 }

@@ -1,9 +1,9 @@
 import { Awaitable } from './types'
 
 // https://github.com/sapphiredev/utilities/blob/main/packages/utilities/src/lib/sleep.ts
-export function sleep<T = undefined>(ms: number, value?: T, options?: SleepOptions) {
+export function sleep<T = void>(ms: number, value?: T, options: SleepOptions = {}) {
 	return new Promise<T>((resolve, reject) => {
-		const signal = options?.signal
+		const { signal = null, ref = false } = options
 		if (signal) {
 			if (signal.aborted) {
 				reject(signal.reason)
@@ -16,36 +16,43 @@ export function sleep<T = undefined>(ms: number, value?: T, options?: SleepOptio
 			})
 		}
 
-		const timer: NodeJS.Timeout | number = setTimeout(() => resolve(value!), ms)
-		if (options?.ref === false && typeof timer === 'object') timer.unref()
-	})
-}
-
-const MinDelay = 10
-const MaxDelay = 2147483647
-
-export async function sleepUntil(callback: SleepUntilCallback, options?: SleepUntilOptions) {
-	const delay = Math.min(Math.max(Math.trunc(options?.delay || MinDelay), MinDelay), MaxDelay)
-	await new Promise<void>(async (resolve) => {
-		let i = 0
-		let done = false
-		let timer: NodeJS.Timeout
-		const cancel = () => ((done = true), clearTimeout(timer))
-		const waiting = async () => {
-			if (done) return resolve()
-			if (await callback(cancel, i++)) cancel()
-			if (done) return resolve()
-
-			timer = setTimeout(waiting, delay)
-			if (!options?.ref) timer.unref()
-		}
-		await waiting()
+		const timer = setTimeout(() => resolve(value!), ms)
+		if (!ref) timer.unref()
 	})
 }
 
 export interface SleepOptions {
-	signal?: AbortSignal | undefined
-	ref?: boolean | undefined
+	signal?: AbortSignal
+	ref?: boolean
+}
+
+export async function sleepUntil(fn: SleepUntilCallback, options: SleepUntilOptions = {}) {
+	return new Promise<void>((resolve) => {
+		let i = 0
+		let done = false
+		let timer: NodeJS.Timeout
+		const { delay = 10, ref = false } = options
+		const cancel = () => ((done = true), clearTimeout(timer))
+		const waiting = async () => {
+			if (await fn(cancel, i++)) cancel()
+			if (done) return resolve()
+			if (delay <= 0) {
+				process.nextTick(waiting)
+			} else {
+				timer = setTimeout(waiting, delay)
+				if (!ref) timer.unref()
+			}
+		}
+		return waiting()
+	})
+}
+
+export async function sleepFor(val: number, fn: (val: number) => Awaitable<boolean | void>) {
+	return sleepUntil((resolve, i) => (i < val ? fn(i) : resolve()), { delay: 0 })
+}
+
+export async function sleepForOf<T>(val: T[], fn: (val: T, i: number) => Awaitable<boolean | void>) {
+	return sleepUntil((resolve, i) => (i < val.length ? fn(val[i], i) : resolve()), { delay: 0 })
 }
 
 export interface SleepUntilOptions {
