@@ -87,7 +87,7 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 	}
 }
 
-export async function waitForConnection(timeout: 10_000) {
+export async function waitForConnection(timeout = 10_000) {
 	const checkGoogle = (resolve: () => void) => {
 		return lookup('google.com').then(resolve)
 	}
