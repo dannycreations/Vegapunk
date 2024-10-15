@@ -4,7 +4,11 @@ import { TimeoutError } from 'got/dist/source/core/utils/timed-out'
 import { lookup } from 'node:dns/promises'
 import UserAgent from 'user-agents'
 
+export * from 'got'
+export { UserAgent }
+
 export const ErrorCodes = [
+	// Got
 	'ETIMEDOUT',
 	'ECONNRESET',
 	'EADDRINUSE',
@@ -13,13 +17,12 @@ export const ErrorCodes = [
 	'ENOTFOUND',
 	'ENETUNREACH',
 	'EAI_AGAIN',
-	'ECONNABORTED',
 	'ERR_CANCELED',
+
+	// Other
+	'ECONNABORTED',
 ]
 export const ErrorStatusCodes = [408, 413, 429, 500, 502, 503, 504, 521, 522, 524]
-
-export * from 'got'
-export { UserAgent }
 
 export const request = got.bind(got)
 
@@ -33,6 +36,7 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 		},
 		{
 			headers: { 'user-agent': userAgent.toString() },
+			retry: 3,
 			timeout: {
 				initial: 10_000,
 				transmission: 30_000,
@@ -42,49 +46,49 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 		},
 	)
 
-	const instance = request({
-		..._options,
-		retry:
-			_options.retry === -1
-				? 0
-				: {
-						limit: _options.retry ?? 3,
-						statusCodes: ErrorStatusCodes,
-						errorCodes: ErrorCodes,
-				  },
-		timeout: undefined,
-		resolveBodyOnly: undefined,
-	} as Options) as CancelableRequest<Response<T>>
+	return new Promise<Response<T>>((resolve, reject) => {
+		return sleepUntil(
+			async (cancel, retry) => {
+				const instance = request({
+					..._options,
+					retry: 0,
+					timeout: undefined,
+					resolveBodyOnly: false,
+				} as Options) as CancelableRequest<Response<T>>
 
-	const cancel = () => instance.cancel()
-	const totalTimeout = setTimeout(() => cancel(), _options.timeout.total).unref()
-	let initialTimeout = setTimeout(() => cancel(), _options.timeout.initial).unref()
+				const start = Date.now()
+				const { initial, transmission, total } = _options.timeout
+				const totalTimeout = setTimeout(instance.cancel, total).unref()
+				let initialTimeout = setTimeout(instance.cancel, initial).unref()
 
-	instance
-		.on('uploadProgress', () => {
-			clearTimeout(initialTimeout)
-			initialTimeout = setTimeout(() => cancel(), _options.timeout.transmission).unref()
-		})
-		.on('downloadProgress', () => {
-			clearTimeout(initialTimeout)
-			initialTimeout = setTimeout(() => cancel(), _options.timeout.transmission).unref()
-		})
-
-	try {
-		return await instance
-	} catch (error) {
-		const flagOne = ErrorCodes.includes(error.code)
-		const flagTwo = typeof error.response === 'object' && ErrorStatusCodes.includes(error.response.statusCode)
-		if (_options.retry === -1 && (flagOne || flagTwo)) return requestDefault(options)
-		if (error instanceof CancelError) {
-			error = new TimeoutError(0, 'request')
-			error.message = 'Request timeout'
-		}
-		throw error
-	} finally {
-		clearTimeout(totalTimeout)
-		clearTimeout(initialTimeout)
-	}
+				await instance
+					.on('uploadProgress', () => {
+						clearTimeout(initialTimeout)
+						initialTimeout = setTimeout(instance.cancel, transmission).unref()
+					})
+					.on('downloadProgress', () => {
+						clearTimeout(initialTimeout)
+						initialTimeout = setTimeout(instance.cancel, transmission).unref()
+					})
+					.then((res) => (cancel(), resolve(res)))
+					.catch((error) => {
+						const flagOne = ErrorCodes.includes(error.code)
+						const flagTwo = typeof error.response === 'object' && ErrorStatusCodes.includes(error.response.statusCode)
+						if (_options.retry < 0 && (flagOne || flagTwo)) return
+						else if (_options.retry > retry && (flagOne || flagTwo)) return
+						else if (error instanceof CancelError) {
+							error = new TimeoutError(Date.now() - start, 'request')
+						}
+						return cancel(), reject(error)
+					})
+					.finally(() => {
+						clearTimeout(totalTimeout)
+						clearTimeout(initialTimeout)
+					})
+			},
+			{ delay: 0 },
+		)
+	})
 }
 
 export async function waitForConnection(timeout = 10_000) {
