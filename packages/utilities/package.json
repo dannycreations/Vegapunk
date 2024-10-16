@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/utilities",
-	"version": "1.0.25",
+	"version": "1.0.26",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"exports": {
@@ -24,10 +24,10 @@
 	"homepage": "https://github.com/dannycreations/Vegapunk",
 	"dependencies": {
 		"chalk": "4.x",
+		"dayjs": "^1.11.13",
 		"es-toolkit": "^1.24.0",
 		"humanize-duration": "^3.32.1",
 		"jsonc-parser": "^3.3.1",
-		"moment-timezone": "^0.5.46",
 		"nanoid": "3.x"
 	},
 	"devDependencies": {
