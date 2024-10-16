@@ -23,7 +23,7 @@ export function defaultsDeep<A extends NonNullObject, B extends Partial<A> = Par
 }
 
 export function strictGet<T extends NonNullObject, V extends NestedKeyOf<T>>(obj: T, path: V, value?: ValueAtPath<T, V>) {
-	return get(obj, path, value) as ValueAtPath<T, V> | undefined
+	return get(obj, path, value) as ValueAtPath<T, V>
 }
 
 export function strictHas<T extends NonNullObject>(obj: T, path: NestedKeyOf<T>) {
