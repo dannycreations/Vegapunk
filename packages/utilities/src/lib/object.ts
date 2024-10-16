@@ -1,4 +1,4 @@
-import { isObject } from 'es-toolkit/compat'
+import { get, has, isObject } from 'es-toolkit/compat'
 import { DeepRequired, NestedKeyOf, NonNullObject, ValueAtPath } from './types'
 
 function isSpecialProperty(key: string) {
@@ -23,16 +23,9 @@ export function defaultsDeep<A extends NonNullObject, B extends Partial<A> = Par
 }
 
 export function strictGet<T extends NonNullObject, V extends NestedKeyOf<T>>(obj: T, path: V, value?: ValueAtPath<T, V>) {
-	let result: unknown = obj
-	const keys = path.split('.')
-	for (const key of keys) {
-		if (result && typeof result === 'object' && key in result) {
-			result = (result as Record<string, unknown>)[key]
-		} else return value
-	}
-	return typeof result === 'undefined' ? value : (result as ValueAtPath<T, V>)
+	return get(obj, path, value) as ValueAtPath<T, V> | undefined
 }
 
-export function strictHas<T extends NonNullObject>(obj: T, key: NestedKeyOf<T>) {
-	return typeof strictGet(obj, key) !== 'undefined'
+export function strictHas<T extends NonNullObject>(obj: T, path: NestedKeyOf<T>) {
+	return has(obj, path)
 }

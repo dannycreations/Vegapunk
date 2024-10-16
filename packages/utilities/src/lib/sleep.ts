@@ -47,6 +47,13 @@ export async function sleepUntil(fn: SleepUntilCallback, options: SleepUntilOpti
 	})
 }
 
+export type SleepUntilCallback = (resolve: () => void, i: number) => Awaitable<boolean | void>
+
+export interface SleepUntilOptions {
+	delay?: number
+	ref?: boolean
+}
+
 export async function sleepFor(val: number, fn: (val: number) => Awaitable<boolean | void>) {
 	return sleepUntil((resolve, i) => (i < val ? fn(i) : resolve()), { delay: 0 })
 }
@@ -54,10 +61,3 @@ export async function sleepFor(val: number, fn: (val: number) => Awaitable<boole
 export async function sleepForOf<T>(val: T[], fn: (val: T, i: number) => Awaitable<boolean | void>) {
 	return sleepUntil((resolve, i) => (i < val.length ? fn(val[i], i) : resolve()), { delay: 0 })
 }
-
-export interface SleepUntilOptions {
-	delay?: number
-	ref?: boolean
-}
-
-export type SleepUntilCallback = (resolve: () => void, i: number) => Awaitable<boolean | void>
