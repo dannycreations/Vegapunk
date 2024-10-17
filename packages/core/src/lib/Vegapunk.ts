@@ -6,7 +6,7 @@ import { EventEmitter } from 'node:events'
 import { ListenerStore } from './structures/ListenerStore'
 import { TaskStore } from './structures/TaskStore'
 
-export class Vegapunk<T extends Record<keyof T, unknown[]> = InternalEvents> extends EventEmitter<T> {
+export class Vegapunk extends EventEmitter<InternalEvents> {
 	public readonly stores: StoreRegistry
 	public readonly options: Required<ClientOptions>
 
