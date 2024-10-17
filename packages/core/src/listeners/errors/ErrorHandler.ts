@@ -1,12 +1,11 @@
 import { container, type Piece } from '@sapphire/pieces'
 import { Listener } from '../../lib/structures/Listener'
-import { Events } from '../../lib/types/Enum'
 
-export class CoreListener extends Listener {
+export class CoreListener extends Listener<'internalError'> {
 	public constructor(context: Listener.LoaderContext) {
 		super(context, {
-			event: Events.ListenerError,
-			enabled: container.client.options.errorCoreHandler,
+			event: 'internalError',
+			enabled: container.client.options.internalError,
 		})
 	}
 
@@ -17,6 +16,6 @@ export class CoreListener extends Listener {
 
 void container.stores.loadPiece({
 	store: 'listeners',
-	name: 'CoreListenerHandler',
+	name: 'InternalError',
 	piece: CoreListener,
 })

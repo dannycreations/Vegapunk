@@ -1,40 +1,43 @@
 import '../listeners/_load'
 
-import { Store, StoreRegistry, container, getRootData } from '@sapphire/pieces'
+import { Piece, Store, StoreRegistry, container, getRootData } from '@sapphire/pieces'
 import { Logger, logger } from '@vegapunk/logger'
 import { EventEmitter } from 'node:events'
 import { ListenerStore } from './structures/ListenerStore'
 import { TaskStore } from './structures/TaskStore'
 
-export class Vegapunk extends EventEmitter {
-	public stores: StoreRegistry
-	public options: ClientOptions
+export class Vegapunk<T extends Record<keyof T, unknown[]> = InternalEvents> extends EventEmitter<T> {
+	public readonly stores: StoreRegistry
+	public readonly options: Required<ClientOptions>
 
 	public constructor(options: ClientOptions = {}) {
 		super()
-		container.client = this
 
-		const _options: Required<ClientOptions> = {
+		this.options = {
 			logger: logger({
-				exceptionHandler: false,
-				rejectionHandler: false,
+				exception: false,
+				rejection: false,
 			}),
 			baseUserDirectory: getRootData().root,
-			errorCoreHandler: true,
-			errorExceptionHandler: true,
-			errorRejectionHandler: true,
+			internalError: true,
+			internalException: true,
+			internalRejection: true,
 			...options,
 		}
 
-		this.options = _options
-		container.logger = _options.logger
-		if (_options.logger.level === 'trace') {
-			Store.logger = _options.logger.trace.bind(_options.logger)
+		container.client = this as Vegapunk
+		container.logger = this.options.logger
+
+		if (this.options.logger.level === 'trace') {
+			Store.logger = this.options.logger.trace.bind(this.options.logger)
 		}
 
 		this.stores = container.stores
 		this.stores.register(new ListenerStore())
 		this.stores.register(new TaskStore())
+
+		process.on('uncaughtException', (...args) => container.client.emit('internalException', ...args))
+		process.on('unhandledRejection', (...args) => container.client.emit('internalRejection', ...args))
 	}
 
 	public async start() {
@@ -49,9 +52,19 @@ export class Vegapunk extends EventEmitter {
 export interface ClientOptions {
 	logger?: Logger
 	baseUserDirectory?: URL | string | null
-	errorCoreHandler?: boolean
-	errorExceptionHandler?: boolean
-	errorRejectionHandler?: boolean
+	internalError?: boolean
+	internalException?: boolean
+	internalRejection?: boolean
+}
+
+export interface ClientEvents {
+	InternalError: [error: unknown, context: Piece]
+	InternalException: [error: Error, origin: string]
+	InternalRejection: [reason: unknown, promise: Promise<unknown>]
+}
+
+export type InternalEvents = {
+	[K in keyof ClientEvents as Uncapitalize<K>]: ClientEvents[K]
 }
 
 declare module '@sapphire/pieces' {
