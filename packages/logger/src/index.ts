@@ -7,8 +7,8 @@ export const pinoPretty = _pinoPretty
 export function logger<T extends string>(options: LoggerOptions = {}) {
 	options = {
 		level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
-		exceptionHandler: true,
-		rejectionHandler: true,
+		exception: true,
+		rejection: true,
 		...options,
 	}
 
@@ -40,17 +40,22 @@ export function logger<T extends string>(options: LoggerOptions = {}) {
 		_pino.multistream(streams),
 	)
 
-	if (options.exceptionHandler) {
-		process.on('uncaughtException', (err, origin) => pino.fatal(err, `Logger: UncaughtException ${origin}`))
+	if (options.exception) {
+		process.on('uncaughtException', (error, _origin) => {
+			pino.fatal(error, 'UncaughtException')
+		})
 	}
-	if (options.rejectionHandler) {
-		process.on('unhandledRejection', (reason: string, promise) => pino.fatal(promise, `Logger: UnhandledRejection ${reason}`))
+	if (options.rejection) {
+		process.on('unhandledRejection', (reason: string, stack) => {
+			const error = Object.assign(new Error(reason), { stack })
+			pino.fatal(error, 'UnhandledRejection')
+		})
 	}
 	return pino
 }
 
 export interface LoggerOptions {
 	level?: Level
-	exceptionHandler?: boolean
-	rejectionHandler?: boolean
+	exception?: boolean
+	rejection?: boolean
 }

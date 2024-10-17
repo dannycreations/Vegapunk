@@ -1,11 +1,14 @@
 import { Piece } from '@sapphire/pieces'
 import { Result } from '@sapphire/result'
 import { type EventEmitter } from 'node:events'
-import { Events } from '../types/Enum'
+import { type InternalEvents } from '../Vegapunk'
 
-export abstract class Listener<Options extends Listener.Options = Listener.Options> extends Piece<Options, 'listeners'> {
+export abstract class Listener<
+	E extends keyof InternalEvents | symbol = keyof InternalEvents,
+	Options extends Listener.Options = Listener.Options,
+> extends Piece<Options, 'listeners'> {
 	public readonly emitter: EventEmitter | null
-	public readonly event: string | symbol
+	public readonly event: keyof InternalEvents | symbol
 	public readonly once: boolean
 
 	public constructor(context: Listener.LoaderContext, options: Options = {} as Options) {
@@ -17,7 +20,7 @@ export abstract class Listener<Options extends Listener.Options = Listener.Optio
 				: (typeof options.emitter === 'string'
 						? (Reflect.get(this.container.client, options.emitter) as EventEmitter)
 						: (options.emitter as EventEmitter)) ?? null
-		this.event = options.event ?? this.name
+		this.event = options.event ?? (this.name as keyof InternalEvents)
 		this.once = options.once ?? false
 
 		this._listener = this.emitter && this.event ? (this.once ? this._runOnce.bind(this) : this._run.bind(this)) : null
@@ -26,13 +29,13 @@ export abstract class Listener<Options extends Listener.Options = Listener.Optio
 		if (this.emitter === null || this._listener === null) this.enabled = false
 	}
 
-	public abstract run(...args: unknown[]): unknown
+	public abstract run(...args: E extends keyof InternalEvents ? InternalEvents[E] : unknown[]): unknown
 
 	private async _run(...args: unknown[]) {
 		this.container.logger.trace(`Listener Run: ${this.event.toString()}`)
 
-		const result = await Result.fromAsync(() => this.run(...args))
-		result.inspectErr((error) => this.container.client.emit(Events.ListenerError, error, this))
+		const result = await Result.fromAsync(() => this.run(...(args as E extends keyof InternalEvents ? InternalEvents[E] : unknown[])))
+		result.inspectErr((error) => this.container.client.emit('internalError', error, this))
 
 		this.container.logger.trace(`Listener End: ${this.event.toString()}`)
 	}
@@ -47,7 +50,7 @@ export abstract class Listener<Options extends Listener.Options = Listener.Optio
 
 export interface ListenerOptions extends Piece.Options {
 	readonly emitter?: EventEmitter
-	readonly event?: string | symbol
+	readonly event?: keyof InternalEvents | symbol
 	readonly once?: boolean
 }
 

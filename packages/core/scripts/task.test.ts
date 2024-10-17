@@ -1,85 +1,96 @@
 import { Task, Vegapunk } from '../dist'
 
-async function main() {
+async function main(i = 0) {
+	setTimeout(Boolean, 60_000)
+
 	try {
 		const client = new Vegapunk()
 		await client.start()
 
-		let i = 1
+		const zero = await Task.createTask({
+			awake: () => console.log(++i, '0.1 awake'),
+			start: () => console.log(++i, '0.2 start'),
+			update() {
+				console.log(++i, '0.3 update')
+				return zero.unload()
+			},
+		})
 
-		const stepOne = await Task.createTask({
-			awake: () => console.log(i++, '1.1 awake'),
-			start: () => console.log(i++, '1.2 start'),
-			async update() {
-				console.log(i++, '1.3 update')
-				await stepOne.unload()
+		const one = await Task.createTask({
+			awake: () => console.log(++i, '1.1 awake'),
+			start: () => console.log(++i, '1.2 start'),
+			update() {
+				console.log(++i, '1.3 update')
+				return one.unload()
 			},
 			options: { delay: 1100 },
 		})
 
-		const stepTwo = await Task.createTask({
-			awake: () => console.log(i++, '2.1 awake'),
-			async update() {
-				console.log(i++, '2.3 update')
-				await stepTwo.unload()
+		const two = await Task.createTask({
+			awake: () => console.log(++i, '2.1 awake'),
+			update() {
+				console.log(++i, '2.3 update')
+				return two.unload()
 			},
 			options: { delay: 1200 },
 		})
 
-		const stepThree = await Task.createTask({
-			start: () => console.log(i++, '3.2 start'),
-			async update() {
-				console.log(i++, '3.3 update')
-				await stepThree.unload()
+		const three = await Task.createTask({
+			start: () => console.log(++i, '3.2 start'),
+			update() {
+				console.log(++i, '3.3 update')
+				return three.unload()
 			},
 			options: { delay: 1300 },
 		})
 
-		const stepFour = await Task.createTask({
-			async update() {
-				console.log(i++, '4.3 update')
-				await stepFour.unload()
+		const four = await Task.createTask({
+			update() {
+				console.log(++i, '4.3 update')
+				return four.unload()
 			},
 			options: { delay: 1400 },
 		})
 
-		const stepFive = await Task.createTask({
-			awake: () => console.log(i++, '5.1 awake'),
-			start: () => console.log(i++, '5.2 start'),
-			async update() {
-				console.log(i++, '5.3 update')
-				await stepFive.unload()
+		const five = await Task.createTask({
+			awake: () => console.log(++i, '5.1 awake'),
+			start: () => console.log(++i, '5.2 start'),
+			update() {
+				console.log(++i, '5.3 update')
+				return five.unload()
 			},
 			options: { delay: 1500, enabled: false },
 		})
-		stepFive.startTask()
+		five.startTask()
 
-		const stepSixName = '6 test'
-		const stepSix = await Task.createTask({
-			async update() {
-				console.log(i++, '6.3 update ' + stepSix.name)
-				await stepSix.unload()
+		const sixName = '6 test'
+		const six = await Task.createTask({
+			update() {
+				console.log(++i, '6.3 update ' + six.name)
+				return six.unload()
 			},
-			options: { name: stepSixName, delay: 1600 },
+			options: { name: sixName, delay: 1600 },
 		})
 
-		/** 
-            1 1.1 awake
-            2 1.2 start
+		/**
+            1 0.1 awake
+            2 1.1 awake
             3 2.1 awake
-            4 3.2 start
-            5 5.1 awake
-            6 1.3 update
-            7 2.3 update
-            8 3.3 update
-            9 4.3 update
-            10 5.2 start
-            11 6.3 update 6 test
-            12 5.3 update
+            4 5.1 awake
+            5 0.2 start
+            6 1.2 start
+            7 3.2 start
+            8 5.2 start
+            9 0.3 update
+            10 1.3 update
+            11 2.3 update
+            12 3.3 update
+            13 4.3 update
+            14 5.3 update
+            15 6.3 update 6 test
          */
 	} catch (error) {
 		console.error(error)
-		process.exit(1)
 	}
 }
 main()

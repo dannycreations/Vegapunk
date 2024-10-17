@@ -1,14 +1,12 @@
 import { Piece } from '@sapphire/pieces'
 import { Result } from '@sapphire/result'
-import { Events } from '../../types/Enum'
 import { Task } from '../Task'
 
 export class TaskBase<Options extends Task.Options> extends Piece<Options, 'tasks'> {
-	public constructor(context: Task.LoaderContext, options: Options) {
+	public constructor(context: Task.LoaderContext, options: Options = {} as Options) {
 		super(context, options)
 
-		this._isEnable = typeof options.enabled === 'boolean' ? options.enabled : true
-		this.setDelay(options.delay as number)
+		this.setDelay(options.delay)
 	}
 
 	public awake?(): unknown
@@ -17,62 +15,61 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 
 	public get isStatus() {
 		return {
-			idle: this._isIdle,
-			enabled: this._isEnable,
+			idle: !!this._timeout,
+			enabled: this.enabled,
 			running: this._isRunning,
 		}
 	}
 
-	public setDelay(delay: number) {
-		this._delay = Math.min(Math.max(Math.trunc(delay || Task.MinDelay), Task.MinDelay), Task.MaxDelay)
+	public setDelay(delay = Task.MinDelay) {
+		this._delay = Math.min(Math.max(Math.trunc(delay), Task.MinDelay), Task.MaxDelay)
 	}
 
 	public startTask(force?: boolean) {
-		this._isEnable = true
+		this.enabled = true
 		clearTimeout(this._timeout)
-		process.nextTick(() => this._update(force))
+		this._timeout = undefined
+		process.nextTick(() => this.#update(force))
 	}
 
 	public stopTask() {
-		this._isEnable = false
+		this.enabled = false
 		clearTimeout(this._timeout)
+		this._timeout = undefined
 	}
 
-	private async _start(init?: boolean) {
+	async #start() {
 		this.container.logger.trace(`Task Run: ${this.name}`)
 		this._isRunning = true
 
 		const result = await Result.fromAsync(async () => {
-			if (!this._isAwakeOnce && typeof this.awake === 'function') {
+			if (!this._isAwakeOnce) {
 				this._isAwakeOnce = true
-				await this.awake()
+				await this.awake?.()
 			}
-			if (this._isEnable) {
-				if (!this._isStartOnce && typeof this.start === 'function') {
+
+			if (this.enabled) {
+				if (!this._isStartOnce) {
 					this._isStartOnce = true
-					await this.start()
-				} else if (!init && typeof this.update === 'function') {
-					await this.update()
+					await this.start?.()
+				} else {
+					await this.update!()
 				}
 			}
 		})
-		result.inspectErr((error) => this.container.client.emit(Events.ListenerError, error, this))
+		result.inspectErr((error) => this.container.client.emit('internalError', error, this))
 
 		this._isRunning = false
 		this.container.logger.trace(`Task End: ${this.name}`)
 	}
 
-	private async _update(force?: boolean) {
-		if (this._isDisable) return
-		if (force) await this._start()
+	async #update(force?: boolean) {
+		if (!this.enabled || this._isRunning) return
+		if (force) await this.#start()
 
-		this._isIdle = true
 		this._timeout = setTimeout(() => {
-			this._isIdle = false
-			if (this._isDisable) return
-
 			this._timeout = undefined
-			this._start().then(() => this._update())
+			this.#start().then(() => this.#update())
 		}, this._delay)
 
 		if (!this.options.ref) {
@@ -80,18 +77,10 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 		}
 	}
 
-	private get _isDisable() {
-		if (this._isRunning) return true
-		if (!this._isEnable) true
-		return false
-	}
-
-	private _isIdle = false
 	private _isRunning = false
 	private _isAwakeOnce = false
 	private _isStartOnce = false
 
-	private _isEnable: boolean
 	private _delay = Task.MinDelay
 	private _timeout?: NodeJS.Timeout
 }

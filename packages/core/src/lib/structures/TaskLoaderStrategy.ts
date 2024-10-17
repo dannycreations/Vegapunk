@@ -3,9 +3,11 @@ import { type Task } from './Task'
 import { type TaskStore } from './TaskStore'
 
 export class TaskLoaderStrategy extends LoaderStrategy<Task> {
-	public override async onLoad(_store: TaskStore, piece: Task) {
-		await piece['_start'](true)
-		await piece['_update']()
+	public override onLoad(_store: TaskStore, piece: Task) {
+		piece.startTask(true)
+		// because startTask force enabled to true
+		// this fix 'options.enabled = false' problem
+		piece.enabled = piece.options.enabled ?? true
 	}
 
 	public override onUnload(_store: TaskStore, piece: Task) {

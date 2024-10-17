@@ -9,7 +9,7 @@ export abstract class Task<Options extends Task.Options = Task.Options> extends 
 	public static readonly MaxDelay = 2147483647
 
 	public static async createTask(task: CreateTask) {
-		const _task = { ...task, options: { enabled: true, ...task.options } }
+		task = { ...task, options: { ...task.options } }
 
 		let taskStores = container.stores.get('tasks')
 		if (!taskStores) {
@@ -19,18 +19,14 @@ export abstract class Task<Options extends Task.Options = Task.Options> extends 
 
 		const uniq = Snowflake.generate({ processId: BigInt(taskStores.size) })
 		const context = { name: `${HookPath}${uniq}`, root: HookPath, path: HookPath, store: taskStores }
-		const piece = new TaskBase(context, { ..._task.options, enabled: true }) as Task
+		const piece = Object.assign(new TaskBase(context, task.options), task)
 
 		const previous = taskStores.get(piece.name)
 		if (previous) await previous.unload()
 
-		piece['_isEnable'] = _task.options.enabled
-		if (typeof _task.awake === 'function') piece.awake = _task.awake.bind(_task.awake)
-		if (typeof _task.start === 'function') piece.start = _task.start.bind(_task.start)
-		if (typeof _task.update === 'function') piece.update = _task.update.bind(_task.update)
 		taskStores.strategy.onLoad(taskStores, piece)
 		taskStores.set(piece.name, piece)
-		return piece
+		return piece as Task
 	}
 
 	public abstract override update(): unknown
