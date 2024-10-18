@@ -6,7 +6,7 @@ import { EventEmitter } from 'node:events'
 import { ListenerStore } from './structures/ListenerStore'
 import { TaskStore } from './structures/TaskStore'
 
-export class Vegapunk extends EventEmitter<InternalEvents> {
+export class Vegapunk extends EventEmitter<ClientEvents> {
 	public readonly stores: StoreRegistry
 	public readonly options: Required<ClientOptions>
 
@@ -58,13 +58,9 @@ export interface ClientOptions {
 }
 
 export interface ClientEvents {
-	InternalError: [error: unknown, context: Piece]
-	InternalException: [error: Error, origin: string]
-	InternalRejection: [reason: unknown, promise: Promise<unknown>]
-}
-
-export type InternalEvents = {
-	[K in keyof ClientEvents as Uncapitalize<K>]: ClientEvents[K]
+	internalError: [error: unknown, context: Piece]
+	internalException: [error: Error, origin: string]
+	internalRejection: [reason: unknown, promise: Promise<unknown>]
 }
 
 declare module '@sapphire/pieces' {

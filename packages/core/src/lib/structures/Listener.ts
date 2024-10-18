@@ -1,14 +1,14 @@
 import { Piece } from '@sapphire/pieces'
 import { Result } from '@sapphire/result'
 import { type EventEmitter } from 'node:events'
-import { type InternalEvents } from '../Vegapunk'
+import { type ClientEvents } from '../Vegapunk'
 
 export abstract class Listener<
-	E extends keyof InternalEvents | symbol = keyof InternalEvents,
+	E extends keyof ClientEvents | symbol = keyof ClientEvents,
 	Options extends Listener.Options = Listener.Options,
 > extends Piece<Options, 'listeners'> {
 	public readonly emitter: EventEmitter | null
-	public readonly event: keyof InternalEvents | symbol
+	public readonly event: keyof ClientEvents | symbol
 	public readonly once: boolean
 
 	public constructor(context: Listener.LoaderContext, options: Options = {} as Options) {
@@ -20,7 +20,7 @@ export abstract class Listener<
 				: (typeof options.emitter === 'string'
 						? (Reflect.get(this.container.client, options.emitter) as EventEmitter)
 						: (options.emitter as EventEmitter)) ?? null
-		this.event = options.event ?? (this.name as keyof InternalEvents)
+		this.event = options.event ?? (this.name as keyof ClientEvents)
 		this.once = options.once ?? false
 
 		this._listener = this.emitter && this.event ? (this.once ? this._runOnce.bind(this) : this._run.bind(this)) : null
@@ -29,12 +29,12 @@ export abstract class Listener<
 		if (this.emitter === null || this._listener === null) this.enabled = false
 	}
 
-	public abstract run(...args: E extends keyof InternalEvents ? InternalEvents[E] : unknown[]): unknown
+	public abstract run(...args: E extends keyof ClientEvents ? ClientEvents[E] : unknown[]): unknown
 
 	private async _run(...args: unknown[]) {
 		this.container.logger.trace(`Listener Run: ${this.event.toString()}`)
 
-		const result = await Result.fromAsync(() => this.run(...(args as E extends keyof InternalEvents ? InternalEvents[E] : unknown[])))
+		const result = await Result.fromAsync(() => this.run(...(args as E extends keyof ClientEvents ? ClientEvents[E] : unknown[])))
 		result.inspectErr((error) => this.container.client.emit('internalError', error, this))
 
 		this.container.logger.trace(`Listener End: ${this.event.toString()}`)
@@ -50,7 +50,7 @@ export abstract class Listener<
 
 export interface ListenerOptions extends Piece.Options {
 	readonly emitter?: EventEmitter
-	readonly event?: keyof InternalEvents | symbol
+	readonly event?: keyof ClientEvents | symbol
 	readonly once?: boolean
 }
 
