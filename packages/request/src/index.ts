@@ -1,5 +1,5 @@
 import { defaultsDeep, sleep, sleepUntil } from '@vegapunk/utilities'
-import got, { type CancelableRequest, CancelError, type Options, type Response } from 'got'
+import got, { type CancelableRequest, type Options, type Response } from 'got'
 import { TimeoutError } from 'got/dist/source/core/utils/timed-out'
 import { lookup } from 'node:dns/promises'
 import UserAgent from 'user-agents'
@@ -8,7 +8,7 @@ export * from 'got'
 export { UserAgent }
 
 export const ErrorCodes = [
-	// Got
+	// Got internal
 	'ETIMEDOUT',
 	'ECONNRESET',
 	'EADDRINUSE',
@@ -17,6 +17,8 @@ export const ErrorCodes = [
 	'ENOTFOUND',
 	'ENETUNREACH',
 	'EAI_AGAIN',
+
+	// Got custom
 	'ERR_CANCELED',
 
 	// Other
@@ -54,32 +56,30 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 					retry: 0,
 					timeout: undefined,
 					resolveBodyOnly: false,
-				} as Options) as CancelableRequest<Response<T>>
+				}) as CancelableRequest<Response<T>>
 
 				const start = Date.now()
 				const { initial, transmission, total } = _options.timeout
-				const totalTimeout = setTimeout(instance.cancel, total).unref()
-				let initialTimeout = setTimeout(instance.cancel, initial).unref()
+				const totalTimeout = setTimeout(() => instance.cancel(), total).unref()
+				let initialTimeout = setTimeout(() => instance.cancel(), initial).unref()
+				const resetTimeout = () => {
+					clearTimeout(initialTimeout)
+					initialTimeout = setTimeout(() => instance.cancel(), transmission).unref()
+				}
 
 				await instance
-					.on('uploadProgress', () => {
-						clearTimeout(initialTimeout)
-						initialTimeout = setTimeout(instance.cancel, transmission).unref()
-					})
-					.on('downloadProgress', () => {
-						clearTimeout(initialTimeout)
-						initialTimeout = setTimeout(instance.cancel, transmission).unref()
-					})
+					.on('uploadProgress', () => resetTimeout())
+					.on('downloadProgress', () => resetTimeout())
 					.then((res) => (cancel(), resolve(res)))
 					.catch((error) => {
-						const flagOne = ErrorCodes.includes(error.code)
-						const flagTwo = typeof error.response === 'object' && ErrorStatusCodes.includes(error.response.statusCode)
-						if (_options.retry < 0 && (flagOne || flagTwo)) return
-						else if (_options.retry > retry && (flagOne || flagTwo)) return
-						else if (error instanceof CancelError) {
+						const flagOne = !!~ErrorCodes.indexOf(error.code)
+						const flagTwo = typeof error.response === 'object' && !!~ErrorStatusCodes.indexOf(error.response.statusCode)
+						if ((flagOne || flagTwo) && (_options.retry < 0 || _options.retry > retry)) return
+						else if (instance.isCanceled) {
 							error = new TimeoutError(Date.now() - start, 'request')
+							Error.captureStackTrace(error, requestDefault)
 						}
-						return cancel(), reject(error)
+						cancel(), reject(error)
 					})
 					.finally(() => {
 						clearTimeout(totalTimeout)
