@@ -26,7 +26,7 @@ export interface SleepOptions {
 	ref?: boolean
 }
 
-export async function sleepUntil(fn: SleepUntilCallback, options: SleepUntilOptions = {}) {
+export async function sleepUntil(fn: (resolve: () => void, i: number) => Awaitable<boolean | void>, options: SleepUntilOptions = {}) {
 	return new Promise<void>((resolve) => {
 		let i = 0
 		let done = false
@@ -46,8 +46,6 @@ export async function sleepUntil(fn: SleepUntilCallback, options: SleepUntilOpti
 		return waiting()
 	})
 }
-
-export type SleepUntilCallback = (resolve: () => void, i: number) => Awaitable<boolean | void>
 
 export interface SleepUntilOptions {
 	delay?: number
