@@ -25,7 +25,7 @@
 	"dependencies": {
 		"chalk": "4.x",
 		"dayjs": "^1.11.13",
-		"es-toolkit": "^1.24.0",
+		"es-toolkit": "^1.25.2",
 		"humanize-duration": "^3.32.1",
 		"jsonc-parser": "^3.3.1",
 		"nanoid": "3.x"
