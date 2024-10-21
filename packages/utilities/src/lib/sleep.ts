@@ -35,19 +35,16 @@ export async function sleepUntil(fn: (resolve: () => void, i: number) => Awaitab
 		const cancel = () => ((done = true), clearTimeout(timer))
 		const waiting = async () => {
 			try {
-				if (await fn(cancel, i++)) {
-					cancel(), resolve()
-				}
-			} catch (error) {
-				cancel(), reject(error)
-			} finally {
-				if (done) return
+				if (await fn(cancel, i++)) cancel()
+				if (done) resolve()
 				else if (delay <= 0) {
 					process.nextTick(waiting)
 				} else {
 					timer = setTimeout(waiting, delay)
 					if (!ref) timer.unref()
 				}
+			} catch (error) {
+				cancel(), reject(error)
 			}
 		}
 		return waiting()
