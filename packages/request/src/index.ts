@@ -56,7 +56,7 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 					retry: 0,
 					timeout: undefined,
 					resolveBodyOnly: false,
-				}) as CancelableRequest<Response<T>>
+				} as Options) as CancelableRequest<Response<T>>
 
 				const start = Date.now()
 				const { initial, transmission, total } = _options.timeout

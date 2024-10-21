@@ -13,10 +13,6 @@
 				"enabled": false
 			},
 			{
-				"matchPackageNames": ["@types/node", "chai", "chai-as-promised", "chalk", "got", "nanoid"],
-				"enabled": false
-			},
-			{
 				"matchUpdateTypes": ["minor", "patch"],
 				"automerge": true,
 				"platformAutomerge": true
