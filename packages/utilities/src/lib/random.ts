@@ -13,7 +13,7 @@ export enum Alphabet {
 	S = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~',
 }
 
-export function randomString(length: number = 30, ...str: Alphabet[]) {
+export function randomString(length: number = 30, ...str: Alphabet[]): string {
 	str = str.length ? str : [Alphabet.L, Alphabet.U, Alphabet.N]
 	return customAlphabet(str.join(''), length)()
 }

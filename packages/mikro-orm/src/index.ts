@@ -4,7 +4,7 @@ import { container } from '@vegapunk/core'
 export * from '@mikro-orm/core'
 export * as BetterSqlite from './config/better-sqlite.config'
 
-export async function MikroORM(options: Options) {
+export async function MikroORM(options: Options): Promise<void> {
 	container.orm = await _orm.init(options)
 	container.em = container.orm.em
 

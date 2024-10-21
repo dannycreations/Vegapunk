@@ -9,7 +9,7 @@ export class CoreListener extends Listener<'internalRejection'> {
 		})
 	}
 
-	public run(reason: string, stack: Promise<unknown>) {
+	public run(reason: string, stack: Promise<unknown>): void {
 		const error = Object.assign(new Error(reason), { stack })
 		this.container.logger.fatal(error, `Encountered error on event "${this.event.toString()}"`)
 	}

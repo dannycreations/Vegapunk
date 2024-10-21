@@ -1,4 +1,4 @@
-export function truncate(str: string, options: TruncateOptions = {}) {
+export function truncate(str: string, options: TruncateOptions = {}): string {
 	const { length = 30, omission = '...', separator } = options
 	if (!length) return omission
 	if (length >= str.length) return str

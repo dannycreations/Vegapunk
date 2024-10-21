@@ -13,7 +13,7 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 	public start?(): unknown
 	public update?(): unknown
 
-	public get isStatus() {
+	public get isStatus(): TaskStatus {
 		return {
 			idle: !!this._timeout,
 			enabled: this.enabled,
@@ -21,18 +21,18 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 		}
 	}
 
-	public setDelay(delay = Task.MinDelay) {
+	public setDelay(delay: number = Task.MinDelay): void {
 		this._delay = Math.min(Math.max(Math.trunc(delay), Task.MinDelay), Task.MaxDelay)
 	}
 
-	public startTask(force?: boolean) {
+	public startTask(force?: boolean): void {
 		this.enabled = true
 		clearTimeout(this._timeout)
 		this._timeout = undefined
 		process.nextTick(() => this.#update(force))
 	}
 
-	public stopTask() {
+	public stopTask(): void {
 		this.enabled = false
 		clearTimeout(this._timeout)
 		this._timeout = undefined
@@ -83,4 +83,10 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 
 	private _delay = Task.MinDelay
 	private _timeout?: NodeJS.Timeout
+}
+
+export interface TaskStatus {
+	idle: boolean
+	enabled: boolean
+	running: boolean
 }

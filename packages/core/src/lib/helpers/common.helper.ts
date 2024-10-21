@@ -3,4 +3,4 @@ import { Snowflake as sf } from '@sapphire/snowflake'
 
 export { Result, ResultOption }
 
-export const Snowflake = new sf(1668384000000n)
+export const Snowflake: sf = new sf(1668384000000n)

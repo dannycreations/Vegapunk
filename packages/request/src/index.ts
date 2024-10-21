@@ -1,5 +1,5 @@
 import { defaultsDeep, sleep, sleepUntil } from '@vegapunk/utilities'
-import got, { type CancelableRequest, type Options, type Response } from 'got'
+import got, { Got, type CancelableRequest, type Options, type Response } from 'got'
 import { TimeoutError } from 'got/dist/source/core/utils/timed-out'
 import { lookup } from 'node:dns/promises'
 import UserAgent from 'user-agents'
@@ -23,13 +23,13 @@ export const ErrorCodes = [
 
 	// Other
 	'ECONNABORTED',
-]
-export const ErrorStatusCodes = [408, 413, 429, 500, 502, 503, 504, 521, 522, 524]
+] as const
+export const ErrorStatusCodes = [408, 413, 429, 500, 502, 503, 504, 521, 522, 524] as const
 
-export const request = got.bind(got)
+export const request: Got = got.bind(got)
 
 const userAgent = new UserAgent({ deviceCategory: 'desktop' })
-export async function requestDefault<T = string>(options: string | DefaultOptions) {
+export async function requestDefault<T = string>(options: string | DefaultOptions): Promise<Response<T>> {
 	const _options = defaultsDeep<DefaultOptions>(
 		{},
 		{
@@ -48,7 +48,7 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 		},
 	)
 
-	return new Promise<Response<T>>((resolve, reject) => {
+	return new Promise((resolve, reject) => {
 		return sleepUntil(
 			async (cancel, retry) => {
 				const instance = request({
@@ -91,7 +91,7 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 	})
 }
 
-export async function waitForConnection(timeout = 10_000) {
+export async function waitForConnection(timeout = 10_000): Promise<void> {
 	const checkGoogle = (resolve: () => void) => {
 		return lookup('google.com').then(resolve)
 	}
