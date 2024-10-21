@@ -53,13 +53,13 @@ export type NestedKeyOf<T> = T extends Array<infer U>
 		? `${number}.${NestedKeyOf<U>}`
 		: `${number}`
 	: T extends object
-	? { [K in keyof T]: K extends string ? (T[K] extends object ? `${K}.${NestedKeyOf<T[K]>}` | K : K) : never }[keyof T]
+	? { [K in keyof T]: K extends string ? `${K}.${NestedKeyOf<T[K]>}` | K : never }[keyof T]
 	: never
 
 export type ValueAtPath<T, P extends NestedKeyOf<T>> = P extends `${infer Key}.${infer Rest}`
 	? Key extends keyof T
 		? Rest extends NestedKeyOf<T[Key]>
-			? ValueAtPath<T[Key], Rest>
+			? ValueAtPath<NonNullable<T[Key]>, Rest>
 			: never
 		: never
 	: P extends keyof T
