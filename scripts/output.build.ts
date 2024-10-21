@@ -10,7 +10,7 @@ async function main() {
 	for (const name of await readdir(repoDir)) {
 		const packageDir = join(repoDir, name)
 		await cp(join(packageDir, 'dist'), join(buildDir, name, 'dist'), { recursive: true })
-		await cp(join(packageDir, 'package.json'), join(buildDir, name, 'package.json'))
+		// await cp(join(packageDir, 'package.json'), join(buildDir, name, 'package.json'))
 	}
 
 	console.log('Copy build success')
