@@ -15,6 +15,6 @@ const baseOptions: Options = {
 	tsconfig: relative(__dirname, resolve(process.cwd(), 'tsconfig.json')),
 }
 
-export function createTsupConfig(options: Options = {}) {
+export function createTsupConfig(options: Options = {}): unknown {
 	return defineConfig({ ...baseOptions, format: 'cjs', ...options })
 }
