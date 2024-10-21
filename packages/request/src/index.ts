@@ -7,7 +7,7 @@ import UserAgent from 'user-agents'
 export * from 'got'
 export { UserAgent }
 
-export const ErrorCodes = [
+export const ErrorCodes: readonly string[] = [
 	// Got internal
 	'ETIMEDOUT',
 	'ECONNRESET',
@@ -23,8 +23,8 @@ export const ErrorCodes = [
 
 	// Other
 	'ECONNABORTED',
-] as const
-export const ErrorStatusCodes = [408, 413, 429, 500, 502, 503, 504, 521, 522, 524] as const
+]
+export const ErrorStatusCodes: readonly number[] = [408, 413, 429, 500, 502, 503, 504, 521, 522, 524]
 
 export const request: Got = got.bind(got)
 
