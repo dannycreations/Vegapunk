@@ -27,20 +27,27 @@ export interface SleepOptions {
 }
 
 export async function sleepUntil(fn: (resolve: () => void, i: number) => Awaitable<boolean | void>, options: SleepUntilOptions = {}): Promise<void> {
-	return new Promise((resolve) => {
+	return new Promise((resolve, reject) => {
 		let i = 0
 		let done = false
 		let timer: NodeJS.Timeout
 		const { delay = 10, ref = false } = options
 		const cancel = () => ((done = true), clearTimeout(timer))
 		const waiting = async () => {
-			if (await fn(cancel, i++)) cancel()
-			if (done) return resolve()
-			if (delay <= 0) {
-				process.nextTick(waiting)
-			} else {
-				timer = setTimeout(waiting, delay)
-				if (!ref) timer.unref()
+			try {
+				if (await fn(cancel, i++)) {
+					cancel(), resolve()
+				}
+			} catch (error) {
+				cancel(), reject(error)
+			} finally {
+				if (done) return
+				else if (delay <= 0) {
+					process.nextTick(waiting)
+				} else {
+					timer = setTimeout(waiting, delay)
+					if (!ref) timer.unref()
+				}
 			}
 		}
 		return waiting()
