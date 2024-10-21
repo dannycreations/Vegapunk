@@ -8,7 +8,7 @@ export abstract class Task<Options extends Task.Options = Task.Options> extends 
 	public static readonly MinDelay = 20
 	public static readonly MaxDelay = 2147483647
 
-	public static async createTask(task: CreateTask) {
+	public static async createTask(task: CreateTask): Promise<Task> {
 		task = { ...task, options: { ...task.options } }
 
 		let taskStores = container.stores.get('tasks')
@@ -26,7 +26,7 @@ export abstract class Task<Options extends Task.Options = Task.Options> extends 
 
 		taskStores.strategy.onLoad(taskStores, piece)
 		taskStores.set(piece.name, piece)
-		return piece as Task
+		return piece
 	}
 
 	public abstract override update(): unknown

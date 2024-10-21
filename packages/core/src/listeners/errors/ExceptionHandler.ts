@@ -9,7 +9,7 @@ export class CoreListener extends Listener<'internalException'> {
 		})
 	}
 
-	public run(error: Error, _origin: string) {
+	public run(error: Error, _origin: string): void {
 		this.container.logger.fatal(error, `Encountered error on event "${this.event.toString()}"`)
 	}
 }

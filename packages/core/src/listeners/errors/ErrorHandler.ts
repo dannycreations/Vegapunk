@@ -9,7 +9,7 @@ export class CoreListener extends Listener<'internalError'> {
 		})
 	}
 
-	public run(error: unknown, context: Piece) {
+	public run(error: unknown, context: Piece): void {
 		this.container.logger.error(error, `Encountered error on event "${context.name}"`)
 	}
 }

@@ -1,10 +1,10 @@
-import _pino, { type Level, type StreamEntry } from 'pino'
-import _pinoPretty from 'pino-pretty'
+import pino, { type Level, type Logger, type StreamEntry } from 'pino'
+import pinoPretty from 'pino-pretty'
 
 export * from 'pino'
-export const pinoPretty = _pinoPretty
+export { pinoPretty }
 
-export function logger<T extends string>(options: LoggerOptions = {}) {
+export function logger(options: LoggerOptions = {}): Logger {
 	options = {
 		level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
 		exception: true,
@@ -15,7 +15,7 @@ export function logger<T extends string>(options: LoggerOptions = {}) {
 	const streams: StreamEntry[] = [
 		{
 			level: 'warn',
-			stream: _pino.destination({
+			stream: pino.destination({
 				mkdir: true,
 				dest: `${process.cwd()}/logs/errors.log`,
 			}),
@@ -31,27 +31,27 @@ export function logger<T extends string>(options: LoggerOptions = {}) {
 		},
 	]
 
-	const pino = _pino<T>(
+	const logger = pino(
 		{
 			level: options.level,
 			base: undefined,
 			nestedKey: 'payload',
 		},
-		_pino.multistream(streams),
+		pino.multistream(streams),
 	)
 
 	if (options.exception) {
 		process.on('uncaughtException', (error, _origin) => {
-			pino.fatal(error, 'UncaughtException')
+			logger.fatal(error, 'UncaughtException')
 		})
 	}
 	if (options.rejection) {
 		process.on('unhandledRejection', (reason: string, stack) => {
 			const error = Object.assign(new Error(reason), { stack })
-			pino.fatal(error, 'UnhandledRejection')
+			logger.fatal(error, 'UnhandledRejection')
 		})
 	}
-	return pino
+	return logger
 }
 
 export interface LoggerOptions {

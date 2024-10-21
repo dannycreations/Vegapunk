@@ -25,7 +25,7 @@ export class Vegapunk extends EventEmitter<ClientEvents> {
 			...options,
 		}
 
-		container.client = this as Vegapunk
+		container.client = this
 		container.logger = this.options.logger
 
 		if (this.options.logger.level === 'trace') {
@@ -40,7 +40,7 @@ export class Vegapunk extends EventEmitter<ClientEvents> {
 		process.on('unhandledRejection', (...args) => container.client.emit('internalRejection', ...args))
 	}
 
-	public async start() {
+	public async start(): Promise<void> {
 		if (this.options.baseUserDirectory !== null) {
 			this.stores.registerPath(this.options.baseUserDirectory)
 		}

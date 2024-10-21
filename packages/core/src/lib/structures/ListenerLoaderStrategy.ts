@@ -3,7 +3,7 @@ import { type Listener } from './Listener'
 import { type ListenerStore } from './ListenerStore'
 
 export class ListenerLoaderStrategy extends LoaderStrategy<Listener> {
-	public override onLoad(_store: ListenerStore, piece: Listener) {
+	public override onLoad(_store: ListenerStore, piece: Listener): void {
 		const listenerCallback = piece['_listener']
 		if (listenerCallback) {
 			const emitter = piece.emitter!
@@ -16,7 +16,7 @@ export class ListenerLoaderStrategy extends LoaderStrategy<Listener> {
 		}
 	}
 
-	public override onUnload(_store: ListenerStore, piece: Listener) {
+	public override onUnload(_store: ListenerStore, piece: Listener): void {
 		const listenerCallback = piece['_listener']
 		if (!piece.once && listenerCallback) {
 			const emitter = piece.emitter!
