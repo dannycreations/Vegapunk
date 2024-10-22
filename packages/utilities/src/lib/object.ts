@@ -1,4 +1,4 @@
-import { get, has, isObject } from 'es-toolkit/compat'
+import { get, has, isObject, isObjectLike } from 'es-toolkit/compat'
 import { DeepRequired, NestedKeyOf, NonNullObject, ValueAtPath } from './types'
 
 function isSpecialProperty(key: string) {
@@ -28,4 +28,14 @@ export function strictGet<T, P extends NestedKeyOf<T>, V extends ValueAtPath<T, 
 
 export function strictHas<T, P extends NestedKeyOf<T>>(obj: T, path: P): boolean {
 	return has(obj, path)
+}
+
+export function isErrorLike<T = unknown>(error: unknown): error is ErrorLike & T {
+	return isObjectLike(error) && ('code' in error || 'stack' in error || 'message' in error)
+}
+
+export interface ErrorLike {
+	code: unknown
+	stack: unknown
+	message: unknown
 }
