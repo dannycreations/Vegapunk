@@ -1,4 +1,4 @@
-import { defaultsDeep, isErrorLike, isObjectLike, sleep, sleepUntil } from '@vegapunk/utilities'
+import { defaultsDeep, isErrorLike, sleep, sleepUntil, strictGet } from '@vegapunk/utilities'
 import got, { Got, RequestError, type CancelableRequest, type Options, type Response } from 'got'
 import { TimeoutError } from 'got/dist/source/core/utils/timed-out'
 import { lookup } from 'node:dns/promises'
@@ -30,7 +30,7 @@ export const request: Got = got.bind(got)
 
 const userAgent = new UserAgent({ deviceCategory: 'desktop' })
 export async function requestDefault<T = string>(options: string | DefaultOptions): Promise<Response<T>> {
-	const _options = defaultsDeep<DefaultOptions>(
+	const _options = defaultsDeep(
 		{},
 		{
 			url: typeof options === 'string' ? options : undefined,
@@ -74,7 +74,7 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 					.catch((error) => {
 						if (isErrorLike<RequestError>(error)) {
 							const flagOne = ErrorCodes.includes(error.code)
-							const flagTwo = isObjectLike(error.response) && ErrorStatusCodes.includes(error.response.statusCode)
+							const flagTwo = ErrorStatusCodes.includes(strictGet(error, 'response.statusCode', 0))
 							if ((flagOne || flagTwo) && (_options.retry < 0 || _options.retry > retry)) return
 						}
 						if (instance.isCanceled) {

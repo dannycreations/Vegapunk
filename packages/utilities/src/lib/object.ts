@@ -1,11 +1,11 @@
 import { get, has, isObjectLike } from 'es-toolkit/compat'
-import { DeepRequired, NestedKeyOf, NonNullObject, ValueAtPath } from './types'
+import { DeepRequired, NestedKeyOf, ValueAtPath } from './types'
 
 function isSpecialProperty(key: string) {
 	return key === '__proto__' || key === 'constructor' || key === 'prototype'
 }
 
-export function defaultsDeep<A extends NonNullObject, B extends Partial<A> = Partial<A>>(target: A, ...sources: B[]) {
+export function defaultsDeep<A, B extends Partial<A> = Partial<A>>(target: A, ...sources: B[]) {
 	for (const source of sources) {
 		if (!isObjectLike(source)) continue
 		for (const [key, sourceValue] of Object.entries(source)) {
@@ -22,20 +22,15 @@ export function defaultsDeep<A extends NonNullObject, B extends Partial<A> = Par
 	return target as DeepRequired<A & B>
 }
 
-export function strictGet<
-	D extends number = 3,
-	T = unknown,
-	P extends NestedKeyOf<D, T> = NestedKeyOf<D, T>,
-	V extends ValueAtPath<D, T, P> = ValueAtPath<D, T, P>,
->(obj: T, path: P, value?: V): ValueAtPath<D, T, P, V> {
-	return get(obj, path, value) as ValueAtPath<D, T, P, V>
+export function strictGet<T, P extends NestedKeyOf<T> = NestedKeyOf<T>, V extends ValueAtPath<T, P> = ValueAtPath<T, P>>(obj: T, path: P, value?: V) {
+	return get(obj, path, value) as NonNullable<ValueAtPath<T, P>> | V
 }
 
-export function strictHas<D extends number = 3, T = unknown, P extends NestedKeyOf<D, T> = NestedKeyOf<D, T>>(obj: T, path: P): boolean {
-	return has(obj, path)
+export function strictHas<T, P extends NestedKeyOf<T> = NestedKeyOf<T>>(obj: T, path: P) {
+	return has(obj, path) as boolean
 }
 
-export function isErrorLike<T = unknown>(error: unknown): error is ErrorLike & T {
+export function isErrorLike<T>(error: unknown): error is ErrorLike & T {
 	return isObjectLike(error) && ('code' in error || 'stack' in error || 'message' in error)
 }
 
