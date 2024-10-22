@@ -48,20 +48,22 @@ export type NonNullObject = {} & object
 export type OnlyOneRequired<T, Key extends keyof T> = Pick<T, Exclude<keyof T, Key>> &
 	{ [K in Key]-?: Partial<Record<Exclude<Key, K>, never>> & Required<Pick<T, K>> }[Key]
 
-export type NestedKeyOf<T> = T extends Array<infer U>
-	? U extends object
-		? `${number}.${NestedKeyOf<U>}`
+export type NestedKeyOf<T> = T extends Array<infer A>
+	? A extends object
+		? `${number}.${NestedKeyOf<A>}`
 		: `${number}`
 	: T extends object
 	? { [K in keyof T]: K extends string ? `${K}.${NestedKeyOf<T[K]>}` | K : never }[keyof T]
 	: never
 
-export type ValueAtPath<T, P extends NestedKeyOf<T>> = P extends `${infer Key}.${infer Rest}`
-	? Key extends keyof T
-		? Rest extends NestedKeyOf<T[Key]>
-			? ValueAtPath<NonNullable<T[Key]>, Rest>
-			: never
+export type ValueAtPath<T, P = NestedKeyOf<T>, V = Nullish> = P extends `${infer A}.${infer B}`
+	? T extends Array<infer U>
+		? ValueAtPath<NonNullable<U>, B, V>
+		: A extends keyof T
+		? ValueAtPath<NonNullable<T[A]>, B, V>
 		: never
 	: P extends keyof T
-	? T[P]
+	? V extends Nullish
+		? T[P]
+		: NonNullable<T[P]>
 	: never
