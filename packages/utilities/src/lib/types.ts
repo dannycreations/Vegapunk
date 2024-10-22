@@ -1,3 +1,5 @@
+import { Sub } from './internal/types'
+
 // https://github.com/sapphiredev/utilities/blob/main/packages/utilities/src/lib/types.ts
 export type Primitive = string | number | boolean | bigint | symbol | undefined | null
 
@@ -48,19 +50,23 @@ export type NonNullObject = {} & object
 export type OnlyOneRequired<T, Key extends keyof T> = Pick<T, Exclude<keyof T, Key>> &
 	{ [K in Key]-?: Partial<Record<Exclude<Key, K>, never>> & Required<Pick<T, K>> }[Key]
 
-export type NestedKeyOf<T> = T extends Array<infer A>
+export type NestedKeyOf<D extends number = 3, T = unknown> = D extends 0
+	? never
+	: T extends Array<infer A>
 	? A extends object
-		? `${number}.${NestedKeyOf<A>}`
+		? `${number}.${NestedKeyOf<Sub<D, 1>, A>}`
 		: `${number}`
 	: T extends object
-	? { [K in keyof T]: K extends string ? `${K}.${NestedKeyOf<T[K]>}` | K : never }[keyof T]
+	? { [K in keyof T]: K extends string ? `${K}.${NestedKeyOf<Sub<D, 1>, T[K]>}` | K : never }[keyof T]
 	: never
 
-export type ValueAtPath<T, P = NestedKeyOf<T>, V = Nullish> = P extends `${infer A}.${infer B}`
+export type ValueAtPath<D extends number = 3, T = unknown, P = NestedKeyOf<D, T>, V = Nullish> = D extends 0
+	? never
+	: P extends `${infer A}.${infer B}`
 	? T extends Array<infer U>
-		? ValueAtPath<NonNullable<U>, B, V>
+		? ValueAtPath<Sub<D, 1>, NonNullable<U>, B, V>
 		: A extends keyof T
-		? ValueAtPath<NonNullable<T[A]>, B, V>
+		? ValueAtPath<Sub<D, 1>, NonNullable<T[A]>, B, V>
 		: never
 	: P extends keyof T
 	? V extends Nullish
