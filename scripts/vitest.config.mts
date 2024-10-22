@@ -7,6 +7,7 @@ const baseOptions: ViteUserConfig = {
 		include: ['test/*.{test,spec}.{ts,mts,cts}'],
 		exclude: [...configDefaults.exclude],
 		watch: false,
+		testTimeout: 10_000,
 	},
 }
 

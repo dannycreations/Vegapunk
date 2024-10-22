@@ -1,5 +1,5 @@
-import { defaultsDeep, sleep, sleepUntil } from '@vegapunk/utilities'
-import got, { Got, type CancelableRequest, type Options, type Response } from 'got'
+import { defaultsDeep, isErrorLike, isObjectLike, sleep, sleepUntil } from '@vegapunk/utilities'
+import got, { Got, RequestError, type CancelableRequest, type Options, type Response } from 'got'
 import { TimeoutError } from 'got/dist/source/core/utils/timed-out'
 import { lookup } from 'node:dns/promises'
 import UserAgent from 'user-agents'
@@ -72,10 +72,12 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 					.on('downloadProgress', () => resetTimeout())
 					.then((res) => (cancel(), resolve(res)))
 					.catch((error) => {
-						const flagOne = !!~ErrorCodes.indexOf(error.code)
-						const flagTwo = typeof error.response === 'object' && !!~ErrorStatusCodes.indexOf(error.response.statusCode)
-						if ((flagOne || flagTwo) && (_options.retry < 0 || _options.retry > retry)) return
-						else if (instance.isCanceled) {
+						if (isErrorLike<RequestError>(error) && isObjectLike(error.response)) {
+							const flagOne = ErrorCodes.includes(error.code)
+							const flagTwo = ErrorStatusCodes.includes(error.response.statusCode)
+							if ((flagOne || flagTwo) && (_options.retry < 0 || _options.retry > retry)) return
+						}
+						if (instance.isCanceled) {
 							error = new TimeoutError(Date.now() - start, 'request')
 							Error.captureStackTrace(error, requestDefault)
 						}
@@ -99,6 +101,7 @@ export async function waitForConnection(timeout = 10_000): Promise<void> {
 		return requestDefault({
 			url: 'https://captive.apple.com/hotspot-detect.html',
 			headers: { 'user-agent': 'CaptiveNetworkSupport/1.0 wispr' },
+			retry: 0,
 			timeout: { total: timeout },
 		}).then(resolve)
 	}
