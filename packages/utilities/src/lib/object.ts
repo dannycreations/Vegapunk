@@ -1,4 +1,4 @@
-import { get, has, isObject, isObjectLike } from 'es-toolkit/compat'
+import { get, has, isObjectLike } from 'es-toolkit/compat'
 import { DeepRequired, NestedKeyOf, NonNullObject, ValueAtPath } from './types'
 
 function isSpecialProperty(key: string) {
@@ -7,12 +7,12 @@ function isSpecialProperty(key: string) {
 
 export function defaultsDeep<A extends NonNullObject, B extends Partial<A> = Partial<A>>(target: A, ...sources: B[]) {
 	for (const source of sources) {
-		if (!isObject(source)) continue
+		if (!isObjectLike(source)) continue
 		for (const [key, sourceValue] of Object.entries(source)) {
 			if (isSpecialProperty(key)) continue
 
 			const targetValue = target[key as keyof A]
-			if (isObject(targetValue) && isObject(sourceValue)) {
+			if (isObjectLike(targetValue) && isObjectLike(sourceValue)) {
 				defaultsDeep(targetValue, sourceValue)
 			} else if (typeof targetValue === 'undefined') {
 				target[key as keyof A] = sourceValue as A[keyof A]
