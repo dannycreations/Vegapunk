@@ -401,4 +401,8 @@ declare module 'dayjs' {
 	/** updateLocale */
 	function updateLocale(localeName: string, customConfig: Record<string, unknown>): Record<string, unknown>
 	/** updateLocale */
+
+	/** utc */
+	function utc(config?: dayjs.ConfigType, format?: string, strict?: boolean): dayjs.Dayjs
+	/** utc */
 }
