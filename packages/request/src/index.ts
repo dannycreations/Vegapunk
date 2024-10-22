@@ -72,9 +72,9 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 					.on('downloadProgress', () => resetTimeout())
 					.then((res) => (cancel(), resolve(res)))
 					.catch((error) => {
-						if (isErrorLike<RequestError>(error) && isObjectLike(error.response)) {
+						if (isErrorLike<RequestError>(error)) {
 							const flagOne = ErrorCodes.includes(error.code)
-							const flagTwo = ErrorStatusCodes.includes(error.response.statusCode)
+							const flagTwo = isObjectLike(error.response) && ErrorStatusCodes.includes(error.response.statusCode)
 							if ((flagOne || flagTwo) && (_options.retry < 0 || _options.retry > retry)) return
 						}
 						if (instance.isCanceled) {
@@ -93,7 +93,7 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 	})
 }
 
-export async function waitForConnection(timeout = 10_000): Promise<void> {
+export async function waitForConnection(total = 10_000): Promise<void> {
 	const checkGoogle = (resolve: () => void) => {
 		return lookup('google.com').then(resolve)
 	}
@@ -101,8 +101,8 @@ export async function waitForConnection(timeout = 10_000): Promise<void> {
 		return requestDefault({
 			url: 'https://captive.apple.com/hotspot-detect.html',
 			headers: { 'user-agent': 'CaptiveNetworkSupport/1.0 wispr' },
+			timeout: { total },
 			retry: 0,
-			timeout: { total: timeout },
 		}).then(resolve)
 	}
 
@@ -110,7 +110,7 @@ export async function waitForConnection(timeout = 10_000): Promise<void> {
 		try {
 			await Promise.race([checkGoogle(resolve), checkApple(resolve)])
 		} catch {
-			await sleep(timeout)
+			await sleep(total)
 		}
 	})
 }
