@@ -1,4 +1,4 @@
-import { defaultsDeep, isErrorLike, sleep, sleepUntil, strictGet } from '@vegapunk/utilities'
+import { defaultsDeep, get, isErrorLike, sleep, sleepUntil } from '@vegapunk/utilities'
 import got, { Got, RequestError, type CancelableRequest, type Options, type Response } from 'got'
 import { TimeoutError } from 'got/dist/source/core/utils/timed-out'
 import { lookup } from 'node:dns/promises'
@@ -74,7 +74,7 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 					.catch((error) => {
 						if (isErrorLike<RequestError>(error)) {
 							const flagOne = ErrorCodes.includes(error.code)
-							const flagTwo = ErrorStatusCodes.includes(strictGet(error, 'response.statusCode', 0))
+							const flagTwo = ErrorStatusCodes.includes(get(error, 'response.statusCode', 0))
 							if ((flagOne || flagTwo) && (_options.retry < 0 || _options.retry > retry)) return
 						}
 						if (instance.isCanceled) {
@@ -106,7 +106,7 @@ export async function waitForConnection(total = 10_000): Promise<void> {
 		}).then(resolve)
 	}
 
-	await sleepUntil(async (resolve) => {
+	return sleepUntil(async (resolve) => {
 		try {
 			await Promise.race([checkGoogle(resolve), checkApple(resolve)])
 		} catch {
