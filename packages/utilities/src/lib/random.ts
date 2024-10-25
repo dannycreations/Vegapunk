@@ -2,7 +2,7 @@ import { customAlphabet } from 'nanoid'
 
 let idCounter = 0
 
-export function uniqId(prefix?: string) {
+export function uniqId(prefix = '') {
 	return `${prefix}${++idCounter}`
 }
 
@@ -13,7 +13,7 @@ export enum Alphabet {
 	S = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~',
 }
 
-export function randomString(length: number = 30, ...str: Alphabet[]): string {
+export function randomString(length = 30, ...str: Alphabet[]): string {
 	str = str.length ? str : [Alphabet.L, Alphabet.U, Alphabet.N]
 	return customAlphabet(str.join(''), length)()
 }
