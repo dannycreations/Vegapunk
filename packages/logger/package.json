@@ -9,7 +9,7 @@
 	},
 	"scripts": {
 		"build": "tsup",
-		"update": "npx npm-check-updates -u"
+		"update": "npm-check-updates -u"
 	},
 	"files": [
 		"dist"

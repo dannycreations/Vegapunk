@@ -4,6 +4,7 @@ import { BetterSQLite3Database, drizzle } from 'drizzle-orm/better-sqlite3'
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator'
 import { Adapter } from './Adapter'
 
+export * from 'drizzle-orm/better-sqlite3'
 export * from 'drizzle-orm/sqlite-core'
 export { Adapter, Database }
 

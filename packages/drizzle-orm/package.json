@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/drizzle-orm",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"exports": {
@@ -15,7 +15,7 @@
 	},
 	"scripts": {
 		"build": "tsup",
-		"update": "npx npm-check-updates -u"
+		"update": "npm-check-updates -u"
 	},
 	"files": [
 		"dist"
@@ -34,6 +34,9 @@
 	"devDependencies": {
 		"@types/better-sqlite3": "^7.6.11"
 	},
+	"bundleDependencies": [
+		"@types/better-sqlite3"
+	],
 	"engines": {
 		"node": ">=20"
 	},
