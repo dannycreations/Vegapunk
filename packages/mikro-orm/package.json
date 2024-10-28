@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/mikro-orm",
-	"version": "1.0.14",
+	"version": "1.0.15",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"exports": {
