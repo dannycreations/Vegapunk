@@ -11,7 +11,7 @@
 		"build": "tsup",
 		"build:type": "tsx scripts/type.build.ts",
 		"test": "vitest",
-		"update": "npx npm-check-updates -u -x chalk,nanoid"
+		"update": "npm-check-updates -u -x chalk,nanoid"
 	},
 	"files": [
 		"dist"

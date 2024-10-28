@@ -5,6 +5,10 @@
 			"dependsOn": ["^build"],
 			"outputs": ["dist/**"],
 			"cache": false
+		},
+		"update": {
+			"outputs": ["package.json"],
+			"cache": false
 		}
 	}
 }

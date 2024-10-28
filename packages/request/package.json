@@ -10,7 +10,7 @@
 	"scripts": {
 		"build": "tsup",
 		"test": "vitest",
-		"update": "npx npm-check-updates -u -x got"
+		"update": "npm-check-updates -u -x got"
 	},
 	"files": [
 		"dist"
