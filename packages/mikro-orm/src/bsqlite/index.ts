@@ -1,14 +1,12 @@
-import { BetterSqliteDriver, defineConfig } from '@mikro-orm/better-sqlite'
-import { EntityManager, MikroORM, Options } from '@mikro-orm/core'
+import { BetterSqliteDriver } from '@mikro-orm/better-sqlite'
+import { MikroORM, Options } from '@mikro-orm/core'
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection'
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter'
 import { defaultsDeep } from '@vegapunk/utilities'
 
 export * from '@mikro-orm/better-sqlite'
 
-export type BSqliteOptions = {
-	driver: typeof BetterSqliteDriver
-} & Options<BetterSqliteDriver>
+export type BSqliteOptions = Omit<Options<BetterSqliteDriver>, 'driver'>
 
 const baseOptions = {
 	driver: BetterSqliteDriver,
@@ -17,9 +15,9 @@ const baseOptions = {
 	highlighter: new SqlHighlighter(),
 	metadataProvider: TsMorphMetadataProvider,
 	allowGlobalContext: true,
-} satisfies BSqliteOptions
+} satisfies BSqliteOptions & { driver: unknown }
 
-export async function start(options: BSqliteOptions): Promise<{ db: MikroORM; em: EntityManager }> {
+export async function start(options: BSqliteOptions): Promise<MikroORM> {
 	const db = await MikroORM.init(options)
 
 	const generator = db.getSchemaGenerator()
@@ -30,9 +28,9 @@ export async function start(options: BSqliteOptions): Promise<{ db: MikroORM; em
 		await generator.ensureDatabase()
 		await generator.updateSchema()
 	}
-	return { db, em: db.em }
+	return db
 }
 
 export function config(options: Partial<BSqliteOptions> = {}): BSqliteOptions {
-	return defineConfig(defaultsDeep({}, options, baseOptions)) as BSqliteOptions
+	return defaultsDeep({}, options, baseOptions)
 }
