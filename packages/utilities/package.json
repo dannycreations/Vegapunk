@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/utilities",
-	"version": "1.0.40",
+	"version": "1.0.41",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"exports": {
@@ -37,8 +37,7 @@
 		"@types/humanize-duration"
 	],
 	"engines": {
-		"node": ">=20",
-		"npm": ">=10"
+		"node": ">=20"
 	},
 	"publishConfig": {
 		"access": "public"

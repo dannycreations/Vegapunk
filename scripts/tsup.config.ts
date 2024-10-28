@@ -1,9 +1,10 @@
 import { relative, resolve } from 'node:path'
 import { defineConfig, type Options } from 'tsup'
 
-const baseOptions: Options = {
+const baseOptions = {
 	dts: true,
 	clean: true,
+	format: 'cjs',
 	minify: false,
 	outDir: 'dist',
 	sourcemap: true,
@@ -13,8 +14,8 @@ const baseOptions: Options = {
 	entry: ['src/index.ts'],
 	skipNodeModulesBundle: true,
 	tsconfig: relative(__dirname, resolve(process.cwd(), 'tsconfig.json')),
-}
+} satisfies Options
 
 export function createTsupConfig(options: Options = {}): unknown {
-	return defineConfig({ ...baseOptions, format: 'cjs', ...options })
+	return defineConfig({ ...baseOptions, ...options })
 }

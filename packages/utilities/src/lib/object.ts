@@ -1,12 +1,12 @@
 import { isError } from 'es-toolkit'
 import { get, has, isObjectLike } from 'es-toolkit/compat'
-import { DeepRequired, NestedKeyOf, ValueAtPath } from './types'
+import { NestedKeyOf, ValueAtPath } from './types'
 
 function isSpecialProperty(key: string) {
 	return key === '__proto__' || key === 'constructor' || key === 'prototype'
 }
 
-export function defaultsDeep<A, B extends Partial<A> = Partial<A>>(target: A, ...sources: B[]) {
+export function defaultsDeep<A, B extends A = A>(target: Partial<A>, ...sources: Partial<B>[]) {
 	for (const source of sources) {
 		if (!isObjectLike(source)) continue
 		for (const [key, sourceValue] of Object.entries(source)) {
@@ -20,7 +20,7 @@ export function defaultsDeep<A, B extends Partial<A> = Partial<A>>(target: A, ..
 			}
 		}
 	}
-	return target as DeepRequired<A & B>
+	return target as A & B
 }
 
 export function strictGet<T, P extends NestedKeyOf<T> = NestedKeyOf<T>, V extends ValueAtPath<T, P> = ValueAtPath<T, P>>(obj: T, path: P, value?: V) {
