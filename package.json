@@ -7,7 +7,7 @@
 	"scripts": {
 		"build": "turbo run build && tsx scripts/output.build.ts",
 		"clean": "npm run clean:distfiles",
-		"clean:distfiles": "npx rimraf -g \"**/dist\" \"**/*.tsbuildinfo\"",
+		"clean:distfiles": "npx rimraf -g \"**/*.tsbuildinfo\" \"**/dist\"",
 		"clean:nodefiles": "npx rimraf -g \"**/*-lock.*\" \"**/node_modules\"",
 		"clean:dangerously": "npm run clean:force",
 		"clean:interactive": "git clean -d -x -i",
@@ -30,7 +30,6 @@
 		"@sapphire/ts-config": "^5.0.1",
 		"@swc/core": "^1.7.40",
 		"@types/node": "20.17.1",
-		"esbuild-plugin-file-path-extensions": "^2.1.3",
 		"tsup": "^8.3.5",
 		"tsx": "^4.19.2",
 		"turbo": "^2.2.3",
