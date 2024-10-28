@@ -1,11 +1,17 @@
 {
 	"name": "@vegapunk/mikro-orm",
-	"version": "1.0.13",
+	"version": "1.0.14",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"exports": {
-		"types": "./dist/index.d.ts",
-		"default": "./dist/index.js"
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./bsqlite": {
+			"types": "./dist/bsqlite/index.d.ts",
+			"default": "./dist/bsqlite/index.js"
+		}
 	},
 	"scripts": {
 		"build": "tsup",
@@ -25,14 +31,10 @@
 		"@mikro-orm/core": "^6.3.13",
 		"@mikro-orm/reflection": "^6.3.13",
 		"@mikro-orm/sql-highlighter": "^1.0.1",
-		"@vegapunk/core": "workspace:*"
-	},
-	"devDependencies": {
-		"@sapphire/pieces": "^4.3.1"
+		"@vegapunk/utilities": "workspace:*"
 	},
 	"engines": {
-		"node": ">=20",
-		"npm": ">=10"
+		"node": ">=20"
 	},
 	"publishConfig": {
 		"access": "public"
