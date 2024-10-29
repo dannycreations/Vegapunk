@@ -1,8 +1,8 @@
 import { isObjectLike } from '@vegapunk/utilities/es-toolkit'
 import { Result } from '@vegapunk/utilities/result'
-import { getTableName, InferInsertModel, InferSelectModel, SQL, sql, Table } from 'drizzle-orm'
+import { getTableColumns, getTableName, InferInsertModel, InferSelectModel, SQL, sql, Table } from 'drizzle-orm'
 import { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
-import { SQLiteSyncDialect, SQLiteTableWithColumns } from 'drizzle-orm/sqlite-core'
+import { SQLiteInsertConfig, SQLiteSyncDialect, SQLiteTableWithColumns } from 'drizzle-orm/sqlite-core'
 
 const OperatorMap = {
 	$eq: (k, v) => sql`${k} = ${v}`,
@@ -96,19 +96,66 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 
 	public insert<B extends Table, R extends ReturnFilter<A, B>>(
 		record: Omit<Insert, 'id'> | Omit<Insert, 'id'>[],
-		options: Pick<QueryOptions<A, B, R>, 'select'> = {},
+		options: Pick<QueryOptions<A, B, R>, 'select'> & {
+			conflict?: {
+				target: (keyof Omit<Insert, 'id'>)[]
+				set: Partial<{ [K in keyof Omit<Insert, 'id'>]: Insert[K] | SQL<A> }>
+				resolution?: 'ignore' | 'replace' | 'update' | 'merge'
+			}
+		} = {},
 	): Result<ReturnAlias<A, B, R>[], Error> {
 		return Result.from(() => {
 			const keys = (r: object) => !!Object.keys(r).length
 			const records = (Array.isArray(record) ? record : [record]).filter(keys)
 			if (!records.length) return []
 
-			const values: Record<string, SQL>[] = records.map((rec) => {
-				const { id, ...rest } = rec as Record<string, unknown>
-				return Object.fromEntries(Object.entries(rest).map(([key, value]) => [key, sql`${value}`]))
-			})
+			const payload: SQLiteInsertConfig = {
+				table: this.table,
+				values: records.map((rec) => {
+					const { id, ...rest } = rec as Record<string, unknown>
+					return Object.fromEntries(Object.entries(rest).map(([key, value]) => [key, sql`${value}`]))
+				}),
+			}
 
-			const insertQuery = this.dialect.buildInsertQuery({ table: this.table, values })
+			if (options.conflict) {
+				let record: Record<string, unknown>
+				if (options.conflict.set && keys(options.conflict.set)) {
+					record = options.conflict.set
+				} else {
+					record = records[0]
+				}
+
+				const targets = sql.join(
+					options.conflict.target.map((key) => sql.raw(this.getClsName(key))),
+					sql.raw(','),
+				)
+
+				switch (options.conflict.resolution) {
+					case 'ignore':
+						payload.onConflict = sql`(${targets}) DO NOTHING`
+						break
+					case 'replace':
+						payload.onConflict = sql`(${targets}) DO REPLACE`
+						break
+					case 'update':
+						const updateClause = this.dialect.buildUpdateSet(this.table, record as Insert)
+						payload.onConflict = sql`(${targets}) DO UPDATE SET ${updateClause}`
+						break
+					case 'merge':
+					default:
+						const { id, ...rest } = record as Record<string, unknown>
+						const values = Object.fromEntries(
+							Object.entries(rest).map(([key, value]) => {
+								return [key, sql`${this.getClsName(key)} = COALESCE(${this.getClsName(key)}, ${value})`]
+							}),
+						)
+						const mergeClause = this.dialect.buildUpdateSet(this.table, values)
+						payload.onConflict = sql`(${targets}) DO UPDATE SET ${mergeClause}`
+						break
+				}
+			}
+
+			const insertQuery = this.dialect.buildInsertQuery(payload)
 			const selectClause = this.buildSelectClause(options.select)
 
 			const query = sql`${insertQuery} RETURNING ${selectClause}`
@@ -151,7 +198,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 
 	private buildWhereClause(filter: QueryFilter<A>): SQL {
 		const conditions = Object.entries(filter).flatMap(([column, value]) => {
-			const tableColumn = this.table[column as keyof A]
+			const tableColumn = this.getClsName(column)
 			const condition = isObjectLike(value) ? value : { $eq: value }
 			return Object.entries(condition).flatMap(([operator, operand]) => {
 				return operand == null
@@ -162,12 +209,10 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 		return conditions.length ? sql`WHERE ${sql.join(conditions, sql.raw(' AND '))}` : sql``
 	}
 
-	public buildJoinClause<B extends Table>(joins: JoinOptions<A, B>[] = []): SQL {
+	private buildJoinClause<B extends Table>(joins: JoinOptions<A, B>[] = []): SQL {
 		const joinClauses = joins.map(({ type, table, on }) => {
 			const onConditions = Object.entries(on).map(([leftKey, rightKey]) => {
-				const leftColumn = this.table[leftKey as keyof A]
-				const rightColumn = table[rightKey as keyof B]
-				return sql`${leftColumn} = ${rightColumn}`
+				return sql`${this.getClsName(leftKey)} = ${this.getClsName(rightKey, table)}`
 			})
 			const onClause = sql.join(onConditions, sql.raw(' AND '))
 			return sql`${sql.raw(type ?? 'INNER')} JOIN ${table} ON ${onClause}`
@@ -181,7 +226,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 
 	private buildSortClause<S>(sort?: S): SQL {
 		const sortings = Object.entries(sort ?? {}).map(([column, direction]) => {
-			return sql`${this.table[column as keyof A]} ${sql.raw(String(direction ?? 'ASC'))}`
+			return sql`${this.getClsName(column)} ${sql.raw(String(direction ?? 'ASC'))}`
 		})
 		return sortings.length ? sql`ORDER BY ${sql.join(sortings, sql.raw(','))}` : sql``
 	}
@@ -191,7 +236,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 			.map((key) => {
 				const col =
 					key in this.table // is left table
-						? this.table[key as keyof A]
+						? this.getClsName(key)
 						: joins?.find(({ table }) => key in table)?.table[key as keyof B]
 				return col ? sql`${col}` : null
 			})
@@ -207,6 +252,10 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 				return (acc[casing] = value), acc
 			}, {} as Record<string, unknown>)
 		}) as ReturnAlias<A, B, R>[]
+	}
+
+	private getClsName<T extends Table>(key: unknown, table?: T): string {
+		return getTableColumns(table ?? this.table)[String(key)].name
 	}
 
 	private readonly dialect: SQLiteSyncDialect
