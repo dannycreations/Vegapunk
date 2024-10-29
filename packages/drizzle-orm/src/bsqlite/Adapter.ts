@@ -1,8 +1,9 @@
 import { isObjectLike } from '@vegapunk/utilities/es-toolkit'
 import { Result } from '@vegapunk/utilities/result'
-import { getTableColumns, getTableName, InferInsertModel, InferSelectModel, SQL, sql, Table } from 'drizzle-orm'
+import { getTableName, InferInsertModel, InferSelectModel, SQL, sql, Table } from 'drizzle-orm'
 import { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
 import { SQLiteInsertConfig, SQLiteSyncDialect, SQLiteTableWithColumns } from 'drizzle-orm/sqlite-core'
+import { getColumnName, reverseCase } from './utils'
 
 const OperatorMap = {
 	$eq: (k, v) => sql`${k} = ${v}`,
@@ -126,7 +127,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 				}
 
 				const targets = sql.join(
-					options.conflict.target.map((key) => sql.raw(this.getClsName(key))),
+					options.conflict.target.map((key) => sql.raw(getColumnName(this.table, key))),
 					sql.raw(','),
 				)
 
@@ -146,7 +147,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 						const { id, ...rest } = record as Record<string, unknown>
 						const values = Object.fromEntries(
 							Object.entries(rest).map(([key, value]) => {
-								return [key, sql`${this.getClsName(key)} = COALESCE(${this.getClsName(key)}, ${value})`]
+								return [key, sql`${getColumnName(this.table, key)} = COALESCE(${getColumnName(this.table, key)}, ${value})`]
 							}),
 						)
 						const mergeClause = this.dialect.buildUpdateSet(this.table, values)
@@ -198,7 +199,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 
 	private buildWhereClause(filter: QueryFilter<A>): SQL {
 		const conditions = Object.entries(filter).flatMap(([column, value]) => {
-			const tableColumn = this.getClsName(column)
+			const tableColumn = getColumnName(this.table, column)
 			const condition = isObjectLike(value) ? value : { $eq: value }
 			return Object.entries(condition).flatMap(([operator, operand]) => {
 				return operand == null
@@ -212,7 +213,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 	private buildJoinClause<B extends Table>(joins: JoinOptions<A, B>[] = []): SQL {
 		const joinClauses = joins.map(({ type, table, on }) => {
 			const onConditions = Object.entries(on).map(([leftKey, rightKey]) => {
-				return sql`${this.getClsName(leftKey)} = ${this.getClsName(rightKey, table)}`
+				return sql`${getColumnName(this.table, leftKey)} = ${getColumnName(table, rightKey)}`
 			})
 			const onClause = sql.join(onConditions, sql.raw(' AND '))
 			return sql`${sql.raw(type ?? 'INNER')} JOIN ${table} ON ${onClause}`
@@ -226,7 +227,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 
 	private buildSortClause<S>(sort?: S): SQL {
 		const sortings = Object.entries(sort ?? {}).map(([column, direction]) => {
-			return sql`${this.getClsName(column)} ${sql.raw(String(direction ?? 'ASC'))}`
+			return sql`${getColumnName(this.table, column)} ${sql.raw(String(direction ?? 'ASC'))}`
 		})
 		return sortings.length ? sql`ORDER BY ${sql.join(sortings, sql.raw(','))}` : sql``
 	}
@@ -236,7 +237,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 			.map((key) => {
 				const col =
 					key in this.table // is left table
-						? this.getClsName(key)
+						? getColumnName(this.table, key)
 						: joins?.find(({ table }) => key in table)?.table[key as keyof B]
 				return col ? sql`${col}` : null
 			})
@@ -247,15 +248,9 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 	private buildReturnAlias<B extends Table, R extends ReturnFilter<A, B>>(results: Select[]): ReturnAlias<A, B, R>[] {
 		return results.map((result) => {
 			return Object.entries(result).reduce((acc, [key, value]) => {
-				// @ts-expect-error
-				const casing = this.dialect.casing.convert(key)
-				return (acc[casing] = value), acc
+				return (acc[reverseCase(key)] = value), acc
 			}, {} as Record<string, unknown>)
 		}) as ReturnAlias<A, B, R>[]
-	}
-
-	private getClsName<T extends Table>(key: unknown, table?: T): string {
-		return getTableColumns(table ?? this.table)[String(key)].name
 	}
 
 	private readonly dialect: SQLiteSyncDialect
