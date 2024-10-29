@@ -1,5 +1,5 @@
 import { Piece } from '@sapphire/pieces'
-import { Result } from '@sapphire/result'
+import { Result } from '@vegapunk/utilities/result'
 import { Task } from '../Task'
 
 export class TaskBase<Options extends Task.Options> extends Piece<Options, 'tasks'> {

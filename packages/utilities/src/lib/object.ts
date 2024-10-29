@@ -41,8 +41,6 @@ export function isErrorLike<T>(error: unknown): error is ErrorLike & T {
 	return [hasCode, hasStack, hasMessage].filter(Boolean).length >= 2
 }
 
-export interface ErrorLike {
-	code: unknown
-	stack: unknown
-	message: unknown
+export interface ErrorLike extends Error {
+	code: string
 }

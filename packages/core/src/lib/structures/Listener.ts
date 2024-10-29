@@ -1,5 +1,5 @@
 import { Piece } from '@sapphire/pieces'
-import { Result } from '@sapphire/result'
+import { Result } from '@vegapunk/utilities/result'
 import { type EventEmitter } from 'node:events'
 import { type ClientEvents } from '../Vegapunk'
 

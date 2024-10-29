@@ -33,7 +33,7 @@ export type BSqliteOptions = {
 const baseOptions = {
 	dialect: 'sqlite',
 	casing: 'snake_case',
-	out: 'src/lib/database/migrations/',
+	out: 'src/lib/database/migrations',
 	schema: 'src/lib/database/schema.ts',
 	dbCredentials: { url: 'sessions/bsqlite.db' },
 } satisfies BSqliteOptions & { dialect: string }
