@@ -1,11 +1,29 @@
 {
 	"name": "@vegapunk/utilities",
-	"version": "1.0.41",
+	"version": "1.0.42",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"exports": {
-		"types": "./dist/index.d.ts",
-		"default": "./dist/index.js"
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./dayjs": {
+			"types": "./dist/lib/std/dayjs.d.ts",
+			"default": "./dist/lib/std/dayjs.js"
+		},
+		"./es-toolkit": {
+			"types": "./dist/lib/std/es-toolkit.d.ts",
+			"default": "./dist/lib/std/es-toolkit.js"
+		},
+		"./result": {
+			"types": "./dist/lib/std/result.d.ts",
+			"default": "./dist/lib/std/result.js"
+		},
+		"./sleep": {
+			"types": "./dist/lib/std/sleep.d.ts",
+			"default": "./dist/lib/std/sleep.js"
+		}
 	},
 	"scripts": {
 		"build": "tsup",
@@ -31,6 +49,7 @@
 		"nanoid": "3.3.7"
 	},
 	"devDependencies": {
+		"@sapphire/result": "^2.6.6",
 		"@types/humanize-duration": "^3.27.4"
 	},
 	"bundleDependencies": [

@@ -1,4 +1,4 @@
-import { Awaitable } from './types'
+import { Awaitable } from '../types'
 
 // https://github.com/sapphiredev/utilities/blob/main/packages/utilities/src/lib/sleep.ts
 export function sleep<T>(ms: number, value?: T, options: SleepOptions = {}): Promise<T> {

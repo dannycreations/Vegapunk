@@ -1,4 +1,6 @@
-import { defaultsDeep, get, isErrorLike, sleep, sleepUntil } from '@vegapunk/utilities'
+import { defaultsDeep, isErrorLike } from '@vegapunk/utilities'
+import { get } from '@vegapunk/utilities/es-toolkit'
+import { sleep, sleepUntil } from '@vegapunk/utilities/sleep'
 import got, { Got, RequestError, type CancelableRequest, type Options, type Response } from 'got'
 import { TimeoutError } from 'got/dist/source/core/utils/timed-out'
 import { lookup } from 'node:dns/promises'
