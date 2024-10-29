@@ -5,6 +5,8 @@ export type Nullish = null | undefined
 
 export type NonNullObject = {} & object
 
+export type Awaitable<T> = PromiseLike<T> | T
+
 export type Primitive = string | number | boolean | bigint | symbol | undefined | null
 
 export type Builtin = Primitive | Function | Date | Error | RegExp
@@ -63,19 +65,21 @@ export type RequiredExcept<T, K extends keyof T> = Partial<Pick<T, K>> & Require
 
 export type PartialExcept<T, K extends keyof T> = Partial<Omit<T, K>> & Required<Pick<T, K>>
 
-export type NonNullableObject<T> = {
+export type NonNullableFields<T> = {
 	[P in keyof T]: NonNullable<T[P]>
 }
 
-export type StrictObject<T> = {
+export type StrictFields<T> = {
 	[P in keyof T]-?: NonNullable<T[P]>
 }
 
-export type MutableObject<T> = {
-	-readonly [P in keyof T]: T[P] extends Array<unknown> | NonNullObject ? MutableObject<T[P]> : T[P]
+export type MutableFields<T> = {
+	-readonly [P in keyof T]: T[P] extends Array<unknown> | NonNullObject ? MutableFields<T[P]> : T[P]
 }
 
-export type Awaitable<T> = PromiseLike<T> | T
+export type RequiredFields<T> = {
+	[K in keyof T as T[K] extends Required<T>[K] ? K : never]: T[K]
+}
 
 export type OnlyOneRequired<T, Key extends keyof T> = Pick<T, Exclude<keyof T, Key>> &
 	{ [K in Key]-?: Partial<Record<Exclude<Key, K>, never>> & Required<Pick<T, K>> }[Key]
