@@ -198,8 +198,8 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 	}
 
 	private buildWhereClause(filter: QueryFilter<A>): SQL {
-		const conditions = Object.entries(filter).flatMap(([column, value]) => {
-			const tableColumn = getColumnName(this.table, column)
+		const conditions = Object.entries(filter).flatMap(([key, value]) => {
+			const tableColumn = this.table[key as keyof A]
 			const condition = isObjectLike(value) ? value : { $eq: value }
 			return Object.entries(condition).flatMap(([operator, operand]) => {
 				return operand == null
@@ -213,7 +213,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 	private buildJoinClause<B extends Table>(joins: JoinOptions<A, B>[] = []): SQL {
 		const joinClauses = joins.map(({ type, table, on }) => {
 			const onConditions = Object.entries(on).map(([leftKey, rightKey]) => {
-				return sql`${getColumnName(this.table, leftKey)} = ${getColumnName(table, rightKey)}`
+				return sql`${this.table[leftKey as keyof A]} = ${table[rightKey as keyof B]}`
 			})
 			const onClause = sql.join(onConditions, sql.raw(' AND '))
 			return sql`${sql.raw(type ?? 'INNER')} JOIN ${table} ON ${onClause}`
@@ -226,8 +226,8 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 	}
 
 	private buildSortClause<S>(sort?: S): SQL {
-		const sortings = Object.entries(sort ?? {}).map(([column, direction]) => {
-			return sql`${getColumnName(this.table, column)} ${sql.raw(String(direction ?? 'ASC'))}`
+		const sortings = Object.entries(sort ?? {}).map(([key, direction]) => {
+			return sql`${this.table[key as keyof A]} ${sql.raw(String(direction ?? 'ASC'))}`
 		})
 		return sortings.length ? sql`ORDER BY ${sql.join(sortings, sql.raw(','))}` : sql``
 	}
@@ -237,7 +237,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 			.map((key) => {
 				const col =
 					key in this.table // is left table
-						? getColumnName(this.table, key)
+						? this.table[key as keyof A]
 						: joins?.find(({ table }) => key in table)?.table[key as keyof B]
 				return col ? sql`${col}` : null
 			})
