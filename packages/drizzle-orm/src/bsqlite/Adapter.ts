@@ -26,9 +26,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 
 	public find<B extends Table, R extends ReturnFilter<A, B>>(
 		filter: QueryFilter<A> = {},
-		options: QueryOptions<A, R> & {
-			joins?: Array<JoinOptions<A, B>>
-		} = {},
+		options: QueryOptions<A, B, R> = {},
 	): Result<Array<ReturnAlias<A, B, R>>, Error> {
 		return Result.from(() => {
 			const select = this.buildSelectClause(options.select, options.joins)
@@ -60,7 +58,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 
 	public findOne<B extends Table, R extends ReturnFilter<A, B>>(
 		filter: QueryFilter<A> = {},
-		options: Omit<QueryOptions<A, R>, 'limit'> = {},
+		options: Omit<QueryOptions<A, B, R>, 'limit'> = {},
 	): Result<ReturnAlias<A, B, R> | null, Error> {
 		const record = this.find(filter, { ...options, limit: 1 })
 		return record.isErr() ? record : Result.ok((record.unwrap()[0] as ReturnAlias<A, B, R>) ?? null)
@@ -69,7 +67,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 	public findOneAndUpdate<B extends Table, R extends ReturnFilter<A, B>>(
 		filter: QueryFilter<A>,
 		data: Partial<Omit<Insert, 'id'>>,
-		options: Omit<QueryOptions<A, R>, 'limit'> & {
+		options: Omit<QueryOptions<A, B, R>, 'limit' | 'joins'> & {
 			upsert?: boolean
 		} = {},
 	): Result<ReturnAlias<A, B, R>, Error> {
@@ -86,7 +84,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 
 	public findOneAndDelete<B extends Table, R extends ReturnFilter<A, B>>(
 		filter: QueryFilter<A> = {},
-		options: Omit<QueryOptions<A, R>, 'limit'> = {},
+		options: Omit<QueryOptions<A, B, R>, 'limit' | 'joins'> = {},
 	): Result<ReturnAlias<A, B, R> | null, Error> {
 		const record = this.findOne(filter, { ...options, select: undefined })
 		if (record.isErr()) return record
@@ -100,7 +98,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 
 	public insert<B extends Table, R extends ReturnFilter<A, B>>(
 		record: Omit<Insert, 'id'> | Array<Omit<Insert, 'id'>>,
-		options: Pick<QueryOptions<A, R>, 'select'> & {
+		options: Pick<QueryOptions<A, B, R>, 'select'> & {
 			conflict?: {
 				target: Array<keyof Omit<Insert, 'id'>>
 				set?: { [K in keyof Omit<Insert, 'id'>]?: Insert[K] | SQL<A> }
@@ -127,12 +125,12 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 				const columns = target.map((key) => sql`${this.table[key as keyof A]}`)
 				const targets = sql.join(columns, sql.raw(', '))
 
+				const { id, ...rest } = record
 				if (resolution === 'ignore') {
 					db.onConflictDoNothing({ target: targets })
 				} else if (resolution === 'update') {
-					db.onConflictDoUpdate({ target: targets, set: record })
+					db.onConflictDoUpdate({ target: targets, set: rest as Insert })
 				} else {
-					const { id, ...rest } = record
 					db.onConflictDoUpdate({
 						target: targets,
 						set: Object.fromEntries(
@@ -150,7 +148,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 
 	public update<B extends Table, R extends ReturnFilter<A, B>>(
 		record: Select,
-		options: Pick<QueryOptions<A, R>, 'limit' | 'order' | 'select'> = {},
+		options: Pick<QueryOptions<A, B, R>, 'limit' | 'order' | 'select'> = {},
 	): Result<Array<ReturnAlias<A, B, R>>, Error> {
 		return Result.from(() => {
 			const { id, ...set } = record
@@ -165,7 +163,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 
 	public delete<B extends Table, R extends ReturnFilter<A, B>>(
 		record: Select,
-		options: Pick<QueryOptions<A, R>, 'limit' | 'order' | 'select'> = {},
+		options: Pick<QueryOptions<A, B, R>, 'limit' | 'order' | 'select'> = {},
 	): Result<Array<ReturnAlias<A, B, R>>, Error> {
 		return Result.from(() => {
 			const db = this.db.delete(this.table)
@@ -345,11 +343,12 @@ type QueryBaseFilter<A extends Table> = {
 		  }
 }
 
-interface QueryOptions<A extends Table, R> {
+interface QueryOptions<A extends Table, B extends Table, R> {
 	select?: R
 	limit?: number
 	offset?: number
 	order?: Partial<Record<keyof InferSelect<A>, 'asc' | 'desc'>>
+	joins?: Array<JoinOptions<A, B>>
 }
 
 interface JoinOptions<A extends Table, B extends Table> {
