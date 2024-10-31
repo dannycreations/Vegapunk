@@ -1,303 +1,373 @@
 import { isObjectLike } from '@vegapunk/utilities/es-toolkit'
 import { Result } from '@vegapunk/utilities/result'
-import { getTableName, InferInsertModel, InferSelectModel, SQL, sql, Table } from 'drizzle-orm'
-import { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
-import { SQLiteInsertConfig, SQLiteSyncDialect, SQLiteTableWithColumns } from 'drizzle-orm/sqlite-core'
-import { getColumnName, reverseCase } from './utils'
-
-const OperatorMap = {
-	$eq: (k, v) => sql`${k} = ${v}`,
-	$ne: (k, v) => sql`${k} <> ${v}`,
-	$gt: (k, v) => sql`${k} > ${v}`,
-	$gte: (k, v) => sql`${k} >= ${v}`,
-	$lt: (k, v) => sql`${k} < ${v}`,
-	$lte: (k, v) => sql`${k} <= ${v}`,
-	$in: (k, v) => (Array.isArray(v) && v.length ? sql`${k} IN (${sql.raw(v.join(','))})` : sql``),
-	$nin: (k, v) => (Array.isArray(v) && v.length ? sql`${k} NOT IN (${sql.raw(v.join(','))})` : sql``),
-	$exists: (k, v) => sql`${k} IS ${sql.raw(v ? 'NOT NULL' : 'NULL')}`,
-	$like: (k, v) => sql`${k} LIKE ${v}`,
-} as const satisfies Record<keyof QueryOperator, (k: unknown, v: unknown) => SQL>
+import { count, getTableName, InferInsertModel, InferSelectModel, sql, SQL, Table } from 'drizzle-orm'
+import { BetterSQLite3Database, BetterSQLiteSession } from 'drizzle-orm/better-sqlite3'
+import { SQLiteSyncDialect } from 'drizzle-orm/sqlite-core'
 
 export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert extends InferInsertModel<A>> {
-	public constructor(private readonly db: BetterSQLite3Database, private readonly table: A) {
+	public constructor(
+		/** @internal */
+		private readonly db: BetterSQLite3Database,
+		/** @internal */
+		private readonly table: A,
+	) {
 		if (!Object.keys(table).includes('id')) {
 			throw new Error(`The "${getTableName(table)}" table must have a primary key column "id"`)
 		}
-
-		// @ts-expect-error
-		this.dialect = this.db.dialect
 	}
 
 	public count(filter: QueryFilter<A> = {}): Result<number, Error> {
 		return Result.from(() => {
-			const whereClause = this.buildWhereClause(filter)
-
-			const query = sql`SELECT COUNT(*) AS count FROM ${this.table} ${whereClause}`
-			return this.db.get<{ count: number }>(query).count
+			const db = this.db.select({ count: count() }).from(this.table)
+			if (filter) db.where(this.buildWhereClause(filter))
+			return db.get()?.count ?? 0
 		})
 	}
 
 	public find<B extends Table, R extends ReturnFilter<A, B>>(
 		filter: QueryFilter<A> = {},
-		options: QueryOptions<A, B, R> & {
-			joins?: JoinOptions<A, B>[]
+		options: QueryOptions<A, R> & {
+			joins?: Array<JoinOptions<A, B>>
 		} = {},
-	): Result<ReturnAlias<A, B, R>[], Error> {
+	): Result<Array<ReturnAlias<A, B, R>>, Error> {
 		return Result.from(() => {
-			const selectClause = this.buildSelectClause(options.select, options.joins)
-			const whereClause = this.buildWhereClause(filter)
-			const sortClause = this.buildSortClause(options.sort)
-			const limitClause = this.buildLimitClause(options.limit)
-			const skipClause = options.skip ? sql`OFFSET ${options.skip}` : sql``
-			const joinClauses = this.buildJoinClause(options.joins)
+			const select = this.buildSelectClause(options.select, options.joins)
+			const db = this.db.select(select).from(this.table)
+			if (Array.isArray(options.joins)) {
+				for (const data of options.joins) {
+					if (!this.hasKeys(data)) continue
 
-			const query = sql`SELECT ${selectClause} FROM ${this.table} ${joinClauses} ${whereClause} ${sortClause} ${limitClause} ${skipClause}`
-			return this.buildReturnAlias<B, R>(this.db.all(query))
+					let type: 'leftJoin' | 'rightJoin' | 'fullJoin' | 'innerJoin' = 'innerJoin'
+					if (data.type === 'left') type = 'leftJoin'
+					else if (data.type === 'right') type = 'rightJoin'
+					else if (data.type === 'full') type = 'fullJoin'
+
+					const conditions = Object.entries(data.on).map(([leftKey, rightKey]) => {
+						const leftTable = this.table[leftKey as keyof A]
+						const rightTable = data.table[rightKey as keyof B]
+						return sql`${leftTable} = ${rightTable}`
+					})
+					db[type](data.table, sql`(${sql.join(conditions, sql.raw(' and '))})`)
+				}
+			}
+			if (filter) db.where(this.buildWhereClause(filter))
+			if (options.order) db.orderBy(this.buildOrderClause(options.order, options.joins))
+			if (typeof options.limit === 'number') db.limit(options.limit)
+			if (typeof options.offset === 'number') db.offset(options.offset)
+			return db.all() as unknown as Array<ReturnAlias<A, B, R>>
 		})
 	}
 
 	public findOne<B extends Table, R extends ReturnFilter<A, B>>(
 		filter: QueryFilter<A> = {},
-		options: Omit<QueryOptions<A, B, R>, 'limit'> = {},
+		options: Omit<QueryOptions<A, R>, 'limit'> = {},
 	): Result<ReturnAlias<A, B, R> | null, Error> {
 		const record = this.find(filter, { ...options, limit: 1 })
-		return record.isErr() ? record : Result.ok(record.unwrap()[0] ?? null)
+		return record.isErr() ? record : Result.ok((record.unwrap()[0] as ReturnAlias<A, B, R>) ?? null)
 	}
 
 	public findOneAndUpdate<B extends Table, R extends ReturnFilter<A, B>>(
 		filter: QueryFilter<A>,
 		data: Partial<Omit<Insert, 'id'>>,
-		options: Omit<QueryOptions<A, B, R>, 'limit'> & { upsert?: boolean } = {},
+		options: Omit<QueryOptions<A, R>, 'limit'> & {
+			upsert?: boolean
+		} = {},
 	): Result<ReturnAlias<A, B, R>, Error> {
 		const record = this.findOne(filter, { ...options, select: undefined })
 		if (record.isErr()) return record
 		else if (options.upsert && record.isOk() && record.contains(null)) {
 			const inserted = this.insert({ ...filter, ...data } as Insert, options)
-			// @ts-expect-error
-			return inserted.isErr() ? inserted : Result.ok(inserted.unwrap()[0])
+			return inserted.isErr() ? inserted : Result.ok(inserted.unwrap()[0] as ReturnAlias<A, B, R>)
 		} else {
 			const updated = this.update({ ...record, ...data } as Select, options)
-			return updated.isErr() ? updated : Result.ok(updated.unwrap()[0])
+			return updated.isErr() ? updated : Result.ok(updated.unwrap()[0] as ReturnAlias<A, B, R>)
 		}
 	}
 
 	public findOneAndDelete<B extends Table, R extends ReturnFilter<A, B>>(
 		filter: QueryFilter<A> = {},
-		options: Omit<QueryOptions<A, B, R>, 'limit'> = {},
+		options: Omit<QueryOptions<A, R>, 'limit'> = {},
 	): Result<ReturnAlias<A, B, R> | null, Error> {
 		const record = this.findOne(filter, { ...options, select: undefined })
 		if (record.isErr()) return record
-		else if (record.isOk() && record.isOkAnd(isObjectLike)) {
+		else if (record.isOk() && !record.contains(null)) {
 			const deleted = this.delete(record as object as Select, options)
-			return deleted.isErr() ? deleted : Result.ok(deleted.unwrap()[0])
+			return deleted.isErr() ? deleted : Result.ok(deleted.unwrap()[0] as ReturnAlias<A, B, R>)
 		} else {
 			return Result.ok(null)
 		}
 	}
 
 	public insert<B extends Table, R extends ReturnFilter<A, B>>(
-		record: Omit<Insert, 'id'> | Omit<Insert, 'id'>[],
-		options: Pick<QueryOptions<A, B, R>, 'select'> & {
+		record: Omit<Insert, 'id'> | Array<Omit<Insert, 'id'>>,
+		options: Pick<QueryOptions<A, R>, 'select'> & {
 			conflict?: {
-				target: (keyof Omit<Insert, 'id'>)[]
-				set: Partial<{ [K in keyof Omit<Insert, 'id'>]: Insert[K] | SQL<A> }>
-				resolution?: 'ignore' | 'replace' | 'update' | 'merge'
+				target: Array<keyof Omit<Insert, 'id'>>
+				set?: { [K in keyof Omit<Insert, 'id'>]?: Insert[K] | SQL<A> }
+				resolution?: 'ignore' | 'update' | 'merge'
 			}
 		} = {},
-	): Result<ReturnAlias<A, B, R>[], Error> {
+	): Result<Array<ReturnAlias<A, B, R>>, Error> {
 		return Result.from(() => {
-			const keys = (r: object) => !!Object.keys(r).length
-			const records = (Array.isArray(record) ? record : [record]).filter(keys)
+			const records = (Array.isArray(record) ? record : [record]).filter(this.hasKeys)
 			if (!records.length) return []
 
-			const payload: SQLiteInsertConfig = {
-				table: this.table,
-				values: records.map((rec) => {
-					const { id, ...rest } = rec as Record<string, unknown>
-					return Object.fromEntries(Object.entries(rest).map(([key, value]) => [key, sql`${value}`]))
-				}),
-			}
+			const values = records.map((rec) => {
+				const { id, ...rest } = rec as Record<string, unknown>
+				return Object.fromEntries(Object.entries(rest).map(([key, value]) => [key, value]))
+			})
 
+			const db = this.db.insert(this.table).values(values as Insert[])
+			db.returning(this.buildSelectClause(options.select))
 			if (options.conflict) {
-				let record: Record<string, unknown>
-				if (options.conflict.set && keys(options.conflict.set)) {
-					record = options.conflict.set
+				const { target, set, resolution } = options.conflict
+				let record: Record<string, unknown> = records[0]
+				if (this.hasKeys(set)) record = set!
+
+				const columns = target.map((key) => sql`${this.table[key as keyof A]}`)
+				const targets = sql.join(columns, sql.raw(', '))
+
+				if (resolution === 'ignore') {
+					db.onConflictDoNothing({ target: targets })
+				} else if (resolution === 'update') {
+					db.onConflictDoUpdate({ target: targets, set: record })
 				} else {
-					record = records[0]
-				}
-
-				const targets = sql.join(
-					options.conflict.target.map((key) => sql.raw(getColumnName(this.table, key))),
-					sql.raw(','),
-				)
-
-				switch (options.conflict.resolution) {
-					case 'ignore':
-						payload.onConflict = sql`(${targets}) DO NOTHING`
-						break
-					case 'replace':
-						payload.onConflict = sql`(${targets}) DO REPLACE`
-						break
-					case 'update':
-						const updateClause = this.dialect.buildUpdateSet(this.table, record as Insert)
-						payload.onConflict = sql`(${targets}) DO UPDATE SET ${updateClause}`
-						break
-					case 'merge':
-					default:
-						const { id, ...rest } = record as Record<string, unknown>
-						const values = Object.fromEntries(
+					const { id, ...rest } = record
+					db.onConflictDoUpdate({
+						target: targets,
+						set: Object.fromEntries(
 							Object.entries(rest).map(([key, value]) => {
-								return [key, sql`${getColumnName(this.table, key)} = COALESCE(${getColumnName(this.table, key)}, ${value})`]
+								const column = this.table[key as keyof A]
+								return [key, sql`coalesce(${column}, ${sql`${value}`})`]
 							}),
-						)
-						const mergeClause = this.dialect.buildUpdateSet(this.table, values)
-						payload.onConflict = sql`(${targets}) DO UPDATE SET ${mergeClause}`
-						break
+						) as Record<string, unknown>,
+					})
 				}
 			}
-
-			const insertQuery = this.dialect.buildInsertQuery(payload)
-			const selectClause = this.buildSelectClause(options.select)
-
-			const query = sql`${insertQuery} RETURNING ${selectClause}`
-			return this.buildReturnAlias<B, R>(this.db.all(query))
+			return db.all() as unknown as Array<ReturnAlias<A, B, R>>
 		})
 	}
 
 	public update<B extends Table, R extends ReturnFilter<A, B>>(
 		record: Select,
-		options: Pick<QueryOptions<A, B, R>, 'limit' | 'sort' | 'select'> = {},
-	): Result<ReturnAlias<A, B, R>[], Error> {
+		options: Pick<QueryOptions<A, R>, 'limit' | 'order' | 'select'> = {},
+	): Result<Array<ReturnAlias<A, B, R>>, Error> {
 		return Result.from(() => {
 			const { id, ...set } = record
-			const updateQuery = this.dialect.buildUpdateQuery({ table: this.table, set })
-			const whereClause = this.buildWhereClause({ id: id! })
-			const sortClause = this.buildSortClause(options.sort)
-			const limitClause = this.buildLimitClause(options.limit)
-			const selectClause = this.buildSelectClause(options.select)
-
-			const query = sql`${updateQuery} ${whereClause} ${sortClause} ${limitClause} RETURNING ${selectClause}`
-			return this.buildReturnAlias<B, R>(this.db.all(query))
+			const db = this.db.update(this.table).set(set as Select)
+			db.where(this.buildWhereClause({ id }))
+			db.returning(this.buildSelectClause(options.select))
+			if (options.order) db.orderBy(this.buildOrderClause(options.order))
+			if (typeof options.limit === 'number') db.limit(options.limit)
+			return db.all() as unknown as Array<ReturnAlias<A, B, R>>
 		})
 	}
 
 	public delete<B extends Table, R extends ReturnFilter<A, B>>(
 		record: Select,
-		options: Pick<QueryOptions<A, B, R>, 'limit' | 'sort' | 'select'> = {},
-	): Result<ReturnAlias<A, B, R>[], Error> {
+		options: Pick<QueryOptions<A, R>, 'limit' | 'order' | 'select'> = {},
+	): Result<Array<ReturnAlias<A, B, R>>, Error> {
 		return Result.from(() => {
-			const deleteQuery = this.dialect.buildDeleteQuery({ table: this.table })
-			const whereClause = this.buildWhereClause({ id: record.id! })
-			const sortClause = this.buildSortClause(options.sort)
-			const limitClause = this.buildLimitClause(options.limit)
-			const selectClause = this.buildSelectClause(options.select)
-
-			const query = sql`${deleteQuery} ${whereClause} ${sortClause} ${limitClause} RETURNING ${selectClause}`
-			return this.buildReturnAlias<B, R>(this.db.all(query))
+			const db = this.db.delete(this.table)
+			db.where(this.buildWhereClause({ id: record.id }))
+			db.returning(this.buildSelectClause(options.select))
+			if (options.order) db.orderBy(this.buildOrderClause(options.order))
+			if (typeof options.limit === 'number') db.limit(options.limit)
+			return db.all() as unknown as Array<ReturnAlias<A, B, R>>
 		})
 	}
 
+	/** @internal */
 	private buildWhereClause(filter: QueryFilter<A>): SQL {
-		const conditions = Object.entries(filter).flatMap(([key, value]) => {
-			const tableColumn = this.table[key as keyof A]
-			const condition = isObjectLike(value) ? value : { $eq: value }
+		const processLogical = (filter: QueryFilter<A>): SQL[] => {
+			return Object.entries(filter).flatMap(([key, value]) => {
+				switch (key as keyof LogicalOperator<A> & '$not') {
+					default: {
+						const column = this.table[key as keyof A]
+						return processComparison(column, value)
+					}
+					case '$and':
+					case '$nand':
+					case '$or':
+					case '$nor': {
+						const joinType = key === '$or' ? ' or ' : ' and '
+						const nestedClauses = (value as QueryFilter<A>[]).map((subFilter) => {
+							const nestedConditions = processLogical(subFilter)
+							if (nestedConditions.length === 0) return sql`true`
+							if (nestedConditions.length === 1) return nestedConditions[0]
+							return sql`(${sql.join(nestedConditions, sql.raw(joinType))})`
+						})
+						if (nestedClauses.length === 0) return sql`true`
+						if (nestedClauses.length === 1) return nestedClauses[0]
+						if (['$nand', '$nor'].includes(key)) {
+							return sql`not (${sql.join(nestedClauses, sql.raw(' and '))})`
+						} else {
+							return sql`(${sql.join(nestedClauses, sql.raw(joinType))})`
+						}
+					}
+					case '$not': {
+						const negatedConditions = processLogical(value as QueryFilter<A>)
+						if (negatedConditions.length === 0) return sql`false`
+						if (negatedConditions.length === 1) return sql`not ${negatedConditions[0]}`
+						return sql`not (${sql.join(negatedConditions, sql.raw(' and '))})`
+					}
+				}
+			})
+		}
+
+		const processComparison = (column: unknown, value: unknown): SQL[] => {
+			const condition = (value = isObjectLike(value) ? value : { $eq: value })
 			return Object.entries(condition).flatMap(([operator, operand]) => {
-				return operand == null
-					? OperatorMap.$exists(tableColumn, operator === '$ne')
-					: OperatorMap[operator as keyof QueryOperator](tableColumn, operand)
+				switch (operator as keyof ComparisonOperator<unknown> & '$not') {
+					default: // default to $eq
+						return sql`${column} = ${sql`${operand}`}`
+					case '$ne':
+						return sql`${column} <> ${sql`${operand}`}`
+					case '$gt':
+						return sql`${column} > ${sql`${operand}`}`
+					case '$gte':
+						return sql`${column} >= ${sql`${operand}`}`
+					case '$lt':
+						return sql`${column} < ${sql`${operand}`}`
+					case '$lte':
+						return sql`${column} <= ${sql`${operand}`}`
+					case '$glob':
+						return sql`${column} glob ${sql`${operand}`}`
+					case '$nglob':
+						return sql`${column} not glob ${sql`${operand}`}`
+					case '$like':
+						return sql`${column} like ${sql`${operand}`}`
+					case '$nlike':
+						return sql`${column} not like ${sql`${operand}`}`
+					case '$in':
+						return Array.isArray(operand) && operand.length ? sql`${column} in (${sql.join(operand, sql.raw(', '))})` : sql`false`
+					case '$nin':
+						return Array.isArray(operand) && operand.length ? sql`${column} not in (${sql.join(operand, sql.raw(', '))})` : sql`true`
+					case '$null':
+						return sql`${column} is ${sql.raw(operand ? 'null' : 'not null')}`
+					case '$not':
+						const negatedConditions = processComparison(column, operand)
+						if (negatedConditions.length === 0) return sql`false`
+						if (negatedConditions.length === 1) return sql`not ${negatedConditions[0]}`
+						return sql`not (${sql.join(negatedConditions, sql.raw(' and '))})`
+				}
 			})
+		}
+
+		const conditions = processLogical(filter)
+		return conditions.length ? sql`(${sql.join(conditions, sql.raw(' and '))})` : (undefined as unknown as SQL)
+	}
+
+	/** @internal */
+	private buildOrderClause<S, B extends Table>(order?: S, joins?: Array<JoinOptions<A, B>>): SQL {
+		if (!order || !this.hasKeys(order)) return undefined as unknown as SQL
+
+		const conditions = Object.entries(order).map(([key, direction]) => {
+			let column: unknown = this.table[key as keyof A]
+			if (!column && joins?.length) {
+				const join = joins.find(({ table }) => key in table)
+				if (join) column = join.table[key as keyof B]
+			}
+			return sql`${column} ${sql.raw(String(direction ?? 'asc'))}`
 		})
-		return conditions.length ? sql`WHERE ${sql.join(conditions, sql.raw(' AND '))}` : sql``
+		return sql.join(conditions, sql.raw(', '))
 	}
 
-	private buildJoinClause<B extends Table>(joins: JoinOptions<A, B>[] = []): SQL {
-		const joinClauses = joins.map(({ type, table, on }) => {
-			const onConditions = Object.entries(on).map(([leftKey, rightKey]) => {
-				return sql`${this.table[leftKey as keyof A]} = ${table[rightKey as keyof B]}`
-			})
-			const onClause = sql.join(onConditions, sql.raw(' AND '))
-			return sql`${sql.raw(type ?? 'INNER')} JOIN ${table} ON ${onClause}`
-		})
-		return sql.join(joinClauses, sql.raw(' '))
+	/** @internal */
+	private buildSelectClause<S, B extends Table>(select?: S, joins?: Array<JoinOptions<A, B>>): InferColumn<A> {
+		if (!select || !this.hasKeys(select)) return undefined as unknown as InferColumn<A>
+
+		const columns = Object.fromEntries(
+			Object.keys(select).map((key) => {
+				let column: unknown = this.table[key as keyof A]
+				if (!column && joins?.length) {
+					const join = joins.find(({ table }) => key in table)
+					if (join) column = join.table[key as keyof B]
+				}
+				return [key, column]
+			}),
+		)
+		return columns as InferColumn<A>
 	}
 
-	private buildLimitClause<L>(limit?: L): SQL {
-		return limit ? sql`LIMIT ${sql`${limit}`}` : sql``
+	/** @internal */
+	private hasKeys(obj?: object): boolean {
+		return !!Object.keys(obj ?? {}).length
 	}
 
-	private buildSortClause<S>(sort?: S): SQL {
-		const sortings = Object.entries(sort ?? {}).map(([key, direction]) => {
-			return sql`${this.table[key as keyof A]} ${sql.raw(String(direction ?? 'ASC'))}`
-		})
-		return sortings.length ? sql`ORDER BY ${sql.join(sortings, sql.raw(','))}` : sql``
+	/** @internal */
+	protected get dialect(): SQLiteSyncDialect {
+		// @ts-expect-error
+		return this.db.dialect
 	}
 
-	private buildSelectClause<S, B extends Table>(select?: S, joins?: JoinOptions<A, B>[]): SQL {
-		const columns = Object.keys(select ?? {})
-			.map((key) => {
-				const col =
-					key in this.table // is left table
-						? this.table[key as keyof A]
-						: joins?.find(({ table }) => key in table)?.table[key as keyof B]
-				return col ? sql`${col}` : null
-			})
-			.filter(Boolean)
-		return columns.length ? sql.join(columns as SQL[], sql.raw(',')) : sql`*`
+	/** @internal */
+	protected get session(): BetterSQLiteSession<never, never> {
+		// @ts-expect-error
+		return this.db.session
 	}
-
-	private buildReturnAlias<B extends Table, R extends ReturnFilter<A, B>>(results: Select[]): ReturnAlias<A, B, R>[] {
-		return results.map((result) => {
-			return Object.entries(result).reduce((acc, [key, value]) => {
-				return (acc[reverseCase(key)] = value), acc
-			}, {} as Record<string, unknown>)
-		}) as ReturnAlias<A, B, R>[]
-	}
-
-	private readonly dialect: SQLiteSyncDialect
 }
 
-type QueryOptions<A extends Table, B extends Table, R> = {
-	limit?: number
-	skip?: number
-	sort?: Partial<Record<keyof ReturnMerge<A, B>, 'ASC' | 'DESC'>>
-	select?: R
-}
-
-interface QueryOperator<T = unknown> {
+interface ComparisonOperator<T> {
 	$eq?: T
 	$ne?: T
 	$gt?: T
 	$gte?: T
 	$lt?: T
 	$lte?: T
+	$glob?: T
+	$nglob?: T
+	$like?: T
+	$nlike?: T
 	$in?: T[]
 	$nin?: T[]
-	$exists?: boolean
-	$like?: T
+	$null?: boolean
 }
 
-type QueryFilter<A extends Table> = {
-	[K in keyof InferSelect<A>]?: InferSelect<A>[K] | QueryOperator<InferSelect<A>[K]>
+interface LogicalOperator<T extends Table> {
+	$and?: QueryBaseFilter<T>[]
+	$nand?: QueryBaseFilter<T>[]
+	$or?: QueryBaseFilter<T>[]
+	$nor?: QueryBaseFilter<T>[]
+}
+
+type QueryFilter<A extends Table> = QueryBaseFilter<A> &
+	LogicalOperator<A> & {
+		$not?: QueryBaseFilter<A> & LogicalOperator<A>
+	}
+
+type QueryBaseFilter<A extends Table> = {
+	[K in keyof InferSelect<A>]?:
+		| InferSelect<A>[K]
+		| ComparisonOperator<InferSelect<A>[K]>
+		| {
+				$not?: ComparisonOperator<InferSelect<A>[K]>
+		  }
+}
+
+interface QueryOptions<A extends Table, R> {
+	select?: R
+	limit?: number
+	offset?: number
+	order?: Partial<Record<keyof InferSelect<A>, 'asc' | 'desc'>>
 }
 
 interface JoinOptions<A extends Table, B extends Table> {
 	table: B
-	on: JoinFilter<A, B>
-	type?: 'INNER' | 'LEFT' | 'RIGHT' | 'FULL'
-}
-
-type JoinFilter<A extends Table, B extends Table> = {
-	[K in keyof InferSelect<A>]?: keyof InferSelect<B>
+	on: { [K in keyof InferSelect<A>]?: keyof InferSelect<B> }
+	type?: 'left' | 'right' | 'full' | 'inner'
 }
 
 type ReturnFilter<A extends Table, B extends Table> = Partial<Record<keyof ReturnMerge<A, B>, 1>>
 
-type ReturnAlias<A extends Table, B extends Table | undefined, R> = B extends SQLiteTableWithColumns<infer _>
-	? R extends ReturnFilter<A, B>
+type ReturnAlias<A extends Table, B extends Table, R> = B extends InferColumn<B>
+	? R extends Record<keyof R, 1>
 		? Omit<ReturnMerge<A, B>, Exclude<keyof ReturnMerge<A, B>, keyof R>>
-		: ReturnMerge<A, B>
-	: Omit<InferSelect<A>, Exclude<keyof InferSelect<A>, keyof R>> | InferSelect<A>
+		: { [K in A['_']['name']]: InferSelect<A> } & { [L in B['_']['name']]: InferSelect<B> }
+	: Omit<InferSelect<A>, Exclude<keyof InferSelect<A>, keyof R>>
 
-type ReturnMerge<A extends Table, B extends Table> = B extends SQLiteTableWithColumns<infer _> ? InferSelect<A> & InferSelect<B> : InferSelect<A>
+type ReturnMerge<A extends Table, B extends Table> = B extends InferColumn<B> ? InferSelect<A> & InferSelect<B> : InferSelect<A>
 
 type InferSelect<T extends Table> = InferSelectModel<T>
+
+type InferColumn<T extends Table> = T['_']['columns']
