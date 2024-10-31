@@ -21,6 +21,6 @@ class ResultAssert extends Error {
 
 declare module '@sapphire/result' {
 	namespace Result {
-		function assert<T>(op: T | (() => T), message: string, ...args: unknown[]): void
+		function assert<T>(op: T | (() => T), message?: string, ...args: unknown[]): void
 	}
 }
