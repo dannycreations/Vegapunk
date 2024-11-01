@@ -1,4 +1,3 @@
-import { isError } from 'es-toolkit'
 import { get, has, isObjectLike } from 'es-toolkit/compat'
 import { NestedKeyOf, ValueAtPath } from './types'
 
@@ -29,18 +28,4 @@ export function strictGet<T, P extends NestedKeyOf<T> = NestedKeyOf<T>, V extend
 
 export function strictHas<T, P extends NestedKeyOf<T> = NestedKeyOf<T>>(obj: T, path: P) {
 	return has(obj, path) as boolean
-}
-
-export function isErrorLike<T>(error: unknown): error is ErrorLike & T {
-	if (isError(error)) return true
-
-	const isObject = isObjectLike(error)
-	const hasCode = isObject && 'code' in error
-	const hasStack = isObject && 'stack' in error
-	const hasMessage = isObject && 'message' in error
-	return [hasCode, hasStack, hasMessage].filter(Boolean).length >= 2
-}
-
-export interface ErrorLike extends Error {
-	code: string
 }
