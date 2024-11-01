@@ -119,6 +119,7 @@ export async function waitForConnection(total = 10_000): Promise<void> {
 }
 
 type ExcludeOptions = 'prefixUrl' | 'retry' | 'timeout' | 'resolveBodyOnly'
+
 export interface DefaultOptions extends Omit<Options, ExcludeOptions> {
 	retry?: number
 	timeout?: Partial<{

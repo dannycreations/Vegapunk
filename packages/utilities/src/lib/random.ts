@@ -7,7 +7,7 @@ export enum Alphabet {
 	S = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~',
 }
 
-export function randomString(length = 30, ...str: Alphabet[]): string {
-	str = str.length ? str : [Alphabet.L, Alphabet.U, Alphabet.N]
-	return customAlphabet(str.join(''), length)()
+export function randomString(length = 30, ...args: Alphabet[]): string {
+	args = args.length ? args : [Alphabet.L, Alphabet.U, Alphabet.N]
+	return customAlphabet(args.join(''), length)()
 }

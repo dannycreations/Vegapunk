@@ -41,8 +41,8 @@ const baseOptions = {
 export function start(options: BSqliteOptions): BetterSQLite3Database {
 	const client = new Database(options.dbCredentials.url)
 	client.pragma('journal_mode = WAL')
-	const db = drizzle(client, { casing: options.casing, logger: options.logger })
 
+	const db = drizzle(client, { casing: options.casing, logger: options.logger })
 	migrate(db, { migrationsFolder: options.out })
 	return db
 }

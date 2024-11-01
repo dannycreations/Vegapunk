@@ -3,7 +3,7 @@ import { isError, isObjectLike } from 'es-toolkit/compat'
 
 export { Option, Result } from '@sapphire/result'
 
-export function isErrorLike<T>(error: unknown): error is ErrorLike & T {
+export function isErrorLike<T>(error: unknown): error is Error & { code: unknown } & T {
 	if (isError(error)) return true
 
 	const isObject = isObjectLike(error)
@@ -13,11 +13,7 @@ export function isErrorLike<T>(error: unknown): error is ErrorLike & T {
 	return [hasCode, hasStack, hasMessage].filter(Boolean).length >= 2
 }
 
-export interface ErrorLike extends Error {
-	code: string
-}
-
-function assert<T>(op: T | (() => T), message?: string, ...args: unknown[]): void {
+function assert<T>(op: T | (() => T), message?: string, ...args: object[]): void {
 	const result = typeof op === 'function' ? (op as Function)() : op
 	if (!result) throw new ResultAssert(message, ...args)
 }
@@ -27,7 +23,7 @@ Object.assign(Result, { assert })
 export class ResultAssert extends Error {
 	public readonly code: string = 'RESULT_ASSERT'
 
-	public constructor(message?: string, ...args: unknown[]) {
+	public constructor(message?: string, ...args: object[]) {
 		super(message)
 		Object.assign(this, ...args)
 		Error.captureStackTrace(this, ResultAssert)
@@ -36,6 +32,6 @@ export class ResultAssert extends Error {
 
 declare module '@sapphire/result' {
 	namespace Result {
-		function assert<T>(op: T | (() => T), message?: string, ...args: unknown[]): void
+		function assert<T>(op: T | (() => T), message?: string, ...args: object[]): void
 	}
 }

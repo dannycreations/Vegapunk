@@ -1,5 +1,5 @@
 import { get, has, isObjectLike } from 'es-toolkit/compat'
-import { NestedKeyOf, ValueAtPath } from './types'
+import { type NestedKeyOf, type ValueAtPath } from './types'
 
 function isSpecialProperty(key: string) {
 	return key === '__proto__' || key === 'constructor' || key === 'prototype'
