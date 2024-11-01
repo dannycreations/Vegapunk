@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/utilities",
-	"version": "1.0.45",
+	"version": "1.0.46",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"exports": {
@@ -27,7 +27,6 @@
 	},
 	"scripts": {
 		"build": "tsup",
-		"build:type": "tsx scripts/type.build.ts",
 		"test": "vitest",
 		"update": "npm-check-updates -u -x chalk,nanoid"
 	},
@@ -41,6 +40,7 @@
 	},
 	"homepage": "https://github.com/dannycreations/Vegapunk",
 	"dependencies": {
+		"@sapphire/result": "^2.6.6",
 		"chalk": "4.1.2",
 		"dayjs": "^1.11.13",
 		"es-toolkit": "^1.26.1",
@@ -49,7 +49,6 @@
 		"nanoid": "3.3.7"
 	},
 	"devDependencies": {
-		"@sapphire/result": "^2.6.6",
 		"@types/humanize-duration": "^3.27.4"
 	},
 	"bundleDependencies": [

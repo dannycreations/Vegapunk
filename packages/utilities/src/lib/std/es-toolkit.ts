@@ -56,6 +56,7 @@ export {
 	slice,
 	some,
 	startsWith,
+	template,
 	times,
 	toDefaulted,
 	toFinite,
@@ -65,6 +66,7 @@ export {
 	toPath,
 	toSafeInteger,
 	toString,
+	uniqueId,
 	unset,
 	zipObjectDeep,
 } from 'es-toolkit/compat'
