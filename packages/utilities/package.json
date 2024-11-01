@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/utilities",
-	"version": "1.0.46",
+	"version": "1.0.47",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"exports": {
@@ -8,13 +8,9 @@
 			"types": "./dist/index.d.ts",
 			"default": "./dist/index.js"
 		},
-		"./dayjs": {
-			"types": "./dist/lib/std/dayjs.d.ts",
-			"default": "./dist/lib/std/dayjs.js"
-		},
-		"./es-toolkit": {
-			"types": "./dist/lib/std/es-toolkit.d.ts",
-			"default": "./dist/lib/std/es-toolkit.js"
+		"./common": {
+			"types": "./dist/lib/std/common.d.ts",
+			"default": "./dist/lib/std/common.js"
 		},
 		"./result": {
 			"types": "./dist/lib/std/result.d.ts",
@@ -23,6 +19,10 @@
 		"./sleep": {
 			"types": "./dist/lib/std/sleep.d.ts",
 			"default": "./dist/lib/std/sleep.js"
+		},
+		"./time": {
+			"types": "./dist/lib/std/time.d.ts",
+			"default": "./dist/lib/std/time.js"
 		}
 	},
 	"scripts": {

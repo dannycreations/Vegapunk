@@ -1,8 +1,8 @@
-import { isObjectLike } from '@vegapunk/utilities/es-toolkit'
+import { isObjectLike } from '@vegapunk/utilities/common'
 import { Result } from '@vegapunk/utilities/result'
-import { count, getTableName, InferInsertModel, InferSelectModel, sql, SQL, Table } from 'drizzle-orm'
-import { BetterSQLite3Database, BetterSQLiteSession } from 'drizzle-orm/better-sqlite3'
-import { SQLiteSyncDialect } from 'drizzle-orm/sqlite-core'
+import { count, getTableName, sql, type InferInsertModel, type InferSelectModel, type SQL, type Table } from 'drizzle-orm'
+import { type BetterSQLite3Database, type BetterSQLiteSession } from 'drizzle-orm/better-sqlite3'
+import { type SQLiteSyncDialect } from 'drizzle-orm/sqlite-core'
 
 export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert extends InferInsertModel<A>> {
 	public constructor(

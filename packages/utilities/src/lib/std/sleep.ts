@@ -10,10 +10,14 @@ export function sleep<T>(ms: number, value?: T, options: SleepOptions = {}): Pro
 				return
 			}
 
-			signal.addEventListener('abort', () => {
-				clearTimeout(timer)
-				reject(signal.reason)
-			})
+			signal.addEventListener(
+				'abort',
+				() => {
+					clearTimeout(timer)
+					reject(signal.reason)
+				},
+				{ once: true },
+			)
 		}
 
 		const timer = setTimeout(() => resolve(value!), ms)

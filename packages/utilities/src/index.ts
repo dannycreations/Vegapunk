@@ -1,5 +1,4 @@
 export * from './lib/array'
-export * from './lib/common'
 export * from './lib/object'
 export * from './lib/random'
 export * from './lib/regex'
