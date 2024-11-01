@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import { type ParseError, type ParseOptions, parse } from 'jsonc-parser'
+import { parse, type ParseError, type ParseOptions } from 'jsonc-parser'
 
 export { chalk }
 

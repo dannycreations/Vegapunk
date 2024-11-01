@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest'
-import { noop, sleepUntil } from '../dist'
+import { noop } from '../dist/lib/std/common'
+import { sleepUntil } from '../dist/lib/std/sleep'
 
 test('should immediate without retries', async () => {
 	let callCount = 0

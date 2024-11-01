@@ -1,4 +1,4 @@
-import { Sub } from './internal/types'
+import { type Sub } from './internal/types'
 
 // https://github.com/sapphiredev/utilities/blob/main/packages/utilities/src/lib/types.ts
 export type Nullish = null | undefined

@@ -1,7 +1,7 @@
 import '../listeners/_load'
 
-import { Piece, Store, StoreRegistry, container, getRootData } from '@sapphire/pieces'
-import { Logger, logger } from '@vegapunk/logger'
+import { type Piece, Store, type StoreRegistry, container, getRootData } from '@sapphire/pieces'
+import { type Logger, logger } from '@vegapunk/logger'
 import { EventEmitter } from 'node:events'
 import { ListenerStore } from './structures/ListenerStore'
 import { TaskStore } from './structures/TaskStore'
