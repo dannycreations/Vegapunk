@@ -9,7 +9,7 @@ function assert<T>(op: T | (() => T), message?: string, ...args: unknown[]): voi
 
 Object.assign(Result, { assert })
 
-class ResultAssert extends Error {
+export class ResultAssert extends Error {
 	public readonly code: string = 'RESULT_ASSERT'
 
 	public constructor(message?: string, ...args: unknown[]) {

@@ -1,10 +1,5 @@
 import { customAlphabet } from 'nanoid'
 
-let idCounter = 0
-export function uniqId(prefix = '') {
-	return `${prefix}${++idCounter}`
-}
-
 export enum Alphabet {
 	L = 'abcdefghijklmnopqrstuvwxyz',
 	U = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
