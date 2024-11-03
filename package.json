@@ -5,6 +5,7 @@
 	"license": "GPL-3.0",
 	"private": true,
 	"scripts": {
+		"start:watch": "turbo watch debug",
 		"build": "turbo run build && tsx scripts/output.build.ts",
 		"clean": "npx rimraf -g \"**/*.tsbuildinfo\" \"**/dist\"",
 		"clean:nodefiles": "npx rimraf -g \"**/*-lock.*\" \"**/node_modules\"",

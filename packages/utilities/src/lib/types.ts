@@ -3,8 +3,6 @@ import { type Sub } from './internal/types'
 // https://github.com/sapphiredev/utilities/blob/main/packages/utilities/src/lib/types.ts
 export type Nullish = null | undefined
 
-export type NonNullObject = {} & object
-
 export type Awaitable<T> = PromiseLike<T> | T
 
 export type Primitive = string | number | boolean | bigint | symbol | undefined | null
@@ -74,15 +72,12 @@ export type StrictFields<T> = {
 }
 
 export type MutableFields<T> = {
-	-readonly [P in keyof T]: T[P] extends Array<unknown> | NonNullObject ? MutableFields<T[P]> : T[P]
+	-readonly [P in keyof T]: T[P] extends Array<unknown> | object ? MutableFields<T[P]> : T[P]
 }
 
-export type RequiredFields<T> = {
-	[K in keyof T as T[K] extends Required<T>[K] ? K : never]: T[K]
+export type OnlyRequired<T, K extends keyof T = never> = {
+	[P in keyof T as P extends K ? P : T[P] extends Required<T>[P] ? P : never]-?: Exclude<T[P], undefined>
 }
-
-export type OnlyOneRequired<T, Key extends keyof T> = Pick<T, Exclude<keyof T, Key>> &
-	{ [K in Key]-?: Partial<Record<Exclude<Key, K>, never>> & Required<Pick<T, K>> }[Key]
 
 export type NestedKeyOf<T, D extends number = 5> = D extends 0
 	? never

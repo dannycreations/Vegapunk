@@ -61,7 +61,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 		options: Omit<QueryOptions<A, B, R>, 'limit'> = {},
 	): Result<ReturnAlias<A, B, R> | null, Error> {
 		const record = this.find(filter, { ...options, limit: 1 })
-		return record.isErr() ? record : Result.ok((record.unwrap()[0] as ReturnAlias<A, B, R>) ?? null)
+		return record.map((r) => r[0] ?? null)
 	}
 
 	public findOneAndUpdate<B extends Table, R extends ReturnFilter<A, B>>(
@@ -70,16 +70,20 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 		options: Omit<QueryOptions<A, B, R>, 'limit' | 'joins'> & {
 			upsert?: boolean
 		} = {},
-	): Result<ReturnAlias<A, B, R>, Error> {
+	): Result<ReturnAlias<A, B, R> | null, Error> {
+		if (!this.hasKeys(data)) return Result.ok(null)
+
 		const record = this.findOne(filter, { ...options, select: undefined })
-		if (record.isErr()) return record
-		else if (options.upsert && record.isOk() && record.contains(null)) {
-			const inserted = this.insert({ ...filter, ...data } as Insert, options)
-			return inserted.isErr() ? inserted : Result.ok(inserted.unwrap()[0] as ReturnAlias<A, B, R>)
-		} else {
-			const updated = this.update({ ...record, ...data } as Select, options)
-			return updated.isErr() ? updated : Result.ok(updated.unwrap()[0] as ReturnAlias<A, B, R>)
-		}
+		return record.mapInto((r) => {
+			if (options.upsert && r === null) {
+				// ! TODO: clean QueryFilter before using it as { ...filter, ...data }
+				const inserted = this.insert({ ...data } as Insert, options)
+				return inserted.map((r) => r[0] as ReturnAlias<A, B, R>)
+			} else {
+				const updated = this.update({ ...r, ...data } as Select, options)
+				return updated.map((r) => r[0] as ReturnAlias<A, B, R>)
+			}
+		})
 	}
 
 	public findOneAndDelete<B extends Table, R extends ReturnFilter<A, B>>(
@@ -87,13 +91,12 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 		options: Omit<QueryOptions<A, B, R>, 'limit' | 'joins'> = {},
 	): Result<ReturnAlias<A, B, R> | null, Error> {
 		const record = this.findOne(filter, { ...options, select: undefined })
-		if (record.isErr()) return record
-		else if (record.isOk() && !record.contains(null)) {
-			const deleted = this.delete(record as object as Select, options)
-			return deleted.isErr() ? deleted : Result.ok(deleted.unwrap()[0] as ReturnAlias<A, B, R>)
-		} else {
-			return Result.ok(null)
-		}
+		return record.mapInto((r) => {
+			if (r === null) return Result.ok(r)
+
+			const deleted = this.delete(r as Select, options)
+			return deleted.map((r) => r[0] as ReturnAlias<A, B, R>)
+		})
 	}
 
 	public insert<B extends Table, R extends ReturnFilter<A, B>>(
@@ -177,83 +180,87 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 
 	/** @internal */
 	private buildWhereClause(filter: QueryFilter<A>): SQL {
-		const processLogical = (filter: QueryFilter<A>): SQL[] => {
-			return Object.entries(filter).flatMap(([key, value]) => {
-				switch (key as keyof LogicalOperator<A> & '$not') {
-					default: {
-						const column = this.table[key as keyof A]
-						return processComparison(column, value)
-					}
-					case '$and':
-					case '$nand':
-					case '$or':
-					case '$nor': {
-						const joinType = key === '$or' ? ' or ' : ' and '
-						const nestedClauses = (value as QueryFilter<A>[]).map((subFilter) => {
-							const nestedConditions = processLogical(subFilter)
-							if (nestedConditions.length === 0) return sql`true`
-							if (nestedConditions.length === 1) return nestedConditions[0]
-							return sql`(${sql.join(nestedConditions, sql.raw(joinType))})`
-						})
-						if (nestedClauses.length === 0) return sql`true`
-						if (nestedClauses.length === 1) return nestedClauses[0]
-						if (['$nand', '$nor'].includes(key)) {
-							return sql`not (${sql.join(nestedClauses, sql.raw(' and '))})`
-						} else {
-							return sql`(${sql.join(nestedClauses, sql.raw(joinType))})`
-						}
-					}
-					case '$not': {
-						const negatedConditions = processLogical(value as QueryFilter<A>)
-						if (negatedConditions.length === 0) return sql`false`
-						if (negatedConditions.length === 1) return sql`not ${negatedConditions[0]}`
-						return sql`not (${sql.join(negatedConditions, sql.raw(' and '))})`
-					}
-				}
-			})
-		}
-
-		const processComparison = (column: unknown, value: unknown): SQL[] => {
-			const condition = (value = isObjectLike(value) ? value : { $eq: value })
-			return Object.entries(condition).flatMap(([operator, operand]) => {
-				switch (operator as keyof ComparisonOperator<unknown> & '$not') {
-					default: // default to $eq
-						return sql`${column} = ${sql`${operand}`}`
-					case '$ne':
-						return sql`${column} <> ${sql`${operand}`}`
-					case '$gt':
-						return sql`${column} > ${sql`${operand}`}`
-					case '$gte':
-						return sql`${column} >= ${sql`${operand}`}`
-					case '$lt':
-						return sql`${column} < ${sql`${operand}`}`
-					case '$lte':
-						return sql`${column} <= ${sql`${operand}`}`
-					case '$glob':
-						return sql`${column} glob ${sql`${operand}`}`
-					case '$nglob':
-						return sql`${column} not glob ${sql`${operand}`}`
-					case '$like':
-						return sql`${column} like ${sql`${operand}`}`
-					case '$nlike':
-						return sql`${column} not like ${sql`${operand}`}`
-					case '$in':
-						return Array.isArray(operand) && operand.length ? sql`${column} in (${sql.join(operand, sql.raw(', '))})` : sql`false`
-					case '$nin':
-						return Array.isArray(operand) && operand.length ? sql`${column} not in (${sql.join(operand, sql.raw(', '))})` : sql`true`
-					case '$null':
-						return sql`${column} is ${sql.raw(operand ? 'null' : 'not null')}`
-					case '$not':
-						const negatedConditions = processComparison(column, operand)
-						if (negatedConditions.length === 0) return sql`false`
-						if (negatedConditions.length === 1) return sql`not ${negatedConditions[0]}`
-						return sql`not (${sql.join(negatedConditions, sql.raw(' and '))})`
-				}
-			})
-		}
-
-		const conditions = processLogical(filter)
+		const conditions = this.processWhereLogical(filter)
 		return conditions.length ? sql`(${sql.join(conditions, sql.raw(' and '))})` : (undefined as unknown as SQL)
+	}
+
+	/** @internal */
+	private processWhereLogical(filter: QueryFilter<A>): SQL[] {
+		return Object.entries(filter).flatMap(([key, value]) => {
+			switch (key as keyof LogicalOperator<A> & '$not') {
+				default: {
+					const column = this.table[key as keyof A]
+					return this.processWhereComparison(column, value)
+				}
+				case '$and':
+				case '$nand':
+				case '$or':
+				case '$nor': {
+					const joinType = ['$or', '$nor'].includes(key) ? ' or ' : ' and '
+					const nestedClauses = (value as QueryFilter<A>[]).map((subFilter) => {
+						const nestedConditions = this.processWhereLogical(subFilter)
+						if (nestedConditions.length === 0) return sql`true`
+						if (nestedConditions.length === 1) return nestedConditions[0]
+						return sql`(${sql.join(nestedConditions, sql.raw(joinType))})`
+					})
+					if (nestedClauses.length === 0) return sql`true`
+					if (nestedClauses.length === 1) return nestedClauses[0]
+					if (['$nand', '$nor'].includes(key)) {
+						return sql`not (${sql.join(nestedClauses, sql.raw(' and '))})`
+					} else {
+						return sql`(${sql.join(nestedClauses, sql.raw(joinType))})`
+					}
+				}
+				case '$not': {
+					const negatedConditions = this.processWhereLogical(value as QueryFilter<A>)
+					if (negatedConditions.length === 0) return sql`false`
+					if (negatedConditions.length === 1) return sql`not ${negatedConditions[0]}`
+					return sql`not (${sql.join(negatedConditions, sql.raw(' and '))})`
+				}
+			}
+		})
+	}
+
+	/** @internal */
+	private processWhereComparison(column: unknown, value: unknown): SQL[] {
+		const condition = (value = isObjectLike(value) ? value : { $eq: value })
+		return Object.entries(condition).flatMap(([operator, operand]) => {
+			if (operand == null) return sql`false`
+
+			switch (operator as keyof ComparisonOperator<unknown> & '$not') {
+				default: // default to $eq
+					return sql`${column} = ${sql`${operand}`}`
+				case '$ne':
+					return sql`${column} <> ${sql`${operand}`}`
+				case '$gt':
+					return sql`${column} > ${sql`${operand}`}`
+				case '$gte':
+					return sql`${column} >= ${sql`${operand}`}`
+				case '$lt':
+					return sql`${column} < ${sql`${operand}`}`
+				case '$lte':
+					return sql`${column} <= ${sql`${operand}`}`
+				case '$glob':
+					return sql`${column} glob ${sql`${operand}`}`
+				case '$nglob':
+					return sql`${column} not glob ${sql`${operand}`}`
+				case '$like':
+					return sql`${column} like ${sql`${operand}`}`
+				case '$nlike':
+					return sql`${column} not like ${sql`${operand}`}`
+				case '$in':
+					return Array.isArray(operand) && operand.length ? sql`${column} in (${sql.join(operand, sql.raw(', '))})` : sql`false`
+				case '$nin':
+					return Array.isArray(operand) && operand.length ? sql`${column} not in (${sql.join(operand, sql.raw(', '))})` : sql`true`
+				case '$null':
+					return sql`${column} is ${sql.raw(operand ? 'null' : 'not null')}`
+				case '$not':
+					const negatedConditions = this.processWhereComparison(column, operand)
+					if (negatedConditions.length === 0) return sql`false`
+					if (negatedConditions.length === 1) return sql`not ${negatedConditions[0]}`
+					return sql`not (${sql.join(negatedConditions, sql.raw(' and '))})`
+			}
+		})
 	}
 
 	/** @internal */

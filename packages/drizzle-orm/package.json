@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/drizzle-orm",
-	"version": "1.0.10",
+	"version": "1.0.11",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"exports": {
