@@ -21,8 +21,8 @@ importers:
         specifier: 20.17.6
         version: 20.17.6
       npm-check-updates:
-        specifier: ^17.1.9
-        version: 17.1.9
+        specifier: ^17.1.10
+        version: 17.1.10
       tsup:
         specifier: ^8.3.5
         version: 8.3.5(@swc/core@1.7.42)(postcss@8.4.47)(tsx@4.19.2)(typescript@5.6.3)
@@ -1701,8 +1701,8 @@ packages:
     resolution: {integrity: sha512-DlL+XwOy3NxAQ8xuC0okPgK46iuVNAK01YN7RueYBqqFeGsBjV9XmCAzAdgt+667bCl5kPh9EqKKDwnaPG1I7A==}
     engines: {node: '>=10'}
 
-  npm-check-updates@17.1.9:
-    resolution: {integrity: sha512-Gfv5S8NNJKTilM1gesFNYka6bUaBs5LnVyPjApXPQphHijrlLFDMw1uSmwYMZbvJSkLZSOx03e8CHcG0Td5SMA==}
+  npm-check-updates@17.1.10:
+    resolution: {integrity: sha512-GnN6KbUzC8BpwsRYJntuumgCiagZ0+xxorvUJM9m06d7AlyK9lm3iFsAsnXF3VAZZzpD5QjZvWBwNze61Vywkw==}
     engines: {node: ^18.18.0 || >=20.0.0, npm: '>=8.12.1'}
     hasBin: true
 
@@ -3665,7 +3665,7 @@ snapshots:
 
   normalize-url@6.1.0: {}
 
-  npm-check-updates@17.1.9: {}
+  npm-check-updates@17.1.10: {}
 
   object-assign@4.1.1: {}
 
