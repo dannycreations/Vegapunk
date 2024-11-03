@@ -79,6 +79,9 @@ export type OnlyRequired<T, K extends keyof T = never> = {
 	[P in keyof T as P extends K ? P : T[P] extends Required<T>[P] ? P : never]-?: Exclude<T[P], undefined>
 }
 
+export type OnlyOneRequired<T, Key extends keyof T> = Pick<T, Exclude<keyof T, Key>> &
+	{ [K in Key]-?: Partial<Record<Exclude<Key, K>, never>> & Required<Pick<T, K>> }[Key]
+
 export type NestedKeyOf<T, D extends number = 5> = D extends 0
 	? never
 	: T extends Array<infer I>
