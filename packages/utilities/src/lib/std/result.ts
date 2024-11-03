@@ -1,9 +1,9 @@
-import { Result } from '@sapphire/result'
+import { Option, Result } from '@sapphire/result'
 import { isError, isObjectLike } from 'es-toolkit/compat'
 
-export { Option, Result } from '@sapphire/result'
+export { Option, Result }
 
-export function isErrorLike<T>(error: unknown): error is Error & { code: unknown } & T {
+export function isErrorLike<T>(error: unknown): error is Error & { code: string } & T {
 	if (isError(error)) return true
 
 	const isObject = isObjectLike(error)
@@ -20,13 +20,22 @@ function assert<T>(op: T | (() => T), message?: string, ...args: object[]): void
 
 Object.assign(Result, { assert })
 
+const stackTraceLimit = Error.stackTraceLimit
+
 export class ResultAssert extends Error {
-	public readonly code: string = 'RESULT_ASSERT'
+	public override name: string = 'ResultAssert'
 
 	public constructor(message?: string, ...args: object[]) {
+		Error.stackTraceLimit = 0
 		super(message)
-		Object.assign(this, ...args)
-		Error.captureStackTrace(this, ResultAssert)
+		Error.stackTraceLimit = 1
+		Error.captureStackTrace(this, assert)
+		Error.stackTraceLimit = stackTraceLimit
+		Object.assign(this, ...args, {
+			name: this.name,
+			code: 'RESULT_ASSERT',
+			stack: this.stack,
+		})
 	}
 }
 

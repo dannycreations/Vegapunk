@@ -9,6 +9,12 @@
 		"update": {
 			"outputs": ["package.json"],
 			"cache": false
+		},
+		"debug": {
+			"dependsOn": ["@vegapunk/utilities#build"],
+			"outputs": ["dist/**"],
+			"persistent": true,
+			"cache": false
 		}
 	}
 }
