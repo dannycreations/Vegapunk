@@ -24,7 +24,7 @@
 		"@changesets/cli": "^2.27.9",
 		"@sapphire/ts-config": "^5.0.1",
 		"@swc/core": "^1.7.42",
-		"@types/node": "20.17.1",
+		"@types/node": "20.17.5",
 		"npm-check-updates": "^17.1.9",
 		"tsup": "^8.3.5",
 		"tsx": "^4.19.2",
