@@ -22,7 +22,7 @@
 	"homepage": "https://github.com/dannycreations/Vegapunk",
 	"dependencies": {
 		"pino": "^9.5.0",
-		"pino-pretty": "^11.3.0"
+		"pino-pretty": "^12.1.0"
 	},
 	"engines": {
 		"node": ">=20"
