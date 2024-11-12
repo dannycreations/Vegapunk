@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/core",
-	"version": "1.0.33",
+	"version": "1.0.34",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"exports": {
@@ -26,6 +26,7 @@
 		"@vegapunk/logger": "workspace:*",
 		"@vegapunk/utilities": "workspace:*"
 	},
+	"sideEffects": false,
 	"engines": {
 		"node": ">=20"
 	},

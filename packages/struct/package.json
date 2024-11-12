@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/struct",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"exports": {
@@ -24,6 +24,7 @@
 	"dependencies": {
 		"@vegapunk/utilities": "workspace:*"
 	},
+	"sideEffects": false,
 	"engines": {
 		"node": ">=20"
 	},
