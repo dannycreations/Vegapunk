@@ -1,15 +1,11 @@
 import { get, has, isObjectLike } from 'es-toolkit/compat'
 import { type NestedKeyOf, type ValueAtPath } from './types'
 
-function isSpecialProperty(key: string) {
-	return key === '__proto__' || key === 'constructor' || key === 'prototype'
-}
-
 export function defaultsDeep<A, B extends A = A>(target: Partial<A>, ...sources: Partial<B>[]) {
 	for (const source of sources) {
 		if (!isObjectLike(source)) continue
 		for (const [key, sourceValue] of Object.entries(source)) {
-			if (isSpecialProperty(key)) continue
+			if (key === '__proto__' || key === 'constructor') continue
 
 			const targetValue = target[key as keyof A]
 			if (isObjectLike(targetValue) && isObjectLike(sourceValue)) {

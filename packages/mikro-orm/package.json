@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/mikro-orm",
-	"version": "1.0.16",
+	"version": "1.0.17",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"exports": {
@@ -27,9 +27,9 @@
 	},
 	"homepage": "https://github.com/dannycreations/Vegapunk",
 	"dependencies": {
-		"@mikro-orm/better-sqlite": "^6.3.13",
-		"@mikro-orm/core": "^6.3.13",
-		"@mikro-orm/reflection": "^6.3.13",
+		"@mikro-orm/better-sqlite": "^6.4.0",
+		"@mikro-orm/core": "^6.4.0",
+		"@mikro-orm/reflection": "^6.4.0",
 		"@mikro-orm/sql-highlighter": "^1.0.1",
 		"@vegapunk/utilities": "workspace:*"
 	},

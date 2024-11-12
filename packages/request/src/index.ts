@@ -82,8 +82,10 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 						}
 						if (instance.isCanceled) {
 							error = new TimeoutError(Date.now() - start, 'request')
-							Error.captureStackTrace(error, requestDefault)
 						}
+
+						// internal got error is hard to trace
+						Error.captureStackTrace(error, requestDefault)
 						cancel(), reject(error)
 					})
 					.finally(() => {

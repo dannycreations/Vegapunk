@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/utilities",
-	"version": "1.0.49",
+	"version": "1.0.50",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"exports": {
@@ -43,7 +43,7 @@
 		"@sapphire/result": "^2.7.2",
 		"chalk": "4.1.2",
 		"dayjs": "^1.11.13",
-		"es-toolkit": "^1.26.1",
+		"es-toolkit": "^1.27.0",
 		"humanize-duration": "^3.32.1",
 		"jsonc-parser": "^3.3.1",
 		"nanoid": "3.3.7"

@@ -1,6 +1,6 @@
 {
-	"name": "@vegapunk/request",
-	"version": "1.0.27",
+	"name": "@vegapunk/struct",
+	"version": "1.0.0",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"exports": {
@@ -10,7 +10,7 @@
 	"scripts": {
 		"build": "tsup",
 		"test": "vitest",
-		"update": "npm-check-updates -u -x got"
+		"update": "npm-check-updates -u"
 	},
 	"files": [
 		"dist"
@@ -18,20 +18,12 @@
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/dannycreations/Vegapunk.git",
-		"directory": "packages/request"
+		"directory": "packages/struct"
 	},
 	"homepage": "https://github.com/dannycreations/Vegapunk",
 	"dependencies": {
-		"@vegapunk/utilities": "workspace:*",
-		"got": "11.8.6",
-		"user-agents": "^1.1.355"
+		"@vegapunk/utilities": "workspace:*"
 	},
-	"devDependencies": {
-		"@types/user-agents": "^1.0.4"
-	},
-	"bundleDependencies": [
-		"@types/user-agents"
-	],
 	"engines": {
 		"node": ">=20"
 	},
