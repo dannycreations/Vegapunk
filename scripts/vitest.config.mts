@@ -1,4 +1,4 @@
-import { configDefaults, defineConfig, mergeConfig, ViteUserConfig } from 'vitest/config'
+import { configDefaults, defineConfig, mergeConfig, type ViteUserConfig } from 'vitest/config'
 import { name } from '../package.json'
 
 const baseOptions = {
