@@ -7,8 +7,8 @@
 	"scripts": {
 		"start:watch": "turbo watch debug",
 		"build": "turbo run build && tsx scripts/output.build.ts",
-		"clean": "npx rimraf -g \"**/*.tsbuildinfo\" \"**/dist\"",
-		"clean:nodefiles": "npx rimraf -g \"**/*-lock.*\" \"**/node_modules\"",
+		"clean": "npx rimraf -g \"packages/*/*.tsbuildinfo\" \"packages/*/dist\"",
+		"clean:nodefiles": "npx rimraf -g \"*-lock*\" \"node_modules\" \"packages/*/node_modules\"",
 		"update": "turbo run update && npm-check-updates -u -x @types/node",
 		"prepack": "npm run clean && npm run build",
 		"publish": "npm run prepack && changeset version && changeset publish --no-git-tag"
@@ -24,7 +24,7 @@
 	"devDependencies": {
 		"@changesets/cli": "^2.27.9",
 		"@sapphire/ts-config": "^5.0.1",
-		"@swc/core": "^1.9.1",
+		"@swc/core": "^1.9.2",
 		"@types/node": "20.17.6",
 		"npm-check-updates": "^17.1.10",
 		"tsup": "^8.3.5",

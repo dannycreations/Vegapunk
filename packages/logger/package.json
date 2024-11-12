@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/logger",
-	"version": "1.0.12",
+	"version": "1.0.13",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"exports": {
@@ -22,7 +22,7 @@
 	"homepage": "https://github.com/dannycreations/Vegapunk",
 	"dependencies": {
 		"pino": "^9.5.0",
-		"pino-pretty": "^11.3.0"
+		"pino-pretty": "^13.0.0"
 	},
 	"engines": {
 		"node": ">=20"

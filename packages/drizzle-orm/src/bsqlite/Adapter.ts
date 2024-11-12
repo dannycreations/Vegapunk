@@ -5,12 +5,7 @@ import { type BetterSQLite3Database, type BetterSQLiteSession } from 'drizzle-or
 import { type SQLiteSyncDialect } from 'drizzle-orm/sqlite-core'
 
 export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert extends InferInsertModel<A>> {
-	public constructor(
-		/** @internal */
-		private readonly db: BetterSQLite3Database,
-		/** @internal */
-		private readonly table: A,
-	) {
+	public constructor(private readonly db: BetterSQLite3Database, private readonly table: A) {
 		if (!Object.keys(table).includes('id')) {
 			throw new Error(`The "${getTableName(table)}" table must have a primary key column "id"`)
 		}
@@ -178,13 +173,11 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 		})
 	}
 
-	/** @internal */
 	private buildWhereClause(filter: QueryFilter<A>): SQL {
 		const conditions = this.processWhereLogical(filter)
 		return conditions.length ? sql`(${sql.join(conditions, sql.raw(' and '))})` : (undefined as unknown as SQL)
 	}
 
-	/** @internal */
 	private processWhereLogical(filter: QueryFilter<A>): SQL[] {
 		return Object.entries(filter).flatMap(([key, value]) => {
 			switch (key as keyof LogicalOperator<A> & '$not') {
@@ -221,7 +214,6 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 		})
 	}
 
-	/** @internal */
 	private processWhereComparison(column: unknown, value: unknown): SQL[] {
 		const condition = (value = isObjectLike(value) ? value : { $eq: value })
 		return Object.entries(condition).flatMap(([operator, operand]) => {
@@ -263,7 +255,6 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 		})
 	}
 
-	/** @internal */
 	private buildOrderClause<S, B extends Table>(order?: S, joins?: Array<JoinOptions<A, B>>): SQL {
 		if (!order || !this.hasKeys(order)) return undefined as unknown as SQL
 
@@ -278,7 +269,6 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 		return sql.join(conditions, sql.raw(', '))
 	}
 
-	/** @internal */
 	private buildSelectClause<S, B extends Table>(select?: S, joins?: Array<JoinOptions<A, B>>): InferColumn<A> {
 		if (!select || !this.hasKeys(select)) return undefined as unknown as InferColumn<A>
 
@@ -295,18 +285,15 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 		return columns as InferColumn<A>
 	}
 
-	/** @internal */
 	private hasKeys(obj?: object): boolean {
 		return !!Object.keys(obj ?? {}).length
 	}
 
-	/** @internal */
 	protected get dialect(): SQLiteSyncDialect {
 		// @ts-expect-error
 		return this.db.dialect
 	}
 
-	/** @internal */
 	protected get session(): BetterSQLiteSession<never, never> {
 		// @ts-expect-error
 		return this.db.session
