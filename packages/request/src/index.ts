@@ -98,7 +98,26 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 	})
 }
 
-export async function waitForConnection(total = 10_000): Promise<void> {
+/**
+ * Waits for a network connection by attempting to reach external services (Google DNS and Apple's captive portal).
+ *
+ * This function checks for network connectivity by performing two parallel checks:
+ * - A DNS lookup for `google.com`.
+ * - An HTTP request to Apple's captive portal detection endpoint.
+ *
+ * If neither check succeeds, the function will retry until the specified timeout expires.
+ *
+ * @param {number} [total=10000] - The total timeout in milliseconds for checking network connectivity.
+ * @returns {Promise<void>} Resolves when a network connection is detected.
+ *
+ * @example
+ * // Wait for network connectivity (default timeout is 10 seconds)
+ * await waitForConnection();
+ *
+ * // Wait for connectivity with a custom timeout
+ * await waitForConnection(15000);
+ */
+export async function waitForConnection(total: number = 10_000): Promise<void> {
 	const checkGoogle = (resolve: () => void) => {
 		return lookup('google.com').then(resolve)
 	}

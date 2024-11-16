@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/logger",
-	"version": "1.0.14",
+	"version": "1.0.15",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"exports": {
@@ -9,6 +9,7 @@
 	},
 	"scripts": {
 		"build": "tsup",
+		"test": "vitest",
 		"update": "npm-check-updates -u"
 	},
 	"files": [

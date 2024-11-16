@@ -1,6 +1,12 @@
 {
 	"$schema": "https://turbo.build/schema.json",
 	"tasks": {
+		"dev": {
+			"dependsOn": ["@vegapunk/utilities#build"],
+			"outputs": ["dist/**"],
+			"persistent": true,
+			"cache": false
+		},
 		"build": {
 			"dependsOn": ["^build"],
 			"outputs": ["dist/**"],
@@ -8,12 +14,6 @@
 		},
 		"update": {
 			"outputs": ["package.json"],
-			"cache": false
-		},
-		"debug": {
-			"dependsOn": ["@vegapunk/utilities#build"],
-			"outputs": ["dist/**"],
-			"persistent": true,
 			"cache": false
 		}
 	}

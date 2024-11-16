@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/core",
-	"version": "1.0.34",
+	"version": "1.0.35",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"exports": {
@@ -9,6 +9,7 @@
 	},
 	"scripts": {
 		"build": "tsup",
+		"test": "vitest",
 		"update": "npm-check-updates -u"
 	},
 	"files": [
@@ -26,7 +27,7 @@
 		"@vegapunk/logger": "workspace:*",
 		"@vegapunk/utilities": "workspace:*"
 	},
-	"sideEffects": false,
+	"sideEffects": true,
 	"engines": {
 		"node": ">=20"
 	},
