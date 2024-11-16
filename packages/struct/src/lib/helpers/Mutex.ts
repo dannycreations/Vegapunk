@@ -18,9 +18,9 @@ export class Mutex {
 	 * }
 	 */
 	public lock(timeout?: number): boolean {
-		if (this.isLock) return true
+		if (this.isLocked) return true
 
-		this.isLock = true
+		this.isLocked = true
 		if (typeof timeout === 'number') {
 			this.lockTimeout = setTimeout(() => {
 				this.unlock()
@@ -41,9 +41,9 @@ export class Mutex {
 	 * console.log("Mutex is unlocked.");
 	 */
 	public unlock(): void {
-		if (!this.isLock) return
+		if (!this.isLocked) return
 
-		this.isLock = false
+		this.isLocked = false
 
 		if (this.lockTimeout) {
 			clearTimeout(this.lockTimeout)
@@ -67,8 +67,8 @@ export class Mutex {
 	public async acquire(priority: number = 0, timeout?: number): Promise<void> {
 		return new Promise((resolve) => {
 			const attempt = () => {
-				if (!this.isAqquire) {
-					this.isAqquire = true
+				if (!this.isAqquired) {
+					this.isAqquired = true
 					if (typeof timeout === 'number') {
 						this.aqquireTimeout = setTimeout(() => {
 							this.release()
@@ -104,9 +104,9 @@ export class Mutex {
 	 * console.log("Mutex released.");
 	 */
 	public release(): void {
-		if (!this.isAqquire) return
+		if (!this.isAqquired) return
 
-		this.isAqquire = false
+		this.isAqquired = false
 
 		if (this.aqquireTimeout) {
 			clearTimeout(this.aqquireTimeout)
@@ -117,8 +117,8 @@ export class Mutex {
 		queue && queue.attempt()
 	}
 
-	protected isLock = false
-	protected isAqquire = false
+	protected isLocked = false
+	protected isAqquired = false
 	protected lockTimeout?: NodeJS.Timeout
 	protected aqquireTimeout?: NodeJS.Timeout
 	protected readonly queue: MutexData[] = []
