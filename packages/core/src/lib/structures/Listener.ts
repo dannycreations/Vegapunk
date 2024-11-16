@@ -1,7 +1,7 @@
 import { Piece } from '@sapphire/pieces'
 import { Result } from '@vegapunk/utilities/result'
-import { type EventEmitter } from 'node:events'
-import { type ClientEvents } from '../Vegapunk'
+import EventEmitter from 'node:events'
+import type { ClientEvents } from '../constants/types'
 
 export abstract class Listener<
 	E extends keyof ClientEvents | symbol = keyof ClientEvents,

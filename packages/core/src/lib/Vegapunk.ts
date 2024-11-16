@@ -1,8 +1,9 @@
 import '../listeners/_load'
 
-import { type Piece, Store, type StoreRegistry, container, getRootData } from '@sapphire/pieces'
-import { type Logger, logger } from '@vegapunk/logger'
-import { EventEmitter } from 'node:events'
+import { container, getRootData, Store, type StoreRegistry } from '@sapphire/pieces'
+import { logger, type Logger } from '@vegapunk/logger'
+import EventEmitter from 'node:events'
+import type { ClientEvents, ClientOptions } from './constants/types'
 import { ListenerStore } from './structures/ListenerStore'
 import { TaskStore } from './structures/TaskStore'
 
@@ -47,20 +48,6 @@ export class Vegapunk extends EventEmitter<ClientEvents> {
 
 		await Promise.all([...this.stores.values()].map((store) => store.loadAll()))
 	}
-}
-
-export interface ClientOptions {
-	logger?: Logger
-	baseUserDirectory?: URL | string | null
-	internalError?: boolean
-	internalException?: boolean
-	internalRejection?: boolean
-}
-
-export interface ClientEvents {
-	internalError: [error: unknown, context: Piece]
-	internalException: [error: Error, origin: string]
-	internalRejection: [reason: unknown, promise: Promise<unknown>]
 }
 
 declare module '@sapphire/pieces' {

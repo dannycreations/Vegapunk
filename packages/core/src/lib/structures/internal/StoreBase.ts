@@ -1,4 +1,4 @@
-import { type Piece, type StoreRegistryKey, Store, VirtualPath } from '@sapphire/pieces'
+import { Store, VirtualPath, type Piece, type StoreRegistryKey } from '@sapphire/pieces'
 
 export const HookPath = '::hook::'
 
