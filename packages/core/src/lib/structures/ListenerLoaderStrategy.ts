@@ -1,6 +1,6 @@
 import { LoaderStrategy } from '@sapphire/pieces'
-import { type Listener } from './Listener'
-import { type ListenerStore } from './ListenerStore'
+import type { Listener } from './Listener'
+import type { ListenerStore } from './ListenerStore'
 
 export class ListenerLoaderStrategy extends LoaderStrategy<Listener> {
 	public override onLoad(_store: ListenerStore, piece: Listener): void {
