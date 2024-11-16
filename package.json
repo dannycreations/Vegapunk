@@ -5,7 +5,7 @@
 	"license": "GPL-3.0",
 	"private": true,
 	"scripts": {
-		"start:watch": "turbo watch debug",
+		"start:watch": "turbo watch dev",
 		"build": "turbo run build && tsx scripts/output.build.ts",
 		"clean": "npx rimraf -g \"packages/*/*.tsbuildinfo\" \"packages/*/dist\"",
 		"clean:nodefiles": "npx rimraf -g \"*-lock*\" \"node_modules\" \"packages/*/node_modules\"",
@@ -26,12 +26,12 @@
 		"@sapphire/ts-config": "^5.0.1",
 		"@swc/core": "^1.9.2",
 		"@types/node": "20.17.6",
-		"npm-check-updates": "^17.1.10",
+		"npm-check-updates": "^17.1.11",
 		"tsup": "^8.3.5",
 		"tsx": "^4.19.2",
-		"turbo": "^2.2.3",
+		"turbo": "^2.3.0",
 		"typescript": "^5.6.3",
-		"vitest": "^2.1.4"
+		"vitest": "^2.1.5"
 	},
-	"packageManager": "pnpm@9.12.3"
+	"packageManager": "pnpm@9.13.2"
 }

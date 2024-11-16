@@ -5,7 +5,6 @@
 		"incremental": false,
 		"skipLibCheck": true,
 		"stripInternal": true,
-		"removeComments": true,
 		"isolatedDeclarations": true
 	}
 }
