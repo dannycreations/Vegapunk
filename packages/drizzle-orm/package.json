@@ -30,10 +30,10 @@
 	"dependencies": {
 		"@vegapunk/utilities": "workspace:*",
 		"better-sqlite3": "^11.5.0",
-		"drizzle-orm": "^0.36.3"
+		"drizzle-orm": "^0.36.4"
 	},
 	"devDependencies": {
-		"@types/better-sqlite3": "^7.6.11"
+		"@types/better-sqlite3": "^7.6.12"
 	},
 	"bundleDependencies": [
 		"@types/better-sqlite3"
