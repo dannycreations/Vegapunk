@@ -106,8 +106,8 @@ importers:
         specifier: 11.8.6
         version: 11.8.6
       user-agents:
-        specifier: ^1.1.374
-        version: 1.1.374
+        specifier: ^1.1.375
+        version: 1.1.375
     devDependencies:
       '@types/user-agents':
         specifier: ^1.0.4
@@ -131,8 +131,8 @@ importers:
         specifier: ^1.11.13
         version: 1.11.13
       es-toolkit:
-        specifier: ^1.28.0
-        version: 1.28.0
+        specifier: ^1.29.0
+        version: 1.29.0
       humanize-duration:
         specifier: ^3.32.1
         version: 3.32.1
@@ -1292,8 +1292,8 @@ packages:
   es-module-lexer@1.5.4:
     resolution: {integrity: sha512-MVNK56NiMrOwitFB7cqDwq0CQutbw+0BvLshJSse0MUNU+y1FC3bUS/AQg7oUng+/wKrrki7JfmwtVHkVfPLlw==}
 
-  es-toolkit@1.28.0:
-    resolution: {integrity: sha512-CxyuOl9b2CoaOOR+J8mrEIbWlD5NuDQ8IFh+mcS5jBecPfyYTz7dY1mPk7qaIEY+lauiRtrUs7yHfzLKw8AFNA==}
+  es-toolkit@1.29.0:
+    resolution: {integrity: sha512-GjTll+E6APcfAQA09D89HdT8Qn2Yb+TeDSDBTMcxAo+V+w1amAtCI15LJu4YPH/UCPoSo/F47Gr1LIM0TE0lZA==}
 
   esbuild@0.21.5:
     resolution: {integrity: sha512-mg3OPMV4hXywwpoDxu3Qda5xCKQi+vCTZq8S9J/EpkhB2HzKXq4SNFZE3+NK93JYxc8VMSep+lOUSC/RVKaBqw==}
@@ -2176,8 +2176,8 @@ packages:
     resolution: {integrity: sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==}
     engines: {node: '>= 10.0.0'}
 
-  user-agents@1.1.374:
-    resolution: {integrity: sha512-Y1/owWZJFdFMHVg7sO/9mF3C2CyKVHnq6CEXjjv027pkQ8Aa9/1mMEaJ2YQgs505biMjcSwCzks/s5TqDynGLQ==}
+  user-agents@1.1.375:
+    resolution: {integrity: sha512-mF67rCOzVIHUK30CL2ktoXGMqMD5kKcVwLpxqdsPpJrS6RXauxuBZ+MIdA4RLOSRSPkyI7oyG8qDDNzXcUln6w==}
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
@@ -3147,7 +3147,7 @@ snapshots:
 
   es-module-lexer@1.5.4: {}
 
-  es-toolkit@1.28.0: {}
+  es-toolkit@1.29.0: {}
 
   esbuild@0.21.5:
     optionalDependencies:
@@ -4042,7 +4042,7 @@ snapshots:
 
   universalify@2.0.1: {}
 
-  user-agents@1.1.374:
+  user-agents@1.1.375:
     dependencies:
       lodash.clonedeep: 4.5.0
 
