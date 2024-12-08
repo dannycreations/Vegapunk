@@ -60,11 +60,11 @@ importers:
         specifier: workspace:*
         version: link:../utilities
       better-sqlite3:
-        specifier: ^11.6.0
-        version: 11.6.0
+        specifier: ^11.7.0
+        version: 11.7.0
       drizzle-orm:
         specifier: ^0.37.0
-        version: 0.37.0(@types/better-sqlite3@7.6.12)(better-sqlite3@11.6.0)(knex@3.1.0(better-sqlite3@11.6.0))
+        version: 0.37.0(@types/better-sqlite3@7.6.12)(better-sqlite3@11.7.0)(knex@3.1.0(better-sqlite3@11.7.0))
     devDependencies:
       '@types/better-sqlite3':
         specifier: ^7.6.12
@@ -1024,8 +1024,8 @@ packages:
   better-sqlite3@11.5.0:
     resolution: {integrity: sha512-e/6eggfOutzoK0JWiU36jsisdWoHOfN9iWiW/SieKvb7SAa6aGNmBM/UKyp+/wWSXpLlWNN8tCPwoDNPhzUvuQ==}
 
-  better-sqlite3@11.6.0:
-    resolution: {integrity: sha512-2J6k/eVxcFYY2SsTxsXrj6XylzHWPxveCn4fKPKZFv/Vqn/Cd7lOuX4d7rGQXT5zL+97MkNL3nSbCrIoe3LkgA==}
+  better-sqlite3@11.7.0:
+    resolution: {integrity: sha512-mXpa5jnIKKHeoGzBrUJrc65cXFKcILGZpU3FXR0pradUEm9MA7UZz02qfEejaMcm9iXrSOCenwwYMJ/tZ1y5Ig==}
 
   bindings@1.5.0:
     resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
@@ -2990,7 +2990,7 @@ snapshots:
       bindings: 1.5.0
       prebuild-install: 7.1.2
 
-  better-sqlite3@11.6.0:
+  better-sqlite3@11.7.0:
     dependencies:
       bindings: 1.5.0
       prebuild-install: 7.1.2
@@ -3124,11 +3124,11 @@ snapshots:
 
   dotenv@16.4.5: {}
 
-  drizzle-orm@0.37.0(@types/better-sqlite3@7.6.12)(better-sqlite3@11.6.0)(knex@3.1.0(better-sqlite3@11.6.0)):
+  drizzle-orm@0.37.0(@types/better-sqlite3@7.6.12)(better-sqlite3@11.7.0)(knex@3.1.0(better-sqlite3@11.7.0)):
     optionalDependencies:
       '@types/better-sqlite3': 7.6.12
-      better-sqlite3: 11.6.0
-      knex: 3.1.0(better-sqlite3@11.6.0)
+      better-sqlite3: 11.7.0
+      knex: 3.1.0(better-sqlite3@11.7.0)
 
   eastasianwidth@0.2.0: {}
 
@@ -3473,7 +3473,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  knex@3.1.0(better-sqlite3@11.6.0):
+  knex@3.1.0(better-sqlite3@11.7.0):
     dependencies:
       colorette: 2.0.19
       commander: 10.0.1
@@ -3490,7 +3490,7 @@ snapshots:
       tarn: 3.0.2
       tildify: 2.0.0
     optionalDependencies:
-      better-sqlite3: 11.6.0
+      better-sqlite3: 11.7.0
     transitivePeerDependencies:
       - supports-color
     optional: true
