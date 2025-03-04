@@ -5,10 +5,13 @@ import { type BetterSQLite3Database, type BetterSQLiteSession } from 'drizzle-or
 import { type SQLiteSyncDialect } from 'drizzle-orm/sqlite-core'
 
 export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert extends InferInsertModel<A>> {
-	public constructor(private readonly db: BetterSQLite3Database, private readonly table: A) {
+	public constructor(db: BetterSQLite3Database, table: A) {
 		if (!Object.keys(table).includes('id')) {
 			throw new Error(`The "${getTableName(table)}" table must have a primary key column "id"`)
 		}
+
+		this.db = db
+		this.table = table
 	}
 
 	public count(filter: QueryFilter<A> = {}): Result<number, Error> {
@@ -298,6 +301,9 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 		// @ts-expect-error
 		return this.db.session
 	}
+
+	private readonly db: BetterSQLite3Database
+	private readonly table: A
 }
 
 interface ComparisonOperator<T> {

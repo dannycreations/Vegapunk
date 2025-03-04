@@ -20,7 +20,9 @@ export class Queue<T> {
 	 * @example
 	 * const queue = new Queue<number>((a, b) => a - b); // Min-heap for numbers.
 	 */
-	public constructor(protected readonly compare: Comparator<T>) {}
+	public constructor(compare: Comparator<T>) {
+		this.compare = compare
+	}
 
 	/**
 	 * Gets the size of the queue.
@@ -255,4 +257,5 @@ export class Queue<T> {
 
 	protected lastHeap?: T
 	protected readonly heap: T[] = []
+	protected readonly compare: Comparator<T>
 }
