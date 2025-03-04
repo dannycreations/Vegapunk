@@ -5,6 +5,7 @@
 		"incremental": false,
 		"skipLibCheck": true,
 		"stripInternal": true,
+		"erasableSyntaxOnly": true,
 		"isolatedDeclarations": true
 	}
 }
