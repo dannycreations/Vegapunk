@@ -60,10 +60,10 @@ export interface SleepUntilOptions {
 	ref?: boolean
 }
 
-export async function sleepFor(val: number, fn: (val: number) => Awaitable<boolean | void>): Promise<void> {
-	return sleepUntil((resolve, i) => (i < val ? fn(i) : resolve()), { delay: 0 })
+export async function sleepFor(val: number, fn: (val: number, resolve: () => void) => Awaitable<boolean | void>): Promise<void> {
+	return sleepUntil((resolve, i) => (i < val ? fn(i, resolve) : resolve()), { delay: 0 })
 }
 
-export async function sleepForOf<T>(val: T[], fn: (val: T, i: number) => Awaitable<boolean | void>): Promise<void> {
-	return sleepUntil((resolve, i) => (i < val.length ? fn(val[i], i) : resolve()), { delay: 0 })
+export async function sleepForOf<T>(val: T[], fn: (val: T, i: number, resolve: () => void) => Awaitable<boolean | void>): Promise<void> {
+	return sleepUntil((resolve, i) => (i < val.length ? fn(val[i], i, resolve) : resolve()), { delay: 0 })
 }
