@@ -20,6 +20,7 @@ test('should use a custom delay', async () => {
 		(_, i) => {
 			if (i > 1) return true
 			setTimeout(noop, 25)
+			return false
 		},
 		{ delay: 20 },
 	)
