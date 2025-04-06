@@ -22,7 +22,7 @@
 	},
 	"homepage": "https://github.com/dannycreations/Vegapunk",
 	"dependencies": {
-		"@sapphire/pieces": "^4.3.1",
+		"@sapphire/pieces": "^4.3.2",
 		"@sapphire/snowflake": "^3.5.5",
 		"@vegapunk/logger": "workspace:*",
 		"@vegapunk/utilities": "workspace:*"
