@@ -33,7 +33,7 @@
 		"drizzle-orm": "^0.41.0"
 	},
 	"devDependencies": {
-		"@types/better-sqlite3": "^7.6.12"
+		"@types/better-sqlite3": "^7.6.13"
 	},
 	"bundleDependencies": [
 		"@types/better-sqlite3"
