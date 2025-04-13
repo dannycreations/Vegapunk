@@ -15,17 +15,17 @@ importers:
         specifier: ^5.0.1
         version: 5.0.1
       '@swc/core':
-        specifier: ^1.11.16
-        version: 1.11.16
+        specifier: ^1.11.20
+        version: 1.11.20
       '@types/node':
-        specifier: 22.14.0
-        version: 22.14.0
+        specifier: 22.14.1
+        version: 22.14.1
       npm-check-updates:
-        specifier: ^17.1.16
-        version: 17.1.16
+        specifier: ^17.1.18
+        version: 17.1.18
       tsup:
         specifier: ^8.4.0
-        version: 8.4.0(@swc/core@1.11.16)(postcss@8.5.3)(tsx@4.19.3)(typescript@5.8.3)
+        version: 8.4.0(@swc/core@1.11.20)(postcss@8.5.3)(tsx@4.19.3)(typescript@5.8.3)
       tsx:
         specifier: ^4.19.3
         version: 4.19.3
@@ -37,7 +37,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.1.1
-        version: 3.1.1(@types/node@22.14.0)(tsx@4.19.3)
+        version: 3.1.1(@types/node@22.14.1)(tsx@4.19.3)
 
   packages/core:
     dependencies:
@@ -82,14 +82,14 @@ importers:
   packages/mikro-orm:
     dependencies:
       '@mikro-orm/better-sqlite':
-        specifier: ^6.4.12
-        version: 6.4.12(@mikro-orm/core@6.4.12)
+        specifier: ^6.4.13
+        version: 6.4.13(@mikro-orm/core@6.4.13)
       '@mikro-orm/core':
-        specifier: ^6.4.12
-        version: 6.4.12
+        specifier: ^6.4.13
+        version: 6.4.13
       '@mikro-orm/reflection':
-        specifier: ^6.4.12
-        version: 6.4.12(@mikro-orm/core@6.4.12)
+        specifier: ^6.4.13
+        version: 6.4.13(@mikro-orm/core@6.4.13)
       '@mikro-orm/sql-highlighter':
         specifier: ^1.0.1
         version: 1.0.1
@@ -106,8 +106,8 @@ importers:
         specifier: 11.8.6
         version: 11.8.6
       user-agents:
-        specifier: ^1.1.501
-        version: 1.1.501
+        specifier: ^1.1.507
+        version: 1.1.507
     devDependencies:
       '@types/user-agents':
         specifier: ^1.0.4
@@ -390,18 +390,18 @@ packages:
   '@manypkg/get-packages@1.1.3':
     resolution: {integrity: sha512-fo+QhuU3qE/2TQMQmbVMqaQ6EWbMhi4ABWP+O4AM1NqPBuy0OrApV5LO6BrrgnhtAHS2NH6RrVk9OL181tTi8A==}
 
-  '@mikro-orm/better-sqlite@6.4.12':
-    resolution: {integrity: sha512-YlmCUyX7/TouxrPDUl7xt2FNNLf3JPAXQMLOOhM+NfDg5zkPfFLKKISQs6FelPgdj4BbsLdjVnPWoB9DSTS/Eg==}
+  '@mikro-orm/better-sqlite@6.4.13':
+    resolution: {integrity: sha512-1Nz3EbU21YaNSGKEEucJfeThiE0QAMODy6Be6CFJ63tzljYuY6jnLQNNJvJ/T1Xn3TFVLpp50LLJPYJECuJnIg==}
     engines: {node: '>= 18.12.0'}
     peerDependencies:
       '@mikro-orm/core': ^6.0.0
 
-  '@mikro-orm/core@6.4.12':
-    resolution: {integrity: sha512-TzJJCFZCdyrVPt/K3UHdao8Iyj4xJSj2r0tYUCY4zNKwuUw6K3RlEYcWGUf85FWIAZJPpYqbv83WTb/H9OiyyQ==}
+  '@mikro-orm/core@6.4.13':
+    resolution: {integrity: sha512-DG6QGr3J9bBy64DBBxoA6WwvnKr35QqOGsQ8OE2B8ccUaK4jrpMolCkKYbZpJmCHGG4qKaECRu46at6nYZzogA==}
     engines: {node: '>= 18.12.0'}
 
-  '@mikro-orm/knex@6.4.12':
-    resolution: {integrity: sha512-KMocJ4fdAbf52I/K25eV+dZDWXdVJpiIaBuIRt04m+SiJ7HZPP0OTDt/mexX3WHWW2m/d1byDNIZecjmV0eRSA==}
+  '@mikro-orm/knex@6.4.13':
+    resolution: {integrity: sha512-S1FD0VJ0zyGnWdmigZEq11vA+Yf9vb5VotbkZOB1s2jC3WH2x8uFM27M8rpmVGHMlJx7LSEZmOw18uFN+w+tOQ==}
     engines: {node: '>= 18.12.0'}
     peerDependencies:
       '@mikro-orm/core': ^6.0.0
@@ -416,8 +416,8 @@ packages:
       mariadb:
         optional: true
 
-  '@mikro-orm/reflection@6.4.12':
-    resolution: {integrity: sha512-RZAMFAwe+yBylbiaHTyBDXDZWkqcLVv6IxRAc/YGBhD+Z1NjZbrFRrNg7OQryEW13OUIuIrXTCgKb9C0Mem0cQ==}
+  '@mikro-orm/reflection@6.4.13':
+    resolution: {integrity: sha512-vXTxfJ6xTWIC8V2i3FT69/cTZw8ZatMVLFkNHRFwy6iwlmHEPAnAE5/NfX7412On41ZEbATydlI8ZGTCfnfxcA==}
     engines: {node: '>= 18.12.0'}
     peerDependencies:
       '@mikro-orm/core': ^6.0.0
@@ -566,71 +566,71 @@ packages:
     resolution: {integrity: sha512-t09vSN3MdfsyCHoFcTRCH/iUtG7OJ0CsjzB8cjAmKc/va/kIgeDI/TxsigdncE/4be734m0cvIYwNaV4i2XqAw==}
     engines: {node: '>=10'}
 
-  '@swc/core-darwin-arm64@1.11.16':
-    resolution: {integrity: sha512-l6uWMU+MUdfLHCl3dJgtVEdsUHPskoA4BSu0L1hh9SGBwPZ8xeOz8iLIqZM27lTuXxL4KsYH6GQR/OdQ/vhLtg==}
+  '@swc/core-darwin-arm64@1.11.20':
+    resolution: {integrity: sha512-Sc06h6pwMhQagU7vz92b7wwQTIibTiqRE4y/XjkvurSbjSarrtSZR4OKkrdNwUkSy1HlQE4NhKQf7tmLeQ7PhQ==}
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [darwin]
 
-  '@swc/core-darwin-x64@1.11.16':
-    resolution: {integrity: sha512-TH0IW8Ao1WZ4ARFHIh29dAQHYBEl4YnP74n++rjppmlCjY+8v3s5nXMA7IqxO3b5LVHyggWtU4+46DXTyMJM7g==}
+  '@swc/core-darwin-x64@1.11.20':
+    resolution: {integrity: sha512-kHANJrgbqaGzUyTectNfLyhnHAeDGGVSRXYyPVAx6x0nuLOnRhKbuSyZY42UEN1IgHauaADCzcd+HiiMv/rgRw==}
     engines: {node: '>=10'}
     cpu: [x64]
     os: [darwin]
 
-  '@swc/core-linux-arm-gnueabihf@1.11.16':
-    resolution: {integrity: sha512-2IxD9t09oNZrbv37p4cJ9cTHMUAK6qNiShi9s2FJ9LcqSnZSN4iS4hvaaX6KZuG54d58vWnMU7yycjkdOTQcMg==}
+  '@swc/core-linux-arm-gnueabihf@1.11.20':
+    resolution: {integrity: sha512-FXllEBeAwU6FNIZzo+u1LmHGaHzwAKzz7tWRkUOqBKjKr20Ot4KGS3xlz2qgV2NESFHAisdHja2P2rcQWqtZRg==}
     engines: {node: '>=10'}
     cpu: [arm]
     os: [linux]
 
-  '@swc/core-linux-arm64-gnu@1.11.16':
-    resolution: {integrity: sha512-AYkN23DOiPh1bf3XBf/xzZQDKSsgZTxlbyTyUIhprLJpAAAT0ZCGAUcS5mHqydk0nWQ13ABUymodvHoroutNzw==}
+  '@swc/core-linux-arm64-gnu@1.11.20':
+    resolution: {integrity: sha512-OsYMFyJzUM0K8a97tu6KxZaCob3vr+UknVqHO09QwechX+rdX4euWm7Lte4d1B+7SBfokhw7ghLZsNTQfRw9pA==}
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [linux]
 
-  '@swc/core-linux-arm64-musl@1.11.16':
-    resolution: {integrity: sha512-n/nWXDRCIhM51dDGELfBcTMNnCiFatE7LDvsbYxb7DJt1HGjaCNvHHCKURb/apJTh/YNtWfgFap9dbsTgw8yPA==}
+  '@swc/core-linux-arm64-musl@1.11.20':
+    resolution: {integrity: sha512-fbSWOQ5ZZ7sWodoC6GnzV9RhbImdxoH8b14K1tnHCWJXolzTH40/4JKf/koJ3r24nm1PtsqX9OUxRsOXYAy5dg==}
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [linux]
 
-  '@swc/core-linux-x64-gnu@1.11.16':
-    resolution: {integrity: sha512-xr182YQrF47n7Awxj+/ruI21bYw+xO/B26KFVnb+i3ezF9NOhqoqTX+33RL1ZLA/uFTq8ksPZO/y+ZVS/odtQA==}
+  '@swc/core-linux-x64-gnu@1.11.20':
+    resolution: {integrity: sha512-OFU53idbY8KA1RkNzZBi0FpoRPSn/anv4N7ZzGZGk664UoFwMbSL+XHGocJzhV9G/VNGH7bMBmgoVWk72nn5hw==}
     engines: {node: '>=10'}
     cpu: [x64]
     os: [linux]
 
-  '@swc/core-linux-x64-musl@1.11.16':
-    resolution: {integrity: sha512-k2JBfiwWfXCIKrBRjFO9/vEdLSYq0QLJ+iNSLdfrejZ/aENNkbEg8O7O2GKUSb30RBacn6k8HMfJrcPLFiEyCQ==}
+  '@swc/core-linux-x64-musl@1.11.20':
+    resolution: {integrity: sha512-GZbqXEc09nIarkGMXc2P4Hf2ONb1vre22X7Se9CCeU/QtWYRU/H1a2TFnYgBKzNVOH65Dd/XYXcuy+tM1aw1iw==}
     engines: {node: '>=10'}
     cpu: [x64]
     os: [linux]
 
-  '@swc/core-win32-arm64-msvc@1.11.16':
-    resolution: {integrity: sha512-taOb5U+abyEhQgex+hr6cI48BoqSvSdfmdirWcxprIEUBHCxa1dSriVwnJRAJOFI9T+5BEz88by6rgbB9MjbHA==}
+  '@swc/core-win32-arm64-msvc@1.11.20':
+    resolution: {integrity: sha512-i0H2MeK8krEd/YeiGz0GHtNL9wSGfAPXiouh8aRNV/u+w4vPaaRqnXwv/yzAW+D2vPpKJBhOwmNFFzdgTJ5mWw==}
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [win32]
 
-  '@swc/core-win32-ia32-msvc@1.11.16':
-    resolution: {integrity: sha512-b7yYggM9LBDiMY+XUt5kYWvs5sn0U3PXSOGvF3CbLufD/N/YQiDcYON2N3lrWHYL8aYnwbuZl45ojmQHSQPcdA==}
+  '@swc/core-win32-ia32-msvc@1.11.20':
+    resolution: {integrity: sha512-/7e3X7EGO8uOvAUP+YKJTdoR2JR5vdiewDOnDS9FFXj8yr9x6/oDFLd92Sp9NglF+aXuqAo33IfH2OTz1MR+Ww==}
     engines: {node: '>=10'}
     cpu: [ia32]
     os: [win32]
 
-  '@swc/core-win32-x64-msvc@1.11.16':
-    resolution: {integrity: sha512-/ibq/YDc3B5AROkpOKPGxVkSyCKOg+ml8k11RxrW7FAPy6a9y5y9KPcWIqV74Ahq4RuaMNslTQqHWAGSm0xJsQ==}
+  '@swc/core-win32-x64-msvc@1.11.20':
+    resolution: {integrity: sha512-rcZpt5uiVNTs/Se+CYBoaDphafFJcsqXo3DNmfkJZoDZUb4PZqxu61p4Qa+lvFDQlRragrlLRpGQM9qnLNd4iQ==}
     engines: {node: '>=10'}
     cpu: [x64]
     os: [win32]
 
-  '@swc/core@1.11.16':
-    resolution: {integrity: sha512-wgjrJqVUss8Lxqilg0vkiE0tkEKU3mZkoybQM1Ehy+PKWwwB6lFAwKi20cAEFlSSWo8jFR8hRo19ZELAoLDowg==}
+  '@swc/core@1.11.20':
+    resolution: {integrity: sha512-2F0+bQs7+pwbudsxRffLdfpGCQX4Ih5k88f7LqTfj2oC7aTrv7FssduOvcAvfVY/InZmyYEblKl1rqg8bvzrZQ==}
     engines: {node: '>=10'}
     peerDependencies:
-      '@swc/helpers': '*'
+      '@swc/helpers': '>=0.5.17'
     peerDependenciesMeta:
       '@swc/helpers':
         optional: true
@@ -672,8 +672,8 @@ packages:
   '@types/node@12.20.55':
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}
 
-  '@types/node@22.14.0':
-    resolution: {integrity: sha512-Kmpl+z84ILoG+3T/zQFyAJsU6EPTmOCj8/2+83fSN6djd6I4o7uOuGIH6vq3PrjY5BGitSbFuMN18j3iknubbA==}
+  '@types/node@22.14.1':
+    resolution: {integrity: sha512-u0HuPQwe/dHrItgHHpmw3N2fYCR6x4ivMNbPHRkBVP4CvN+kiRrKHWk3i8tXiO/joPwXLMYvF9TTF0eqgHIuOw==}
 
   '@types/responselike@1.0.3':
     resolution: {integrity: sha512-H/+L+UkTV33uf49PH5pCAUBVPNj2nDBXTN+qS1dOwyyg24l3CcicicCA7ca+HMvJBZcFgl5r8e+RR6elsb4Lyw==}
@@ -911,8 +911,8 @@ packages:
     resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}
     engines: {node: '>=8'}
 
-  dotenv@16.4.7:
-    resolution: {integrity: sha512-47qPchRCykZC03FhkYAhrvwU4xDBFIj1QPqaarj6mdM/hgUzfPHcpkHJOn3mJAufFeeAxAzeGsr5X0M4k6fLZQ==}
+  dotenv@16.5.0:
+    resolution: {integrity: sha512-m/C+AwOAr9/W1UOIZUo232ejMNnJAJtYQjUbHoNTBNTJSvqzzDh7vnrei3o3r3m9blf6ZoDkvcw0VmozNRFJxg==}
     engines: {node: '>=12'}
 
   drizzle-orm@0.41.0:
@@ -1340,8 +1340,8 @@ packages:
     resolution: {integrity: sha512-PXwfBhYu0hBCPw8Dn0E+WDYb7af3dSLVWKi3HGv84IdF4TyFoC0ysxFd0Goxw7nSv4T/PzEJQxsYsEiFCKo2BA==}
     engines: {node: '>=8.6'}
 
-  mikro-orm@6.4.12:
-    resolution: {integrity: sha512-uOJdx0q9Hg0SKYtHeJ73Iu2PhlU8LoyhaMm2PH9n1kvqpyoqUme2vKpwWywELFpZKgXwtkeIA8Ce56caYb593Q==}
+  mikro-orm@6.4.13:
+    resolution: {integrity: sha512-sQZezhVLjH/gHUjVqsn+k60xC4TsL7h+Q/0UPe+OF4LoywTZNKwid1mN3WPxNd4c5eI6Aavl11KIsu2t9OKqzQ==}
     engines: {node: '>= 18.12.0'}
 
   mimic-response@1.0.1:
@@ -1395,8 +1395,8 @@ packages:
     resolution: {integrity: sha512-DlL+XwOy3NxAQ8xuC0okPgK46iuVNAK01YN7RueYBqqFeGsBjV9XmCAzAdgt+667bCl5kPh9EqKKDwnaPG1I7A==}
     engines: {node: '>=10'}
 
-  npm-check-updates@17.1.16:
-    resolution: {integrity: sha512-9nohkfjLRzLfsLVGbO34eXBejvrOOTuw5tvNammH73KEFG5XlFoi3G2TgjTExHtnrKWCbZ+mTT+dbNeSjASIPw==}
+  npm-check-updates@17.1.18:
+    resolution: {integrity: sha512-bkUy2g4v1i+3FeUf5fXMLbxmV95eG4/sS7lYE32GrUeVgQRfQEk39gpskksFunyaxQgTIdrvYbnuNbO/pSUSqw==}
     engines: {node: ^18.18.0 || >=20.0.0, npm: '>=8.12.1'}
     hasBin: true
 
@@ -1902,8 +1902,8 @@ packages:
     resolution: {integrity: sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==}
     engines: {node: '>= 10.0.0'}
 
-  user-agents@1.1.501:
-    resolution: {integrity: sha512-EtS147JvrpJkqLheZ2lcCmByIATIZ+NfZ8kdpYIYZBDFm5vJ0rFInzcqD3gt3hC+Jt1hr+y21nwIjziadmwCXA==}
+  user-agents@1.1.507:
+    resolution: {integrity: sha512-zZMal86j5Yo/2eL3/IsPe27q2rexd4VJIMbJQM0Lly+nKXVTGf7jphvxn+b8eNRG+sxDTZ6WvoeZSQhIlnulmg==}
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
@@ -2275,10 +2275,10 @@ snapshots:
       globby: 11.1.0
       read-yaml-file: 1.1.0
 
-  '@mikro-orm/better-sqlite@6.4.12(@mikro-orm/core@6.4.12)':
+  '@mikro-orm/better-sqlite@6.4.13(@mikro-orm/core@6.4.13)':
     dependencies:
-      '@mikro-orm/core': 6.4.12
-      '@mikro-orm/knex': 6.4.12(@mikro-orm/core@6.4.12)(better-sqlite3@11.9.1)
+      '@mikro-orm/core': 6.4.13
+      '@mikro-orm/knex': 6.4.13(@mikro-orm/core@6.4.13)(better-sqlite3@11.9.1)
       better-sqlite3: 11.9.1
       fs-extra: 11.3.0
       sqlstring-sqlite: 0.1.1
@@ -2293,19 +2293,19 @@ snapshots:
       - supports-color
       - tedious
 
-  '@mikro-orm/core@6.4.12':
+  '@mikro-orm/core@6.4.13':
     dependencies:
       dataloader: 2.2.3
-      dotenv: 16.4.7
+      dotenv: 16.5.0
       esprima: 4.0.1
       fs-extra: 11.3.0
       globby: 11.1.0
-      mikro-orm: 6.4.12
+      mikro-orm: 6.4.13
       reflect-metadata: 0.2.2
 
-  '@mikro-orm/knex@6.4.12(@mikro-orm/core@6.4.12)(better-sqlite3@11.9.1)':
+  '@mikro-orm/knex@6.4.13(@mikro-orm/core@6.4.13)(better-sqlite3@11.9.1)':
     dependencies:
-      '@mikro-orm/core': 6.4.12
+      '@mikro-orm/core': 6.4.13
       fs-extra: 11.3.0
       knex: 3.1.0(better-sqlite3@11.9.1)
       sqlstring: 2.3.3
@@ -2320,9 +2320,9 @@ snapshots:
       - supports-color
       - tedious
 
-  '@mikro-orm/reflection@6.4.12(@mikro-orm/core@6.4.12)':
+  '@mikro-orm/reflection@6.4.13(@mikro-orm/core@6.4.13)':
     dependencies:
-      '@mikro-orm/core': 6.4.12
+      '@mikro-orm/core': 6.4.13
       globby: 11.1.0
       ts-morph: 25.0.1
 
@@ -2424,51 +2424,51 @@ snapshots:
 
   '@sindresorhus/is@4.6.0': {}
 
-  '@swc/core-darwin-arm64@1.11.16':
+  '@swc/core-darwin-arm64@1.11.20':
     optional: true
 
-  '@swc/core-darwin-x64@1.11.16':
+  '@swc/core-darwin-x64@1.11.20':
     optional: true
 
-  '@swc/core-linux-arm-gnueabihf@1.11.16':
+  '@swc/core-linux-arm-gnueabihf@1.11.20':
     optional: true
 
-  '@swc/core-linux-arm64-gnu@1.11.16':
+  '@swc/core-linux-arm64-gnu@1.11.20':
     optional: true
 
-  '@swc/core-linux-arm64-musl@1.11.16':
+  '@swc/core-linux-arm64-musl@1.11.20':
     optional: true
 
-  '@swc/core-linux-x64-gnu@1.11.16':
+  '@swc/core-linux-x64-gnu@1.11.20':
     optional: true
 
-  '@swc/core-linux-x64-musl@1.11.16':
+  '@swc/core-linux-x64-musl@1.11.20':
     optional: true
 
-  '@swc/core-win32-arm64-msvc@1.11.16':
+  '@swc/core-win32-arm64-msvc@1.11.20':
     optional: true
 
-  '@swc/core-win32-ia32-msvc@1.11.16':
+  '@swc/core-win32-ia32-msvc@1.11.20':
     optional: true
 
-  '@swc/core-win32-x64-msvc@1.11.16':
+  '@swc/core-win32-x64-msvc@1.11.20':
     optional: true
 
-  '@swc/core@1.11.16':
+  '@swc/core@1.11.20':
     dependencies:
       '@swc/counter': 0.1.3
       '@swc/types': 0.1.21
     optionalDependencies:
-      '@swc/core-darwin-arm64': 1.11.16
-      '@swc/core-darwin-x64': 1.11.16
-      '@swc/core-linux-arm-gnueabihf': 1.11.16
-      '@swc/core-linux-arm64-gnu': 1.11.16
-      '@swc/core-linux-arm64-musl': 1.11.16
-      '@swc/core-linux-x64-gnu': 1.11.16
-      '@swc/core-linux-x64-musl': 1.11.16
-      '@swc/core-win32-arm64-msvc': 1.11.16
-      '@swc/core-win32-ia32-msvc': 1.11.16
-      '@swc/core-win32-x64-msvc': 1.11.16
+      '@swc/core-darwin-arm64': 1.11.20
+      '@swc/core-darwin-x64': 1.11.20
+      '@swc/core-linux-arm-gnueabihf': 1.11.20
+      '@swc/core-linux-arm64-gnu': 1.11.20
+      '@swc/core-linux-arm64-musl': 1.11.20
+      '@swc/core-linux-x64-gnu': 1.11.20
+      '@swc/core-linux-x64-musl': 1.11.20
+      '@swc/core-win32-arm64-msvc': 1.11.20
+      '@swc/core-win32-ia32-msvc': 1.11.20
+      '@swc/core-win32-x64-msvc': 1.11.20
 
   '@swc/counter@0.1.3': {}
 
@@ -2488,13 +2488,13 @@ snapshots:
 
   '@types/better-sqlite3@7.6.13':
     dependencies:
-      '@types/node': 22.14.0
+      '@types/node': 22.14.1
 
   '@types/cacheable-request@6.0.3':
     dependencies:
       '@types/http-cache-semantics': 4.0.4
       '@types/keyv': 3.1.4
-      '@types/node': 22.14.0
+      '@types/node': 22.14.1
       '@types/responselike': 1.0.3
 
   '@types/estree@1.0.6': {}
@@ -2507,17 +2507,17 @@ snapshots:
 
   '@types/keyv@3.1.4':
     dependencies:
-      '@types/node': 22.14.0
+      '@types/node': 22.14.1
 
   '@types/node@12.20.55': {}
 
-  '@types/node@22.14.0':
+  '@types/node@22.14.1':
     dependencies:
       undici-types: 6.21.0
 
   '@types/responselike@1.0.3':
     dependencies:
-      '@types/node': 22.14.0
+      '@types/node': 22.14.1
 
   '@types/user-agents@1.0.4': {}
 
@@ -2528,13 +2528,13 @@ snapshots:
       chai: 5.2.0
       tinyrainbow: 2.0.0
 
-  '@vitest/mocker@3.1.1(vite@6.2.3(@types/node@22.14.0)(tsx@4.19.3))':
+  '@vitest/mocker@3.1.1(vite@6.2.3(@types/node@22.14.1)(tsx@4.19.3))':
     dependencies:
       '@vitest/spy': 3.1.1
       estree-walker: 3.0.3
       magic-string: 0.30.17
     optionalDependencies:
-      vite: 6.2.3(@types/node@22.14.0)(tsx@4.19.3)
+      vite: 6.2.3(@types/node@22.14.1)(tsx@4.19.3)
 
   '@vitest/pretty-format@3.1.1':
     dependencies:
@@ -2725,7 +2725,7 @@ snapshots:
     dependencies:
       path-type: 4.0.0
 
-  dotenv@16.4.7: {}
+  dotenv@16.5.0: {}
 
   drizzle-orm@0.41.0(@types/better-sqlite3@7.6.13)(better-sqlite3@11.9.1)(knex@3.1.0(better-sqlite3@11.9.1)):
     optionalDependencies:
@@ -3059,7 +3059,7 @@ snapshots:
       braces: 3.0.3
       picomatch: 2.3.1
 
-  mikro-orm@6.4.12: {}
+  mikro-orm@6.4.13: {}
 
   mimic-response@1.0.1: {}
 
@@ -3097,7 +3097,7 @@ snapshots:
 
   normalize-url@6.1.0: {}
 
-  npm-check-updates@17.1.16: {}
+  npm-check-updates@17.1.18: {}
 
   object-assign@4.1.1: {}
 
@@ -3503,7 +3503,7 @@ snapshots:
 
   tslib@2.8.1: {}
 
-  tsup@8.4.0(@swc/core@1.11.16)(postcss@8.5.3)(tsx@4.19.3)(typescript@5.8.3):
+  tsup@8.4.0(@swc/core@1.11.20)(postcss@8.5.3)(tsx@4.19.3)(typescript@5.8.3):
     dependencies:
       bundle-require: 5.1.0(esbuild@0.25.1)
       cac: 6.7.14
@@ -3522,7 +3522,7 @@ snapshots:
       tinyglobby: 0.2.12
       tree-kill: 1.2.2
     optionalDependencies:
-      '@swc/core': 1.11.16
+      '@swc/core': 1.11.20
       postcss: 8.5.3
       typescript: 5.8.3
     transitivePeerDependencies:
@@ -3577,19 +3577,19 @@ snapshots:
 
   universalify@2.0.1: {}
 
-  user-agents@1.1.501:
+  user-agents@1.1.507:
     dependencies:
       lodash.clonedeep: 4.5.0
 
   util-deprecate@1.0.2: {}
 
-  vite-node@3.1.1(@types/node@22.14.0)(tsx@4.19.3):
+  vite-node@3.1.1(@types/node@22.14.1)(tsx@4.19.3):
     dependencies:
       cac: 6.7.14
       debug: 4.4.0
       es-module-lexer: 1.6.0
       pathe: 2.0.3
-      vite: 6.2.3(@types/node@22.14.0)(tsx@4.19.3)
+      vite: 6.2.3(@types/node@22.14.1)(tsx@4.19.3)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -3604,20 +3604,20 @@ snapshots:
       - tsx
       - yaml
 
-  vite@6.2.3(@types/node@22.14.0)(tsx@4.19.3):
+  vite@6.2.3(@types/node@22.14.1)(tsx@4.19.3):
     dependencies:
       esbuild: 0.25.1
       postcss: 8.5.3
       rollup: 4.37.0
     optionalDependencies:
-      '@types/node': 22.14.0
+      '@types/node': 22.14.1
       fsevents: 2.3.3
       tsx: 4.19.3
 
-  vitest@3.1.1(@types/node@22.14.0)(tsx@4.19.3):
+  vitest@3.1.1(@types/node@22.14.1)(tsx@4.19.3):
     dependencies:
       '@vitest/expect': 3.1.1
-      '@vitest/mocker': 3.1.1(vite@6.2.3(@types/node@22.14.0)(tsx@4.19.3))
+      '@vitest/mocker': 3.1.1(vite@6.2.3(@types/node@22.14.1)(tsx@4.19.3))
       '@vitest/pretty-format': 3.1.1
       '@vitest/runner': 3.1.1
       '@vitest/snapshot': 3.1.1
@@ -3633,11 +3633,11 @@ snapshots:
       tinyexec: 0.3.2
       tinypool: 1.0.2
       tinyrainbow: 2.0.0
-      vite: 6.2.3(@types/node@22.14.0)(tsx@4.19.3)
-      vite-node: 3.1.1(@types/node@22.14.0)(tsx@4.19.3)
+      vite: 6.2.3(@types/node@22.14.1)(tsx@4.19.3)
+      vite-node: 3.1.1(@types/node@22.14.1)(tsx@4.19.3)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 22.14.0
+      '@types/node': 22.14.1
     transitivePeerDependencies:
       - jiti
       - less
