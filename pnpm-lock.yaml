@@ -131,8 +131,8 @@ importers:
         specifier: ^1.11.13
         version: 1.11.13
       es-toolkit:
-        specifier: ^1.37.1
-        version: 1.37.1
+        specifier: ^1.37.2
+        version: 1.37.2
       humanize-duration:
         specifier: ^3.32.1
         version: 3.32.1
@@ -1024,8 +1024,8 @@ packages:
   es-module-lexer@1.6.0:
     resolution: {integrity: sha512-qqnD1yMU6tk/jnaMosogGySTZP8YtUgAffA9nMN+E/rjxcfRQ6IEk7IiozUjgxKoFHBGjTLnrHB/YC45r/59EQ==}
 
-  es-toolkit@1.37.1:
-    resolution: {integrity: sha512-DdySDruhCtmP793ePSFKz3eD+m6YEDtXyBxeiDxSJeFJ95K7zeE8GhPgKRAAskJ21GvnDB60DPSvAVbK2mE9WQ==}
+  es-toolkit@1.37.2:
+    resolution: {integrity: sha512-ADDfk+pPFF0ofMpRAIc6on01p8heiuwuuJsYLzTP4UOjxVK9QsE2+0D1Q4J/zX2XBo6ac+27H5++YBIwmGAX/g==}
 
   esbuild@0.25.1:
     resolution: {integrity: sha512-BGO5LtrGC7vxnqucAe/rmvKdJllfGaYWdyABvyMoXQlfYMb2bbRuReWR5tEGE//4LcNJj9XrkovTqNYRFZHAMQ==}
@@ -2751,7 +2751,7 @@ snapshots:
 
   es-module-lexer@1.6.0: {}
 
-  es-toolkit@1.37.1: {}
+  es-toolkit@1.37.2: {}
 
   esbuild@0.25.1:
     optionalDependencies:
