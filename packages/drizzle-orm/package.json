@@ -1,6 +1,6 @@
 {
 	"name": "@vegapunk/drizzle-orm",
-	"version": "1.0.18",
+	"version": "1.0.19",
 	"author": "dannycreations",
 	"license": "GPL-3.0",
 	"exports": {
@@ -29,7 +29,7 @@
 	"homepage": "https://github.com/dannycreations/Vegapunk",
 	"dependencies": {
 		"@vegapunk/utilities": "workspace:*",
-		"better-sqlite3": "^11.9.1",
+		"better-sqlite3": "^11.10.0",
 		"drizzle-orm": "^0.43.1"
 	},
 	"devDependencies": {
