@@ -1,11 +1,11 @@
 {
-	"extends": ["@sapphire/ts-config/base", "@sapphire/ts-config/extra-strict", "@sapphire/ts-config/bundler", "@sapphire/ts-config/verbatim"],
-	"compilerOptions": {
-		"noEmit": true,
-		"incremental": false,
-		"skipLibCheck": true,
-		"stripInternal": true,
-		"erasableSyntaxOnly": true,
-		"isolatedDeclarations": true
-	}
+  "extends": ["@sapphire/ts-config/base", "@sapphire/ts-config/extra-strict", "@sapphire/ts-config/bundler", "@sapphire/ts-config/verbatim"],
+  "compilerOptions": {
+    "noEmit": true,
+    "incremental": false,
+    "skipLibCheck": true,
+    "stripInternal": true,
+    "erasableSyntaxOnly": true,
+    "isolatedDeclarations": true
+  }
 }

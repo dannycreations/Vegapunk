@@ -20,9 +20,9 @@
  * console.log(arr); // Output: [1, 4, 3, 2]
  */
 export function swap<T>(heap: T[], a: number, b: number): void {
-	if (a < 0 || b < 0 || a >= heap.length || b >= heap.length) {
-		throw new RangeError('Index out of bounds')
-	}
+  if (a < 0 || b < 0 || a >= heap.length || b >= heap.length) {
+    throw new RangeError('Index out of bounds')
+  }
 
-	;[heap[a], heap[b]] = [heap[b], heap[a]]
+  ;[heap[a], heap[b]] = [heap[b], heap[a]]
 }

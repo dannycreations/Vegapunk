@@ -1,48 +1,48 @@
 {
-	"name": "@vegapunk/drizzle-orm",
-	"version": "1.0.19",
-	"author": "dannycreations",
-	"license": "GPL-3.0",
-	"exports": {
-		".": {
-			"types": "./dist/index.d.ts",
-			"default": "./dist/index.js"
-		},
-		"./bsqlite": {
-			"types": "./dist/bsqlite/index.d.ts",
-			"default": "./dist/bsqlite/index.js"
-		}
-	},
-	"scripts": {
-		"build": "tsup",
-		"test": "vitest",
-		"update": "npm-check-updates -u"
-	},
-	"files": [
-		"dist"
-	],
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/dannycreations/Vegapunk.git",
-		"directory": "packages/drizzle-orm"
-	},
-	"homepage": "https://github.com/dannycreations/Vegapunk",
-	"dependencies": {
-		"@vegapunk/utilities": "workspace:*",
-		"better-sqlite3": "^11.10.0",
-		"drizzle-orm": "^0.43.1"
-	},
-	"devDependencies": {
-		"@types/better-sqlite3": "^7.6.13"
-	},
-	"bundleDependencies": [
-		"@types/better-sqlite3"
-	],
-	"sideEffects": false,
-	"engines": {
-		"node": ">=20"
-	},
-	"publishConfig": {
-		"access": "public"
-	}
+  "name": "@vegapunk/drizzle-orm",
+  "version": "1.0.19",
+  "author": "dannycreations",
+  "license": "GPL-3.0",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./bsqlite": {
+      "types": "./dist/bsqlite/index.d.ts",
+      "default": "./dist/bsqlite/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest",
+    "update": "npm-check-updates -u"
+  },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dannycreations/Vegapunk.git",
+    "directory": "packages/drizzle-orm"
+  },
+  "homepage": "https://github.com/dannycreations/Vegapunk",
+  "dependencies": {
+    "@vegapunk/utilities": "workspace:*",
+    "better-sqlite3": "^11.10.0",
+    "drizzle-orm": "^0.43.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13"
+  },
+  "bundleDependencies": [
+    "@types/better-sqlite3"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }
