@@ -1,37 +1,37 @@
 {
-	"name": "@vegapunk/core",
-	"version": "1.0.42",
-	"author": "dannycreations",
-	"license": "GPL-3.0",
-	"exports": {
-		"types": "./dist/index.d.ts",
-		"default": "./dist/index.js"
-	},
-	"scripts": {
-		"build": "tsup",
-		"test": "vitest",
-		"update": "npm-check-updates -u"
-	},
-	"files": [
-		"dist"
-	],
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/dannycreations/Vegapunk.git",
-		"directory": "packages/core"
-	},
-	"homepage": "https://github.com/dannycreations/Vegapunk",
-	"dependencies": {
-		"@sapphire/pieces": "^4.3.2",
-		"@sapphire/snowflake": "^3.5.5",
-		"@vegapunk/logger": "workspace:*",
-		"@vegapunk/utilities": "workspace:*"
-	},
-	"sideEffects": false,
-	"engines": {
-		"node": ">=20"
-	},
-	"publishConfig": {
-		"access": "public"
-	}
+  "name": "@vegapunk/core",
+  "version": "1.0.43",
+  "author": "dannycreations",
+  "license": "GPL-3.0",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "default": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest",
+    "update": "npm-check-updates -u"
+  },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dannycreations/Vegapunk.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/dannycreations/Vegapunk",
+  "dependencies": {
+    "@sapphire/pieces": "^4.4.0",
+    "@sapphire/snowflake": "^3.5.5",
+    "@vegapunk/logger": "workspace:*",
+    "@vegapunk/utilities": "workspace:*"
+  },
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

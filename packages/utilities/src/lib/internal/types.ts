@@ -6,8 +6,8 @@ export type Sub<A extends number, B extends number> = CreateArrOfLen<A> extends 
 type Append<T extends unknown[], U> = [...T, U]
 
 type CreateArrOfLen<N extends number, CurrArr extends unknown[] = []> = CurrArr['length'] extends N
-	? CurrArr
-	: CreateArrOfLen<N, Append<CurrArr, unknown>>
+  ? CurrArr
+  : CreateArrOfLen<N, Append<CurrArr, unknown>>
 
 type Concat<A extends unknown[], B extends unknown[]> = [...A, ...B]
 
