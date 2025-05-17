@@ -27,7 +27,7 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 
   public startTask(force?: boolean): void {
     this.enabled = true
-    this.#clearTask()
+    this.#clear()
     process.nextTick(async () => {
       if (force) await this.#start()
 
@@ -37,7 +37,7 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 
   public stopTask(): void {
     this.enabled = false
-    this.#clearTask()
+    this.#clear()
   }
 
   async #start() {
@@ -65,22 +65,22 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
     this.container.logger.trace(`Task End: ${this.name}`)
   }
 
+  #clear() {
+    clearTimeout(this.#timeout)
+    this.#timeout = undefined
+  }
+
   #update() {
     if (!this.enabled || this.#isRunning) return
 
     this.#timeout = setTimeout(() => {
-      this.#clearTask()
+      this.#clear()
       this.#start().then(() => this.#update())
     }, this.#delay)
 
     if (!this.options.ref) {
       this.#timeout.unref()
     }
-  }
-
-  #clearTask() {
-    clearTimeout(this.#timeout)
-    this.#timeout = undefined
   }
 
   #isRunning = false
