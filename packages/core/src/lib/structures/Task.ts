@@ -17,8 +17,8 @@ export abstract class Task<Options extends Task.Options = Task.Options> extends 
       taskStores = container.stores.get('tasks')
     }
 
-    const uniq = Snowflake.generate({ processId: BigInt(taskStores.size) })
-    const context = { name: `${HookPath}${uniq}`, root: HookPath, path: HookPath, store: taskStores }
+    const name = `${HookPath}${Snowflake.generate({ workerId: BigInt(taskStores.size) })}`
+    const context = { name, root: HookPath, path: HookPath, store: taskStores }
     const piece = Object.assign(new TaskBase(context, task.options), task)
 
     const previous = taskStores.get(piece.name)

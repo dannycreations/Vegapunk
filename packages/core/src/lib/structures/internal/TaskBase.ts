@@ -15,42 +15,44 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 
   public get isStatus(): TaskStatus {
     return {
-      idle: !!this._timeout,
+      idle: !!this.#timeout,
       enabled: this.enabled,
-      running: this._isRunning,
+      running: this.#isRunning,
     }
   }
 
   public setDelay(delay: number = Task.MIN_DELAY): void {
-    this._delay = Math.min(Math.max(Math.trunc(delay), Task.MIN_DELAY), Task.MAX_DELAY)
+    this.#delay = Math.min(Math.max(Math.trunc(delay), Task.MIN_DELAY), Task.MAX_DELAY)
   }
 
   public startTask(force?: boolean): void {
     this.enabled = true
-    clearTimeout(this._timeout)
-    this._timeout = undefined
-    process.nextTick(() => this.#update(force))
+    this.#clearTask()
+    process.nextTick(async () => {
+      if (force) await this.#start()
+
+      this.#update()
+    })
   }
 
   public stopTask(): void {
     this.enabled = false
-    clearTimeout(this._timeout)
-    this._timeout = undefined
+    this.#clearTask()
   }
 
   async #start() {
     this.container.logger.trace(`Task Run: ${this.name}`)
-    this._isRunning = true
+    this.#isRunning = true
 
     const result = await Result.fromAsync(async () => {
-      if (!this._isAwakeOnce) {
-        this._isAwakeOnce = true
+      if (!this.#isAwakeOnce) {
+        this.#isAwakeOnce = true
         await this.awake?.()
       }
 
       if (this.enabled) {
-        if (!this._isStartOnce) {
-          this._isStartOnce = true
+        if (!this.#isStartOnce) {
+          this.#isStartOnce = true
           await this.start?.()
         } else {
           await this.update!()
@@ -59,30 +61,34 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
     })
     result.inspectErr((error) => this.container.client.emit('internalError', error, this))
 
-    this._isRunning = false
+    this.#isRunning = false
     this.container.logger.trace(`Task End: ${this.name}`)
   }
 
-  async #update(force?: boolean) {
-    if (!this.enabled || this._isRunning) return
-    if (force) await this.#start()
+  #update() {
+    if (!this.enabled || this.#isRunning) return
 
-    this._timeout = setTimeout(() => {
-      this._timeout = undefined
+    this.#timeout = setTimeout(() => {
+      this.#clearTask()
       this.#start().then(() => this.#update())
-    }, this._delay)
+    }, this.#delay)
 
     if (!this.options.ref) {
-      this._timeout.unref()
+      this.#timeout.unref()
     }
   }
 
-  private _isRunning = false
-  private _isAwakeOnce = false
-  private _isStartOnce = false
+  #clearTask() {
+    clearTimeout(this.#timeout)
+    this.#timeout = undefined
+  }
 
-  private _delay = Task.MIN_DELAY
-  private _timeout?: NodeJS.Timeout
+  #isRunning = false
+  #isAwakeOnce = false
+  #isStartOnce = false
+
+  #delay = Task.MIN_DELAY
+  #timeout?: NodeJS.Timeout
 }
 
 export interface TaskStatus {
