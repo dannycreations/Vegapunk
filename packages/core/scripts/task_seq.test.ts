@@ -32,6 +32,21 @@ async function main(i = 0) {
   const client = new Vegapunk()
   await client.start()
 
+  const OBSERVER_TASK = await Task.createTask({
+    async update() {
+      if (i < expectedOutput.length) return
+      if (JSON.stringify(capturedLogs) === JSON.stringify(expectedOutput)) {
+        console.log('[v] Output matches the expected sequence!')
+      } else {
+        console.error('[x] Output does not match the expected sequence!')
+        console.error('Captured output:', capturedLogs)
+      }
+
+      await OBSERVER_TASK.unload()
+    },
+    options: { ref: true },
+  })
+
   const zeroTask = await Task.createTask({
     awake: () => console.log(++i, '0.1 awake'),
     start: () => console.log(++i, '0.2 start'),
@@ -107,20 +122,5 @@ async function main(i = 0) {
     options: { delay: 1700, enabled: false },
   })
   sevenTask.startTask(true)
-
-  const OBSERVER_TASK = await Task.createTask({
-    async update() {
-      if (i < expectedOutput.length) return
-      if (JSON.stringify(capturedLogs) === JSON.stringify(expectedOutput)) {
-        console.log('[v] Output matches the expected sequence!')
-      } else {
-        console.error('[x] Output does not match the expected sequence!')
-        console.error('Captured output:', capturedLogs)
-      }
-
-      await OBSERVER_TASK.unload()
-    },
-    options: { ref: true },
-  })
 }
 main().catch(console.trace.bind(console))
