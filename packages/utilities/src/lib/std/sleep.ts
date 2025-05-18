@@ -30,16 +30,16 @@ export interface SleepOptions {
   ref?: boolean
 }
 
-export async function sleepUntil(fn: (resolve: () => void, i: number) => Awaitable<boolean | void>, options: SleepUntilOptions = {}): Promise<void> {
+export async function sleepUntil(fn: (release: () => void, i: number) => Awaitable<boolean | void>, options: SleepUntilOptions = {}): Promise<void> {
   return new Promise((resolve, reject) => {
-    let i = 0
-    let done = false
-    let timer: NodeJS.Timeout
+    let i = 0,
+      done = false,
+      timer: NodeJS.Timeout
     const { delay = 10, ref = false } = options
-    const cancel = () => ((done = true), clearTimeout(timer))
+    const release = () => ((done = true), clearTimeout(timer))
     const waiting = async () => {
       try {
-        if (await fn(cancel, i++)) cancel()
+        if (await fn(release, i++)) release()
         if (done) resolve()
         else if (delay <= 0) {
           process.nextTick(waiting)
@@ -48,7 +48,7 @@ export async function sleepUntil(fn: (resolve: () => void, i: number) => Awaitab
           if (!ref) timer.unref()
         }
       } catch (error) {
-        cancel(), reject(error)
+        release(), reject(error)
       }
     }
     return waiting()
@@ -60,10 +60,10 @@ export interface SleepUntilOptions {
   ref?: boolean
 }
 
-export async function sleepFor(val: number, fn: (val: number, resolve: () => void) => Awaitable<boolean | void>): Promise<void> {
-  return sleepUntil((resolve, i) => (i < val ? fn(i, resolve) : resolve()), { delay: 0 })
+export async function sleepFor(val: number, fn: (val: number, release: () => void) => Awaitable<boolean | void>): Promise<void> {
+  return sleepUntil((release, i) => (i < val ? fn(i, release) : release()), { delay: 0 })
 }
 
-export async function sleepForOf<T>(val: T[], fn: (val: T, i: number, resolve: () => void) => Awaitable<boolean | void>): Promise<void> {
-  return sleepUntil((resolve, i) => (i < val.length ? fn(val[i], i, resolve) : resolve()), { delay: 0 })
+export async function sleepForOf<T>(val: T[], fn: (val: T, i: number, release: () => void) => Awaitable<boolean | void>): Promise<void> {
+  return sleepUntil((release, i) => (i < val.length ? fn(val[i], i, release) : release()), { delay: 0 })
 }
