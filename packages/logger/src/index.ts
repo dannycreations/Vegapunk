@@ -5,58 +5,35 @@ export * from 'pino'
 export { pinoPretty }
 
 /**
- * Creates and configures a pino logger instance with customizable options.
- * This logger can output to multiple streams, including formatted console output
- * and log files for errors and traces. It can also automatically handle
- * uncaught exceptions and unhandled promise rejections by logging them.
+ * Creates and configures a Pino logger instance.
  *
- * The default behavior includes:
- * - Log level set to 'debug' in development (`process.env.NODE_ENV === 'development'`) and 'info' otherwise.
- * - Pretty-printing of logs to the console, optimized for development and production environments.
- * - Logging of warnings and errors to `./logs/errors.log`.
- * - Automatic logging of uncaught exceptions and unhandled promise rejections.
+ * This function initializes a logger with customizable settings.
+ * The effective default for the log level is 'debug' in development environments
+ * (`process.env.NODE_ENV === 'development'`) and 'info' otherwise.
+ * Pretty printing for console output is active by default. Trace logging to a
+ * file (`logs/traces.log`) is inactive by default but can be enabled via options.
+ * Logging of 'warn' level messages and above to `logs/errors.log` is always active.
+ * By default, this function also sets up global handlers for `uncaughtException`
+ * and `unhandledRejection` events, logging them as fatal errors.
+ * These behaviors can be further customized through the `options` parameter.
  *
  * @example
- * // Initialize logger with default settings
+ * // Initialize logger with default options (behavior influenced by NODE_ENV)
  * const log = logger();
  * log.info('Application started.');
- * log.debug('This is a debug message.'); // Visible if NODE_ENV is 'development'
  *
- * @example
- * // Initialize logger with custom options: warn level, trace file, no pretty printing
- * const customLog = logger({
- *   level: 'warn',
- *   trace: true,  // Enable trace logging to ./logs/traces.log
- *   pretty: false, // Disable console pretty printing
- *   exception: false // Disable automatic uncaught exception logging
- * });
- * customLog.warn('A warning message.'); // This will be logged
- * customLog.info('An info message.');   // This will NOT be logged due to 'warn' level
- * // Trace messages are written to file if options.trace is true and logger.level allows 'trace'.
- * // To make customLog actually log traces, its level would also need to be 'trace'.
- * // For example: logger({ level: 'trace', trace: true }).trace('details');
+ * // Initialize logger with a specific level and disabled pretty printing
+ * const prodLog = logger({ level: 'warn', pretty: false });
+ * prodLog.warn('A warning occurred in production mode.');
  *
- * @param {LoggerOptions=} [options={}] Configuration options for the logger.
- *   If not provided, an empty object is used, and internal defaults apply for each property.
- *   The `options` object can contain the following properties:
- *   - `level` (pino.Level): The minimum log level to be active (e.g., 'info', 'debug', 'trace').
- *     Defaults to 'debug' if `process.env.NODE_ENV` is 'development', otherwise 'info'.
- *   - `trace` (boolean): If `true`, enables a separate log stream for 'trace' level messages
- *     to `./logs/traces.log`. This stream is independent of the main log level for console/other streams
- *     but messages are only written if the logger's overall level also permits 'trace'.
- *     Defaults to `false`.
- *   - `pretty` (boolean): If `true`, formats console log output for readability using
- *     `pino-pretty`. Behavior (colorize, sync, singleLine) adapts to `NODE_ENV`.
- *     Defaults to `true`.
- *   - `exception` (boolean): If `true`, sets up a global handler to log uncaught exceptions
- *     as fatal errors using the configured logger. Defaults to `true`.
- *   - `rejection` (boolean): If `true`, sets up a global handler to log unhandled promise
- *     rejections as fatal errors using the configured logger. Defaults to `true`.
- * @returns {pino.Logger} A configured pino logger instance from the 'pino' library.
- * @throws {Error} This function may throw an error if file system operations, such as
- *   creating log directories (e.g., `./logs/`) or writing to log files (e.g.,
- *   `errors.log`, `traces.log`), fail. This typically occurs due to issues like
- *   insufficient file system permissions.
+ * // Initialize logger with file tracing enabled and exception handling disabled
+ * const customLog = logger({ trace: true, exception: false });
+ * customLog.info('Custom logger setup, tracing to file.');
+ * customLog.trace('This is a detailed trace message.');
+ *
+ * @param {LoggerOptions} [options={}] Configuration for the logger.
+ *   See {@link LoggerOptions} for available settings and their effective defaults.
+ * @returns {Logger} A configured Pino logger instance.
  */
 export function logger(options: LoggerOptions = {}): Logger {
   options = {
@@ -126,10 +103,35 @@ export function logger(options: LoggerOptions = {}): Logger {
   return instance
 }
 
+/**
+ * Defines the configuration options for the {@link logger} function.
+ * These options allow customization of logging behavior, such as level,
+ * output formatting, and error handling.
+ */
 export interface LoggerOptions {
+  /**
+   * The minimum logging level. The {@link logger} function defaults this to 'debug'
+   * if `process.env.NODE_ENV` is 'development', and 'info' otherwise.
+   */
   level?: Level
+  /**
+   * Specifies whether to enable detailed trace logging to `logs/traces.log`.
+   * The {@link logger} function defaults this to `false`.
+   */
   trace?: boolean
+  /**
+   * Specifies whether to enable pretty-printed, human-readable console output.
+   * The {@link logger} function defaults this to `true`.
+   */
   pretty?: boolean
+  /**
+   * Specifies whether the {@link logger} should automatically log `uncaughtException` events.
+   * The {@link logger} function defaults this to `true`.
+   */
   exception?: boolean
+  /**
+   * Specifies whether the {@link logger} should automatically log `unhandledRejection` events.
+   * The {@link logger} function defaults this to `true`.
+   */
   rejection?: boolean
 }
