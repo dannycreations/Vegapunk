@@ -1,7 +1,7 @@
 import { defaultsDeep } from '@vegapunk/utilities'
 import { get } from '@vegapunk/utilities/common'
 import { isErrorLike } from '@vegapunk/utilities/result'
-import { sleep, sleepUntil } from '@vegapunk/utilities/sleep'
+import { sleep, waitUntil } from '@vegapunk/utilities/sleep'
 import got, { type CancelableRequest, type Got, type Options, type RequestError, type Response } from 'got'
 import { TimeoutError } from 'got/dist/source/core/utils/timed-out'
 import { lookup } from 'node:dns/promises'
@@ -11,9 +11,8 @@ export * from 'got'
 export { UserAgent }
 
 /**
- * Read-only array of error codes that may trigger a retry in the `requestDefault`
- * function's custom retry logic. These codes typically represent transient
- * network or connection issues.
+ * Readonly array of error codes that may trigger retries in `requestDefault`.
+ * These codes typically represent network or connection issues.
  */
 export const ErrorCodes: readonly string[] = [
   // Got internal
@@ -34,106 +33,70 @@ export const ErrorCodes: readonly string[] = [
 ]
 
 /**
- * Read-only array of HTTP status codes that may trigger a retry in the
- * `requestDefault` function's custom retry logic. These codes usually
- * indicate server-side issues or rate limiting that might be resolved on a subsequent attempt.
+ * Readonly array of HTTP status codes that may trigger retries in `requestDefault`.
+ * These status codes often indicate temporary server-side issues.
  */
 export const ErrorStatusCodes: readonly number[] = [408, 413, 429, 500, 502, 503, 504, 521, 522, 524]
 
 /**
- * A `got` instance for making HTTP/HTTPS requests, bound from the imported `got` library.
- * It supports the standard `got` API for sending requests.
- * For requests with enhanced default behaviors (e.g., custom user-agent, specific retry logic, and layered timeouts),
- * consider using the `requestDefault` function.
+ * The core `got` function instance, pre-bound.
+ * This can be used to make HTTP requests directly, similar to the original `got` library.
  *
  * @example
- * async function main() {
+ * async function fetchData() {
  *   try {
- *     // Requesting a URL (string)
- *     const response = await request('https://jsonplaceholder.typicode.com/todos/1');
- *     console.log(JSON.parse(response.body));
+ *     // Simple GET request
+ *     const response = await request('https://api.example.com/items');
+ *     console.log(response.body);
  *
- *     // Requesting with an options object
- *     const { body } = await request({
- *       url: 'https://jsonplaceholder.typicode.com/posts',
- *       method: 'POST',
- *       json: { title: 'foo', body: 'bar', userId: 1 },
- *       responseType: 'json'
- *     });
- *     console.log(body); // The 'body' is already parsed as JSON
+ *     // POST request with JSON body
+ *     const item = await request.post('https://api.example.com/items', {
+ *       json: { name: 'newItem', value: 42 }
+ *     }).json();
+ *     console.log(item);
  *   } catch (error) {
- *     // Type guard for RequestError if needed, though error.message is usually available
- *     if (error instanceof request.RequestError) {
- *       console.error('Request failed specifically:', error.message, error.code);
- *     } else {
- *       console.error('An unexpected error occurred:', error.message);
- *     }
+ *     console.error('Request failed:', error);
  *   }
  * }
- * main();
+ * fetchData();
  *
- * @param {string | URL | import('got').Options} urlOrOptions - If a string or URL, it's the request URL.
- *   If an object, it's the `got.Options` configuration for the request.
- *   Refer to the official `got` documentation for details on all available options.
- * @param {import('got').Options=} [options] - If `urlOrOptions` is a string or URL, this parameter can be
- *   used to provide `got.Options`. This parameter is ignored if `urlOrOptions` is an object.
- *   Refer to the official `got` documentation.
- * @returns {import('got').CancelableRequest} A `CancelableRequest` (a Promise with a `.cancel()` method).
- *   It resolves to a `Response` object from `got`. The `body` type of the response depends on options like
- *   `responseType` or content-type headers (e.g., string by default, object if `responseType: 'json'` is used).
- *   See `got` documentation for specifics.
- * @throws {import('got').RequestError} Throws `RequestError` or its subtypes (e.g., `HTTPError`, `MaxRedirectsError`, `TimeoutError`)
- *   on various request failures like network issues, timeouts, or non-successful HTTP status codes (if `throwHttpErrors` is enabled by default or explicitly set).
- *   Consult `got` documentation for error handling details.
+ * @param {string | URL | Options} urlOrOptions The URL to request or a `got` options object.
+ * @param {Options=} options Additional `got` options, used if the first argument is a URL string or `URL` object.
+ * @returns {CancelableRequest<Response>} A `CancelableRequest` promise that resolves with the HTTP response.
+ * @throws {RequestError | TimeoutError | unknown} When the request fails due to network issues, timeouts, or other errors.
  */
 export const request: Got = got.bind(got)
 
 const userAgent = new UserAgent({ deviceCategory: 'desktop' })
 
 /**
- * Makes an HTTP/HTTPS request with sensible defaults and a custom layered timeout and retry mechanism.
- * It uses a default desktop User-Agent header. Retries are attempted for specific error codes
- * and status codes. Timeouts are managed at three levels: initial connection, data transmission, and total request duration.
+ * Makes an HTTP request with enhanced default settings, including a standard user-agent,
+ * retry logic for specific errors and status codes, and a multi-stage timeout handling.
  *
  * @example
- * // Simple GET request
- * requestDefault('https://api.example.com/data')
+ * // Request a URL as a string, expecting a string response
+ * requestDefault('https://example.com')
  *   .then(response => console.log(response.body))
- *   .catch(error => console.error('Request failed:', error.message));
+ *   .catch(error => console.error('Failed to fetch:', error));
  *
- * // POST request with custom options
- * async function postData() {
- *   try {
- *     const response = await requestDefault<MyExpectedType>({
- *       url: 'https://api.example.com/submit',
- *       method: 'POST',
- *       json: { key: 'value' },
- *       retry: 2, // Override default retry count
- *       timeout: { total: 45000 } // Override total timeout
- *     });
- *     console.log('Submission successful. Status:', response.statusCode);
- *     // response.body will be of MyExpectedType if request is successful and server returns compatible JSON
- *   } catch (error) {
- *     console.error('Submission failed:', error.message);
- *   }
+ * // Request with custom options, expecting a JSON response
+ * interface MyData {
+ *   id: number;
+ *   name: string;
  * }
- * postData();
+ * requestDefault<MyData>({
+ *   url: 'https://api.example.com/data',
+ *   method: 'POST',
+ *   json: { key: 'value' }
+ * })
+ * .then(response => console.log(response.body.id))
+ * .catch(error => console.error('API call failed:', error));
  *
- * @template T The expected type of the response body. Defaults to `string`.
- * @param {string | DefaultOptions} options The URL to request (as a string) or a `DefaultOptions` object.
- *   The `DefaultOptions` object allows customization of standard `got` options, with specific
- *   behavior for `retry` and `timeout`.
- *   - `retry`: Number of retry attempts. Defaults to 3.
- *   - `timeout`: An object specifying timeouts in milliseconds:
- *     - `initial`: For connection and initial response. Defaults to 10,000ms.
- *     - `transmission`: For ongoing data transfer, reset on progress. Defaults to 30,000ms.
- *     - `total`: Overall request duration. Defaults to 60,000ms.
- *   Other `got.Options` can be passed, excluding `prefixUrl`, `resolveBodyOnly`, and `got`'s own `retry` and `timeout` objects
- *   which are handled by this function's custom logic.
- * @returns {Promise<Response<T>>} A promise that resolves with the `got.Response` object, where the body is of type `T`.
- * @throws {TimeoutError | import('got').RequestError} Throws `TimeoutError` if the request exceeds any of the configured
- *   custom timeout thresholds (initial, transmission, or total). Throws `RequestError` (or its subtypes)
- *   for other unrecoverable network or HTTP errors not handled by the retry mechanism.
+ * @template T The expected type of the response body.
+ * @param {string | DefaultOptions} options The URL to request as a string, or a `DefaultOptions` object.
+ * @returns {Promise<Response<T>>} A promise that resolves with the HTTP response object.
+ * @throws {TimeoutError | RequestError | unknown} When the request times out after all retry attempts,
+ * or if another unrecoverable `got` internal error or network error occurs.
  */
 export async function requestDefault<T = string>(options: string | DefaultOptions): Promise<Response<T>> {
   const _options = defaultsDeep(
@@ -155,7 +118,7 @@ export async function requestDefault<T = string>(options: string | DefaultOption
   )
 
   return new Promise((resolve, reject) => {
-    return sleepUntil(
+    return waitUntil(
       async (cancel, retry) => {
         const instance = request({
           ..._options,
@@ -202,34 +165,29 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 }
 
 /**
- * Waits until an internet connection is established.
+ * Waits for an active internet connection to be established.
  * It periodically checks connectivity by attempting to resolve 'google.com' via DNS
- * and by requesting Apple's captive portal detection URL.
- * The function resolves once either check succeeds. It retries indefinitely upon failure.
+ * and by requesting 'captive.apple.com'.
  *
  * @example
- * async function initializeApp() {
+ * async function ensureConnected() {
  *   console.log('Checking for internet connection...');
- *   await waitForConnection();
- *   console.log('Internet connection established. Proceeding with app initialization.');
- *   // ... rest of initialization logic
+ *   try {
+ *     await waitForConnection(5000); // Check with a 5-second interval/timeout for individual checks
+ *     console.log('Internet connection established.');
+ *     // Proceed with network-dependent tasks
+ *   } catch (error) {
+ *     // This catch block would typically be hit if `waitUntil` itself has a mechanism to give up and reject.
+ *     console.error('Failed to establish internet connection after multiple attempts:', error);
+ *   }
  * }
- * initializeApp();
+ * ensureConnected();
  *
- * @example
- * // Using a custom timeout for Apple's captive portal check attempts
- * async function checkWithCustomTimeout() {
- *   console.log('Waiting for connection with 5s check timeout...');
- *   await waitForConnection(5000);
- *   console.log('Connection available.');
- * }
- * checkWithCustomTimeout();
- *
- * @param {number=} [total=10000] The timeout in milliseconds for the individual HTTP request
- *   attempt to Apple's captive portal detection URL. This also serves as the sleep duration
- *   between sets of checks if both fail.
+ * @param {number=} [total=10000] The timeout in milliseconds for each individual check (DNS lookup or HTTP request to Apple).
+ * Also used as the sleep duration between failed attempts.
  * @returns {Promise<void>} A promise that resolves when an internet connection is detected.
- *   This promise does not reject under normal operation as it retries indefinitely.
+ * @throws {unknown} If the `waitUntil` utility itself gives up due to internal limits (e.g., max retries or total timeout),
+ * though this specific implementation of `waitForConnection` primarily retries on failure.
  */
 export async function waitForConnection(total: number = 10_000): Promise<void> {
   const checkGoogle = (resolve: () => void) => {
@@ -244,7 +202,7 @@ export async function waitForConnection(total: number = 10_000): Promise<void> {
     }).then(resolve)
   }
 
-  return sleepUntil(async (resolve) => {
+  return waitUntil(async (resolve) => {
     try {
       await Promise.race([checkGoogle(resolve), checkApple(resolve)])
     } catch {
@@ -255,11 +213,27 @@ export async function waitForConnection(total: number = 10_000): Promise<void> {
 
 type ExcludeOptions = 'prefixUrl' | 'retry' | 'timeout' | 'resolveBodyOnly'
 
+/**
+ * Defines the structure for options passable to the `requestDefault` function.
+ * It omits certain properties from the standard `got.Options` type and provides
+ * specific partial types for `retry` and `timeout` configurations.
+ */
 export interface DefaultOptions extends Omit<Options, ExcludeOptions> {
+  /**
+   * Number of retry attempts.
+   * If less than 0, retries indefinitely for eligible errors.
+   */
   retry?: number
+  /**
+   * Timeout settings for the request, allowing specification of initial connection,
+   * data transmission, and total request duration timeouts.
+   */
   timeout?: Partial<{
+    /** Timeout for the initial connection phase in milliseconds. */
     initial: number
+    /** Timeout for data transmission phase in milliseconds, reset on progress. */
     transmission: number
+    /** Overall total timeout for the entire request in milliseconds. */
     total: number
   }>
 }
