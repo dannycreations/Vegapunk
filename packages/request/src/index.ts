@@ -11,7 +11,7 @@ export * from 'got'
 export { UserAgent }
 
 /**
- * Readonly array of error codes that may trigger retries in `requestDefault`.
+ * Readonly array of error codes that may trigger retries in {@link requestDefault}.
  * These codes typically represent network or connection issues.
  */
 export const ErrorCodes: readonly string[] = [
@@ -33,7 +33,7 @@ export const ErrorCodes: readonly string[] = [
 ]
 
 /**
- * Readonly array of HTTP status codes that may trigger retries in `requestDefault`.
+ * Readonly array of HTTP status codes that may trigger retries in {@link requestDefault}.
  * These status codes often indicate temporary server-side issues.
  */
 export const ErrorStatusCodes: readonly number[] = [408, 413, 429, 500, 502, 503, 504, 521, 522, 524]
@@ -41,6 +41,8 @@ export const ErrorStatusCodes: readonly number[] = [408, 413, 429, 500, 502, 503
 /**
  * The core `got` function instance, pre-bound.
  * This can be used to make HTTP requests directly, similar to the original `got` library.
+ * For a more robust wrapper with default behaviors such as automatic retries and timeouts,
+ * consider using {@link requestDefault}.
  *
  * @example
  * async function fetchData() {
@@ -60,43 +62,44 @@ export const ErrorStatusCodes: readonly number[] = [408, 413, 429, 500, 502, 503
  * }
  * fetchData();
  *
- * @param {string | URL | Options} urlOrOptions The URL to request or a `got` options object.
- * @param {Options=} options Additional `got` options, used if the first argument is a URL string or `URL` object.
- * @returns {CancelableRequest<Response>} A `CancelableRequest` promise that resolves with the HTTP response.
- * @throws {RequestError | TimeoutError | unknown} When the request fails due to network issues, timeouts, or other errors.
+ * @param {string | URL | Options} urlOrOptions The URL to request or a `got` {@link Options} object.
+ * @param {Options=} options Additional `got` {@link Options}, used if the first argument is a URL string or `URL` object.
+ * @returns {CancelableRequest<Response>} A {@link CancelableRequest} promise that resolves with the HTTP {@link Response}.
+ * @throws {RequestError | TimeoutError | unknown} When the request fails due to network issues, timeouts, or other errors originating from `got`.
  */
 export const request: Got = got.bind(got)
 
 const userAgent = new UserAgent({ deviceCategory: 'desktop' })
 
 /**
- * Makes an HTTP request with enhanced default settings, including a standard user-agent,
- * retry logic for specific errors and status codes, and a multi-stage timeout handling.
+ * Makes an HTTP request with default behaviors, including automatic retries for specific
+ * error codes and status codes, configurable timeouts, and a default user agent.
+ * It wraps the {@link request} function to provide a more resilient request mechanism.
  *
  * @example
- * // Request a URL as a string, expecting a string response
- * requestDefault('https://example.com')
- *   .then(response => console.log(response.body))
- *   .catch(error => console.error('Failed to fetch:', error));
+ * async function fetchDataWithDefaults() {
+ *   try {
+ *     // Request with default string response body
+ *     const response = await requestDefault('https://api.example.com/data');
+ *     console.log(response.body);
  *
- * // Request with custom options, expecting a JSON response
- * interface MyData {
- *   id: number;
- *   name: string;
+ *     // Request with JSON response body and custom options
+ *     const jsonData = await requestDefault<{ id: number, name: string }>({
+ *       url: 'https://api.example.com/json-data',
+ *       method: 'POST',
+ *       json: { key: 'value' }
+ *     });
+ *     console.log(jsonData.body.id);
+ *   } catch (error) {
+ *     console.error('Request with defaults failed:', error);
+ *   }
  * }
- * requestDefault<MyData>({
- *   url: 'https://api.example.com/data',
- *   method: 'POST',
- *   json: { key: 'value' }
- * })
- * .then(response => console.log(response.body.id))
- * .catch(error => console.error('API call failed:', error));
+ * fetchDataWithDefaults();
  *
- * @template T The expected type of the response body.
- * @param {string | DefaultOptions} options The URL to request as a string, or a `DefaultOptions` object.
- * @returns {Promise<Response<T>>} A promise that resolves with the HTTP response object.
- * @throws {TimeoutError | RequestError | unknown} When the request times out after all retry attempts,
- * or if another unrecoverable `got` internal error or network error occurs.
+ * @template T The expected type of the response body. Defaults to `string`.
+ * @param {string | DefaultOptions} options The URL to request as a string, or a {@link DefaultOptions} object for more control.
+ * @returns {Promise<Response<T>>} A promise that resolves with the HTTP {@link Response} object, where the body is of type `T`.
+ * @throws {RequestError | TimeoutError | unknown} When the request ultimately fails after all retries, due to network issues, timeouts, or other errors.
  */
 export async function requestDefault<T = string>(options: string | DefaultOptions): Promise<Response<T>> {
   const _options = defaultsDeep(
@@ -165,35 +168,32 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 }
 
 /**
- * Waits for an active internet connection to be established.
- * It periodically checks connectivity by attempting to resolve 'google.com' via DNS
- * and by requesting 'captive.apple.com'.
+ * Waits for an active internet connection by attempting to reach known reliable endpoints.
+ * It concurrently tries DNS lookup for 'google.com' and fetching Apple's captive portal detection URL.
+ * The function resolves once either check succeeds. If checks fail, it waits for a specified duration before retrying.
  *
  * @example
  * async function ensureConnected() {
- *   console.log('Checking for internet connection...');
  *   try {
- *     await waitForConnection(5000); // Check with a 5-second interval/timeout for individual checks
- *     console.log('Internet connection established.');
- *     // Proceed with network-dependent tasks
+ *     console.log('Checking for internet connection...');
+ *     await waitForConnection(5000); // Wait up to 5 seconds for each attempt cycle
+ *     console.log('Connection established.');
  *   } catch (error) {
- *     // This catch block would typically be hit if `waitUntil` itself has a mechanism to give up and reject.
- *     console.error('Failed to establish internet connection after multiple attempts:', error);
+ *     // This function is designed to retry indefinitely and not throw.
+ *     // An error here would imply an issue with the waitUntil utility itself or an unhandled case.
+ *     console.error('Unexpected error during connection check:', error);
  *   }
  * }
  * ensureConnected();
  *
- * @param {number=} [total=10000] The timeout in milliseconds for each individual check (DNS lookup or HTTP request to Apple).
- * Also used as the sleep duration between failed attempts.
- * @returns {Promise<void>} A promise that resolves when an internet connection is detected.
- * @throws {unknown} If the `waitUntil` utility itself gives up due to internal limits (e.g., max retries or total timeout),
- * though this specific implementation of `waitForConnection` primarily retries on failure.
+ * @param {number=} [total=10000] The timeout in milliseconds for individual connection attempts and the sleep duration between retry cycles if both checks fail.
+ * @returns {Promise<void>} A promise that resolves when a connection is established.
  */
 export async function waitForConnection(total: number = 10_000): Promise<void> {
-  const checkGoogle = (resolve: () => void) => {
+  const checkGoogle = async (resolve: () => void): Promise<void> => {
     return lookup('google.com').then(resolve)
   }
-  const checkApple = (resolve: () => void) => {
+  const checkApple = async (resolve: () => void): Promise<void> => {
     return requestDefault({
       url: 'https://captive.apple.com/hotspot-detect.html',
       headers: { 'user-agent': 'CaptiveNetworkSupport/1.0 wispr' },
@@ -214,26 +214,40 @@ export async function waitForConnection(total: number = 10_000): Promise<void> {
 type ExcludeOptions = 'prefixUrl' | 'retry' | 'timeout' | 'resolveBodyOnly'
 
 /**
- * Defines the structure for options passable to the `requestDefault` function.
- * It omits certain properties from the standard `got.Options` type and provides
- * specific partial types for `retry` and `timeout` configurations.
+ * Configuration options for {@link requestDefault}.
+ * This interface extends `got`'s {@link Options} but omits certain fields (`prefixUrl`, `retry`, `timeout`, `resolveBodyOnly`)
+ * that are managed internally by {@link requestDefault} or have specific handling within it.
  */
 export interface DefaultOptions extends Omit<Options, ExcludeOptions> {
   /**
-   * Number of retry attempts.
-   * If less than 0, retries indefinitely for eligible errors.
+   * Number of retry attempts for the request.
+   * This controls how many times {@link requestDefault} will retry on specific errors (listed in {@link ErrorCodes})
+   * or HTTP status codes (listed in {@link ErrorStatusCodes}).
+   * A negative value means retry indefinitely.
    */
   retry?: number
   /**
-   * Timeout settings for the request, allowing specification of initial connection,
-   * data transmission, and total request duration timeouts.
+   * Timeout settings for the request, managed by {@link requestDefault}.
+   * These provide granular control over different phases of the request lifecycle.
    */
   timeout?: Partial<{
-    /** Timeout for the initial connection phase in milliseconds. */
+    /**
+     * Milliseconds to wait for the initial server connection to be established
+     * before the request is considered timed out. This timeout applies from the start of the request
+     * until the first byte of the response headers is received or the request body starts sending.
+     */
     initial: number
-    /** Timeout for data transmission phase in milliseconds, reset on progress. */
+    /**
+     * Milliseconds to wait for data to be transmitted (either sending the request body
+     * or receiving the response body) after the initial connection has been made.
+     * This timeout resets upon any data activity (e.g., 'uploadProgress', 'downloadProgress').
+     * If no data is sent or received within this period, the request is cancelled.
+     */
     transmission: number
-    /** Overall total timeout for the entire request in milliseconds. */
+    /**
+     * Total milliseconds for the entire request lifecycle, from the moment the request is initiated
+     * until the response body is fully downloaded. This acts as an overall deadline for the request.
+     */
     total: number
   }>
 }
