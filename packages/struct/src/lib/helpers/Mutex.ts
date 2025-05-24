@@ -1,21 +1,27 @@
 /**
- * A lightweight Mutex (mutual exclusion) implementation that provides mechanisms
- * for locking, unlocking, acquiring, and releasing resources in a thread-safe manner.
+ * A mutual exclusion lock (Mutex) used to control access to a shared resource,
+ * ensuring that only one operation can access the resource at any given time.
+ * It supports both simple locking/unlocking and a prioritized asynchronous acquisition queue.
  */
 export class Mutex {
   /**
-   * Locks the mutex, optionally setting a timeout after which the lock will automatically release.
-   *
-   * @param {number} [timeout] - Optional timeout in milliseconds to automatically release the lock.
-   * @returns {boolean} - Returns `true` if the mutex was already locked, otherwise `false`.
+   * Attempts to acquire the lock. If a timeout is provided, the lock will be
+   * automatically released after the specified duration.
    *
    * @example
    * const mutex = new Mutex();
-   * if (!mutex.lock(1000)) {
-   *   console.log("Locked successfully!");
+   * if (!mutex.lock(5000)) {
+   *   console.log('Lock acquired successfully for 5 seconds.');
+   *   // Critical section code here...
+   *   // mutex.unlock(); // Optionally unlock sooner if work is done
    * } else {
-   *   console.log("Already locked.");
+   *   console.log('Mutex is already locked.');
    * }
+   *
+   * @param {number=} timeout The duration in milliseconds after which the lock
+   *     is automatically released.
+   * @returns {boolean} `true` if the mutex was already locked by a previous
+   *     call to `lock()`, `false` if the lock was successfully acquired by this call.
    */
   public lock(timeout?: number): boolean {
     if (this.isLocked) return true
@@ -30,15 +36,19 @@ export class Mutex {
   }
 
   /**
-   * Unlocks the mutex, canceling any active lock timeout.
-   *
-   * @returns {void}
+   * Releases the lock previously acquired by `lock()`.
+   * If a timeout was set during locking, it will be cleared.
    *
    * @example
    * const mutex = new Mutex();
-   * mutex.lock();
-   * mutex.unlock();
-   * console.log("Mutex is unlocked.");
+   * if (!mutex.lock()) {
+   *   console.log('Lock acquired.');
+   *   // Critical section code here...
+   *   mutex.unlock();
+   *   console.log('Lock released.');
+   * }
+   *
+   * @returns {void}
    */
   public unlock(): void {
     if (!this.isLocked) return
@@ -52,17 +62,31 @@ export class Mutex {
   }
 
   /**
-   * Acquires the mutex asynchronously, with an optional priority and timeout.
-   * If the mutex is already acquired, the request is queued based on priority.
-   *
-   * @param {number} [priority=0] - Priority of the acquire operation (higher values are prioritized).
-   * @param {number} [timeout] - Optional timeout in milliseconds to automatically release the acquire.
-   * @returns {Promise<void>} - Resolves when the mutex is successfully acquired.
+   * Asynchronously acquires the lock. Tasks are queued based on priority (higher
+   * numbers mean higher priority) and then by the timestamp of the request.
+   * If a timeout is provided, the acquired lock will be automatically released
+   * after the specified duration.
    *
    * @example
    * const mutex = new Mutex();
-   * await mutex.acquire(1, 1000);
-   * console.log("Mutex acquired with priority 1 and 1-second timeout.");
+   * async function criticalTask(taskId: string, taskPriority: number) {
+   *   console.log(`Task ${taskId} (priority ${taskPriority}) waiting for lock.`);
+   *   await mutex.acquire(taskPriority, 2000); // Auto-release after 2s
+   *   console.log(`Task ${taskId} acquired lock.`);
+   *   // Simulate work
+   *   await new Promise(resolve => setTimeout(resolve, 500));
+   *   console.log(`Task ${taskId} finished work.`);
+   *   mutex.release(); // Release lock
+   * }
+   * criticalTask('A', 0);
+   * criticalTask('B', 1); // Higher priority
+   * criticalTask('C', 0);
+   *
+   * @param {number=} [priority=0] The priority of the acquire request. Higher
+   *     numbers indicate higher priority.
+   * @param {number=} timeout The duration in milliseconds after which the
+   *     acquired lock is automatically released.
+   * @returns {Promise<void>} A promise that resolves when the lock is acquired.
    */
   public async acquire(priority: number = 0, timeout?: number): Promise<void> {
     return new Promise((resolve) => {
@@ -91,17 +115,25 @@ export class Mutex {
   }
 
   /**
-   * Releases the acquired mutex, allowing the next item in the queue to acquire it.
-   * Cancels any active acquire timeout.
-   *
-   * @returns {void}
+   * Releases the lock previously acquired by `acquire()`. If there are tasks
+   * waiting in the queue, the next highest priority task will then acquire the lock.
+   * If a timeout was set during acquisition, it will be cleared.
    *
    * @example
    * const mutex = new Mutex();
-   * await mutex.acquire();
-   * console.log("Doing some work...");
-   * mutex.release();
-   * console.log("Mutex released.");
+   * async function performAction() {
+   *   await mutex.acquire();
+   *   try {
+   *     console.log('Lock acquired, performing action.');
+   *     // Critical section code here...
+   *   } finally {
+   *     mutex.release();
+   *     console.log('Lock released.');
+   *   }
+   * }
+   * performAction();
+   *
+   * @returns {void}
    */
   public release(): void {
     if (!this.isAqquired) return
