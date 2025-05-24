@@ -1,56 +1,32 @@
 /**
- * Compares two numbers in ascending order.
- *
- * This function compares two numbers and returns a value indicating their relative order.
- * It returns:
- * - `-1` if `a` is less than `b` (i.e., `a` should come before `b` in ascending order).
- * - `1` if `a` is greater than `b` (i.e., `b` should come before `a`).
- * - `0` if `a` and `b` are equal.
- *
- * @param {number} a - The first number to compare.
- * @param {number} b - The second number to compare.
- * @returns {number} A value indicating the relative order of the numbers.
+ * Compares two numbers for ascending order.
+ * Useful as a comparator function for sorting arrays in ascending order.
  *
  * @example
- * // Example 1: a < b, should return -1
- * ascend(3, 5); // -1
+ * const numbers = [3, 1, 4, 1, 5, 9, 2, 6];
+ * numbers.sort(ascend);
+ * // numbers is now [1, 1, 2, 3, 4, 5, 6, 9]
  *
- * @example
- * // Example 2: a > b, should return 1
- * ascend(7, 2); // 1
- *
- * @example
- * // Example 3: a === b, should return 0
- * ascend(4, 4); // 0
+ * @param {number} a The first number to compare.
+ * @param {number} b The second number to compare.
+ * @returns {number} Returns -1 if `a` is less than `b`, 1 if `a` is greater than `b`, and 0 if they are equal.
  */
 export function ascend(a: number, b: number): number {
   return a < b ? -1 : a > b ? 1 : 0
 }
 
 /**
- * Compares two numbers in descending order.
- *
- * This function is used to compare two numbers and returns a value indicating their relative order.
- * It returns:
- * - `-1` if `a` is greater than `b` (i.e., `a` should come before `b` in descending order).
- * - `1` if `a` is less than `b` (i.e., `b` should come before `a`).
- * - `0` if `a` and `b` are equal.
- *
- * @param {number} a - The first number to compare.
- * @param {number} b - The second number to compare.
- * @returns {number} A value indicating the relative order of the numbers.
+ * Compares two numbers for descending order.
+ * Useful as a comparator function for sorting arrays in descending order.
  *
  * @example
- * // Example 1: a > b, should return -1
- * descend(5, 3); // -1
+ * const numbers = [3, 1, 4, 1, 5, 9, 2, 6];
+ * numbers.sort(descend);
+ * // numbers is now [9, 6, 5, 4, 3, 2, 1, 1]
  *
- * @example
- * // Example 2: a < b, should return 1
- * descend(2, 4); // 1
- *
- * @example
- * // Example 3: a === b, should return 0
- * descend(3, 3); // 0
+ * @param {number} a The first number to compare.
+ * @param {number} b The second number to compare.
+ * @returns {number} Returns -1 if `a` is greater than `b`, 1 if `a` is less than `b`, and 0 if they are equal.
  */
 export function descend(a: number, b: number): number {
   return a > b ? -1 : a < b ? 1 : 0
