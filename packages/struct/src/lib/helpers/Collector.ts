@@ -1,111 +1,104 @@
-import { randomUUID } from 'node:crypto'
 import { EventEmitter } from 'node:events'
 
 /**
- * A generic class that collects data items of type `T` based on specified filtering criteria
- * and time/count limits. It extends {@link EventEmitter} to allow consumers to react to
- * inspected data. Each collector instance uses a unique ID for its events.
- *
- * @template T The type of data items to be collected.
+ * A class that collects and manages data emitted through an internal {@link EventEmitter}.
+ * It allows for inspecting data (emitting it) and gathering data based on specified criteria
+ * such as filtering, maximum count, and timeout.
  */
-export class Collector<T> extends EventEmitter {
+export class Collector {
   /**
-   * Creates an instance of the Collector.
-   *
-   * @param {string=} id The unique identifier for this collector instance.
-   *   If not provided, a random UUID will be generated.
-   */
-  public constructor(id?: string) {
-    super()
-
-    this.#id = id || randomUUID()
-    this.#length = 0
-  }
-
-  /**
-   * Gets the unique identifier of the collector instance.
-   *
-   * @returns {string} The unique identifier.
-   */
-  public get id(): string {
-    return this.#id
-  }
-
-  /**
-   * Gets the current number of active `gather` operations (listeners) on this collector.
-   *
-   * @returns {number} The number of active listeners.
-   */
-  public get length(): number {
-    return this.#length
-  }
-
-  /**
-   * Inspects a new data item. If there are active `gather` operations (listeners),
-   * this method emits an event using the collector's unique ID as the event name,
-   * passing the data item to the listeners.
+   * Emits data through the internal event emitter on a specified or default key.
+   * This method is used to provide data that can be potentially collected by one or more
+   * active {@link Collector.gather} operations listening on the same key.
    *
    * @example
-   * const stringCollector = new Collector<string>();
-   * // Assume a gather() operation is active for stringCollector.id
-   * stringCollector.inspect("new data item");
+   * const collector = new Collector();
    *
-   * @param {T} data The data item of type `T` to be inspected and potentially collected.
+   * // Inspect a string with a custom key
+   * collector.inspect<string>('Hello, world!', 'customEvent');
+   *
+   * // Inspect a number using the default collector ID as key
+   * collector.inspect<number>(123);
+   *
+   * @template T The type of data to inspect.
+   * @param {T} data The data to be emitted.
+   * @param {(string | symbol)=} [key=this.id] The event key to emit the data on. If not provided, `this.id` is used.
    * @returns {void}
    */
-  public inspect(data: T): void {
-    if (this.#length === 0) return
-    super.emit(this.#id, data)
+  public inspect<T>(data: T, key: string | symbol = this.id): void {
+    this.emitter.emit(key, data)
   }
 
   /**
-   * Gathers data items of type `T` that match the provided filter criteria.
-   * The gathering stops when the `max` number of items is collected, or when the `time` limit is reached.
-   * Each call to `gather` sets up a new listener for data passed to `inspect`.
+   * Gathers data items that match a filter, are emitted on a specific key,
+   * and collects them until a maximum count is reached or a timeout occurs.
    *
    * @example
-   * const numberCollector = new Collector<number>();
+   * const collector = new Collector();
    *
-   * async function collectEvenNumbers() {
+   * async function collectNumbers() {
+   *   // Start gathering numbers greater than 10, up to 2 items, or 1 second timeout
+   *   const promise = collector.gather<number>({
+   *     filter: (n) => n > 10,
+   *     max: 2,
+   *     timeout: 1000
+   *   });
+   *
+   *   // Simulate data inspection
+   *   collector.inspect(5);    // Ignored by filter
+   *   collector.inspect(15);   // Collected
+   *   setTimeout(() => collector.inspect(25), 100); // Collected
+   *   collector.inspect(35);   // Ignored (max reached)
+   *
    *   try {
-   *     const numbers = await numberCollector.gather({
-   *       filter: (n) => n % 2 === 0,
-   *       max: 3,
-   *       time: 5000, // 5 seconds
-   *       errors: ["Timeout: Failed to collect 3 even numbers within 5 seconds."]
-   *     });
-   *     console.log("Collected even numbers:", numbers); // e.g., [2, 4, 6]
-   *   } catch (e) {
-   *     console.error(e); // e.g., ["Timeout: Failed to collect 3 even numbers within 5 seconds."]
+   *     const collectedItems = await promise;
+   *     console.log('Collected:', collectedItems); // Expected: [15, 25]
+   *   } catch (error) {
+   *     console.error('Collection error:', error);
    *   }
    * }
+   * collectNumbers();
    *
-   * collectEvenNumbers();
+   * // Example demonstrating timeout with custom error messages
+   * async function collectWithTimeoutError() {
+   *   try {
+   *     await collector.gather<string>({
+   *       filter: (s) => s.startsWith('a'),
+   *       max: 1, // Max is > 0
+   *       timeout: 500,
+   *       errors: ['Timeout: No string starting with "a" received.']
+   *     }, 'stringChannel');
+   *   } catch (error) {
+   *     console.error(error); // Expected: ['Timeout: No string starting with "a" received.']
+   *   }
+   * }
+   * collectWithTimeoutError();
    *
-   * // Simulate inspecting data, which will be processed by the active gather operation
-   * setTimeout(() => numberCollector.inspect(1), 100);
-   * setTimeout(() => numberCollector.inspect(2), 200); // Collected
-   * setTimeout(() => numberCollector.inspect(3), 300);
-   * setTimeout(() => numberCollector.inspect(4), 400); // Collected
-   * setTimeout(() => numberCollector.inspect(5), 500);
-   * setTimeout(() => numberCollector.inspect(6), 600); // Collected, gather resolves
-   *
-   * @param {FilterOptions<T>} options The options to configure the data gathering process.
-   *   - `options.filter`: A function that takes a data item of type `T` and returns `true` if it should be collected, `false` otherwise.
-   *   - `options.max`: The maximum number of items to collect. If 0 or not provided, collects items until the `time` limit is reached (no count limit). Defaults to 0.
-   *   - `options.time`: The maximum time in milliseconds to wait for data collection. Defaults to 60,000 ms (60 seconds).
-   *   - `options.errors`: An array of error messages (typically a single string in an array). If provided, and `max` is greater than 0, and the operation times out before `max` items are collected, the promise will be rejected with these errors.
-   * @returns {Promise<T[]>} A promise that resolves with an array of collected items of type `T`.
-   *   If `options.errors` is provided and the conditions for rejection are met (timeout before `max` items collected when `max` > 0), the promise is rejected.
-   * @throws {string[]} Rejects with `options.errors` if `options.errors` is provided, `options.max` is greater than 0,
-   *   and the collection times out before `options.max` items are collected.
+   * @template T The type of data to be collected.
+   * @param {GatherOptions<T>} options The options for gathering data, including `filter`, `max` count, `timeout`, and `errors`. See {@link GatherOptions}.
+   * @param {(string | symbol)=} [key=this.id] The event key to listen for data on. If not provided, `this.id` is used.
+   * @returns {Promise<T[]>} A promise that resolves with an array of collected items.
+   * @throws {(string | string[] | Error)} The promise may reject with a reason string (e.g., internal disposal),
+   *   an array of error strings (if `options.errors` is provided and timeout occurs under specific conditions),
+   *   or an {@link Error} instance (e.g., if {@link Collector.dispose} is called globally).
    */
-  public async gather(options: FilterOptions<T>): Promise<T[]> {
-    const { filter, max = 0, time = 60_000, errors } = options
+  public async gather<T>(options: GatherOptions<T>, key: string | symbol = this.id): Promise<T[]> {
+    const { filter, max = 0, timeout = 60_000, errors } = options
 
     const collections: T[] = []
     return new Promise((resolve, reject) => {
-      const listener = (data: T) => {
+      const cleanup = (): void => {
+        clearTimeout(timeoutId)
+        this.gathers.delete(dispose)
+        this.emitter.off(key, listener)
+      }
+
+      const dispose = (reason: string): void => {
+        cleanup()
+        reject(reason)
+      }
+
+      const listener = (data: T): void => {
         if (!filter(data)) return
 
         collections.push(data)
@@ -115,29 +108,76 @@ export class Collector<T> extends EventEmitter {
         resolve(collections)
       }
 
-      const cleanup = () => {
-        clearTimeout(timeout)
-        this.off(this.#id, listener)
-        this.#length = Math.max(0, this.#length - 1)
-      }
-
-      const timeout = setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         cleanup()
-        errors && max > 0 && collections.length < max ? reject(errors) : resolve(collections)
-      }, time).unref()
+        max > 0 && errors ? reject(errors) : resolve(collections)
+      }, timeout).unref()
 
-      super.on(this.#id, listener)
-      this.#length++
+      this.gathers.add(dispose)
+      this.emitter.on(key, listener)
     })
   }
 
-  #id: string
-  #length: number
+  /**
+   * Disposes of the collector, cleaning up all active gather operations and event listeners.
+   * All pending promises returned by {@link Collector.gather} will be rejected with an error
+   * indicating that the collector was disposed.
+   *
+   * @example
+   * const collector = new Collector();
+   * const promise = collector.gather<number>({
+   *   filter: () => true,
+   *   timeout: 5000
+   * });
+   *
+   * promise.catch(error => {
+   *   if (error instanceof Error && error.message === 'Collector disposed') {
+   *     console.log('Gather operation was cancelled due to collector disposal.');
+   *   }
+   * });
+   *
+   * // Sometime later, before the promise resolves or rejects naturally:
+   * collector.dispose();
+   *
+   * @returns {void}
+   */
+  public dispose(): void {
+    const gathers = [...this.gathers.values()]
+    this.gathers.clear()
+
+    gathers.forEach((reject) => reject(new Error('Collector disposed')))
+    this.emitter.removeAllListeners()
+  }
+
+  protected readonly id: symbol = Symbol(Collector.name)
+  protected readonly emitter: EventEmitter = new EventEmitter()
+  protected readonly gathers: Set<Function> = new Set<Function>()
 }
 
-export interface FilterOptions<T> {
+/**
+ * Defines the options for the {@link Collector.gather} method.
+ * @template T The type of data to be collected.
+ */
+export interface GatherOptions<T> {
+  /**
+   * A function to filter the data. Only data for which this function returns true will be collected.
+   */
   filter: (data: T) => boolean
+  /**
+   * The maximum number of items to collect.
+   * If `undefined` or `0`, the collection is not limited by the number of items,
+   * though it may still be limited by `timeout`. The default value if not specified is `0`.
+   */
   max?: number
-  time?: number
+  /**
+   * The maximum time in milliseconds to wait for data before the promise is settled.
+   * If `undefined`, defaults to 60,000ms.
+   */
+  timeout?: number
+  /**
+   * An array of strings to be used as the rejection reason if the operation times out,
+   * `max` is greater than 0, and the number of collected items is less than `max`.
+   * If not provided under these timeout conditions, the promise resolves with the items collected so far.
+   */
   errors?: string[]
 }
