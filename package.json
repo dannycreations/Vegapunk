@@ -7,15 +7,13 @@
   "scripts": {
     "start:watch": "turbo watch dev",
     "build": "turbo run build && tsx scripts/output.build.ts",
-    "clean": "npx rimraf -g \"packages/*/*.tsbuildinfo\" \"packages/*/dist\"",
-    "clean:nodefiles": "npx rimraf -g \"*-lock*\" \"node_modules\" \"packages/*/node_modules\"",
+    "clean": "rimraf -g \"packages/*/*.tsbuildinfo\" \"packages/*/dist\"",
+    "clean:nodefiles": "rimraf -g \"*-lock*\" \"node_modules\" \"packages/*/node_modules\"",
+    "bump": "lerna version patch --no-git-tag-version --yes",
     "update": "turbo run update && npm-check-updates -u -x @types/node",
-    "prepack": "npm run clean && npm run build",
-    "publish": "npm run prepack && changeset version && changeset publish --no-git-tag"
+    "prepack": "pnpm run clean && pnpm run build",
+    "release": "pnpm run prepack && changeset publish --no-git-tag"
   },
-  "workspaces": [
-    "packages/*"
-  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/dannycreations/Vegapunk.git"
@@ -26,7 +24,9 @@
     "@sapphire/ts-config": "^5.0.1",
     "@swc/core": "^1.11.29",
     "@types/node": "22.15.21",
+    "lerna": "^8.2.2",
     "npm-check-updates": "^18.0.1",
+    "rimraf": "^6.0.1",
     "tsup": "^8.5.0",
     "tsx": "^4.19.4",
     "turbo": "^2.5.3",

@@ -1,6 +1,6 @@
 {
   "name": "@vegapunk/request",
-  "version": "1.0.35",
+  "version": "1.0.36",
   "author": "dannycreations",
   "license": "GPL-3.0",
   "exports": {
@@ -24,7 +24,7 @@
   "dependencies": {
     "@vegapunk/utilities": "workspace:*",
     "got": "11.8.6",
-    "user-agents": "^1.1.550"
+    "user-agents": "^1.1.551"
   },
   "devDependencies": {
     "@types/user-agents": "^1.0.4"
