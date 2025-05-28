@@ -95,6 +95,22 @@ export function logger(options: LoggerOptions = {}): Logger {
       level: options.level,
       base: undefined,
       nestedKey: 'payload',
+      hooks: {
+        logMethod(args, method) {
+          // Winston style
+          if (args.length >= 2) {
+            const [arg0, arg1, ...rest] = args
+            if (typeof arg0 === 'string' && typeof arg1 === 'object') {
+              return method.apply(this, [arg1, arg0, ...rest])
+            } else if (args.every((r) => typeof r === 'string')) {
+              return method.apply(this, [args.join(' ')])
+            }
+          }
+
+          // Pino style
+          return method.apply(this, args)
+        },
+      },
     },
     pino.multistream(streams),
   )
