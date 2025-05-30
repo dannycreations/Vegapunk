@@ -192,7 +192,7 @@ export class Queue<T> {
 
   /**
    * Updates the first element found by the predicate with the new value.
-   * If the element and the new value are both objects, `Object.assign` is used
+   * If the element and the new value are both objects, `defaultsDeep` is used
    * to merge them; otherwise, the element is replaced. After updating, heap
    * properties are restored. If `upsert` is true and no element is found,
    * the new value is enqueued using {@link enqueue}.
