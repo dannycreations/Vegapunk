@@ -1,3 +1,4 @@
+import { defaultsDeep } from '@vegapunk/utilities'
 import { isObjectLike } from '@vegapunk/utilities/common'
 import { swap } from '../utils/common'
 import { type Comparator } from '../utils/comparators'
@@ -232,7 +233,7 @@ export class Queue<T> {
 
     let item = this.heap[index]!
     if (isObjectLike(item) && isObjectLike(value)) {
-      Object.assign(item, value)
+      defaultsDeep(item, value)
     } else {
       this.heap[index] = value
       item = value!
