@@ -104,7 +104,8 @@ export class Mutex {
    * @param {string | symbol=} [key] The identifier for the resource to lock.
    *   Defaults to an internal unique ID for this {@link Mutex} instance if not provided.
    * @param {number=} [priority=0] The priority of the lock request. Higher numbers indicate greater priority.
-   * @param {number=} [timeout] The duration in milliseconds after which the lock is automatically released, after being acquired.
+   * @param {number=} [timeout] The duration in milliseconds after which the lock is automatically released,
+   *   after being acquired.
    * @returns {Promise<void>} A promise that resolves when the lock has been successfully acquired.
    * @throws {Error} If the {@link Mutex} is disposed while this acquisition request is pending.
    */

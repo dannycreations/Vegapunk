@@ -14,7 +14,8 @@
  *
  * @param {number} a The first number to compare.
  * @param {number} b The second number to compare.
- * @returns {number} A negative value if `a` is less than `b`, a positive value if `a` is greater than `b`, or 0 if they are equal.
+ * @returns {number} A negative value if `a` is less than `b`, a positive value if `a` is greater than `b`,
+ *   or 0 if they are equal.
  */
 export function ascend(a: number, b: number): number {
   return a < b ? -1 : a > b ? 1 : 0
@@ -36,7 +37,8 @@ export function ascend(a: number, b: number): number {
  *
  * @param {number} a The first number to compare.
  * @param {number} b The second number to compare.
- * @returns {number} A negative value if `a` is greater than `b`, a positive value if `a` is less than `b`, or 0 if they are equal.
+ * @returns {number} A negative value if `a` is greater than `b`, a positive value if `a` is less than `b`,
+ *   or 0 if they are equal.
  */
 export function descend(a: number, b: number): number {
   return a > b ? -1 : a < b ? 1 : 0
