@@ -20,7 +20,8 @@
  * @param {number} a The index of the first element to swap.
  * @param {number} b The index of the second element to swap.
  * @returns {void}
- * @throws {RangeError} If either index `a` or `b` is less than 0, or greater than or equal to the length of the `heap` array.
+ * @throws {RangeError} If either index `a` or `b` is less than 0, or greater than or
+ *   equal to the length of the `heap` array.
  */
 export function swap<T>(heap: T[], a: number, b: number): void {
   if (a < 0 || b < 0 || a >= heap.length || b >= heap.length) {

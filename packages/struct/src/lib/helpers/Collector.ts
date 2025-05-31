@@ -75,7 +75,8 @@ export class Collector {
    * collectWithTimeoutError();
    *
    * @template T The type of data to be collected.
-   * @param {GatherOptions<T>} options The options for gathering data, including `filter`, `max` count, `timeout`, and `errors`. See {@link GatherOptions}.
+   * @param {GatherOptions<T>} options The options for gathering data, including `filter`, `max` count, `timeout`, and `errors`.
+   *   See {@link GatherOptions}.
    * @param {(string | symbol)=} [key=this.id] The event key to listen for data on. If not provided, `this.id` is used.
    * @returns {Promise<T[]>} A promise that resolves with an array of collected items.
    * @throws {(string | string[] | Error)} The promise may reject with a reason string (e.g., internal disposal),
