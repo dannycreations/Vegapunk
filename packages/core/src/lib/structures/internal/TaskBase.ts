@@ -29,7 +29,9 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
     this.enabled = true
     this.#clear()
     process.nextTick(async () => {
-      if (force) await this.#start()
+      if (force) {
+        await this.#start()
+      }
 
       this.#update()
     })
@@ -40,7 +42,7 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
     this.#clear()
   }
 
-  async #start() {
+  async #start(): Promise<void> {
     this.container.logger.trace(`Task Run: ${this.name}`)
     this.#isRunning = true
 
@@ -65,17 +67,19 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
     this.container.logger.trace(`Task End: ${this.name}`)
   }
 
-  #clear() {
+  #clear(): void {
     clearTimeout(this.#timeout)
     this.#timeout = undefined
   }
 
-  #update() {
-    if (!this.enabled || this.#isRunning) return
+  #update(): void {
+    if (!this.enabled || this.#isRunning) {
+      return
+    }
 
     this.#timeout = setTimeout(() => {
       this.#clear()
-      this.#start().then(() => this.#update())
+      this.#start().finally(() => this.#update())
     }, this.#delay)
 
     if (!this.options.ref) {
@@ -83,11 +87,11 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
     }
   }
 
-  #isRunning = false
-  #isAwakeOnce = false
-  #isStartOnce = false
+  #isRunning: boolean = false
+  #isAwakeOnce: boolean = false
+  #isStartOnce: boolean = false
 
-  #delay = Task.MIN_DELAY
+  #delay: number = Task.MIN_DELAY
   #timeout?: NodeJS.Timeout
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@vegapunk/utilities",
-  "version": "1.0.61",
+  "version": "1.0.62",
   "author": "dannycreations",
   "license": "GPL-3.0",
   "exports": {
@@ -51,7 +51,7 @@
     "humanize-duration": "^3.32.2",
     "jsonc-parser": "^3.3.1",
     "nanoid": "3.3.11",
-    "zod": "^3.25.28"
+    "zod": "^3.25.42"
   },
   "devDependencies": {
     "@types/humanize-duration": "^3.27.4"
