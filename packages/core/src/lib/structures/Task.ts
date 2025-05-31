@@ -5,8 +5,8 @@ import { TaskBase } from './internal/TaskBase'
 import { TaskStore } from './TaskStore'
 
 export abstract class Task<Options extends Task.Options = Task.Options> extends TaskBase<Options> {
-  public static readonly MIN_DELAY = 20
-  public static readonly MAX_DELAY = 2147483647
+  public static readonly MIN_DELAY: number = 20
+  public static readonly MAX_DELAY: number = 2147483647
 
   public static async createTask(task: CreateTask): Promise<Task> {
     task = { ...task, options: { ...task.options } }
@@ -22,7 +22,9 @@ export abstract class Task<Options extends Task.Options = Task.Options> extends 
     const piece = Object.assign(new TaskBase(context, task.options), task)
 
     const previous = taskStores.get(piece.name)
-    if (previous) await previous.unload()
+    if (previous) {
+      await previous.unload()
+    }
 
     taskStores.strategy.onLoad(taskStores, piece)
     taskStores.set(piece.name, piece)

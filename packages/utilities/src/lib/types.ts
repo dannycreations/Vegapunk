@@ -101,3 +101,5 @@ export type ValueAtPath<T, P, D extends number = 5> = D extends 0
   : P extends keyof T
   ? T[P]
   : never
+
+export type ValueOf<T> = T[keyof T]
