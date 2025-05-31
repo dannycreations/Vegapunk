@@ -14,7 +14,7 @@ export { UserAgent }
  * Readonly array of error codes that may trigger retries in {@link requestDefault}.
  * These codes typically represent network or connection issues.
  */
-export const ErrorCodes: readonly string[] = [
+export const ERROR_CODES: readonly string[] = [
   // Got internal
   'ETIMEDOUT',
   'ECONNRESET',
@@ -36,7 +36,7 @@ export const ErrorCodes: readonly string[] = [
  * Readonly array of HTTP status codes that may trigger retries in {@link requestDefault}.
  * These status codes often indicate temporary server-side issues.
  */
-export const ErrorStatusCodes: readonly number[] = [408, 413, 429, 500, 502, 503, 504, 521, 522, 524]
+export const ERROR_STATUS_CODES: readonly number[] = [408, 413, 429, 500, 502, 503, 504, 521, 522, 524]
 
 /**
  * The core `got` function instance, pre-bound.
@@ -65,7 +65,8 @@ export const ErrorStatusCodes: readonly number[] = [408, 413, 429, 500, 502, 503
  * @param {string | URL | Options} urlOrOptions The URL to request or a `got` {@link Options} object.
  * @param {Options=} options Additional `got` {@link Options}, used if the first argument is a URL string or `URL` object.
  * @returns {CancelableRequest<Response>} A {@link CancelableRequest} promise that resolves with the HTTP {@link Response}.
- * @throws {RequestError | TimeoutError | unknown} When the request fails due to network issues, timeouts, or other errors originating from `got`.
+ * @throws {RequestError | TimeoutError | unknown} When the request fails due to network issues, timeouts,
+ *   or other errors originating from `got`.
  */
 export const request: Got = got.bind(got)
 
@@ -99,7 +100,8 @@ const userAgent = new UserAgent({ deviceCategory: 'desktop' })
  * @template T The expected type of the response body. Defaults to `string`.
  * @param {string | DefaultOptions} options The URL to request as a string, or a {@link DefaultOptions} object for more control.
  * @returns {Promise<Response<T>>} A promise that resolves with the HTTP {@link Response} object, where the body is of type `T`.
- * @throws {RequestError | TimeoutError | unknown} When the request ultimately fails after all retries, due to network issues, timeouts, or other errors.
+ * @throws {RequestError | TimeoutError | unknown} When the request ultimately fails after all retries,
+ *   due to network issues, timeouts, or other errors.
  */
 export async function requestDefault<T = string>(options: string | DefaultOptions): Promise<Response<T>> {
   const _options = defaultsDeep(
@@ -145,8 +147,8 @@ export async function requestDefault<T = string>(options: string | DefaultOption
           .then((res) => (cancel(), resolve(res)))
           .catch((error) => {
             if (isErrorLike<RequestError>(error)) {
-              const flagOne = ErrorCodes.includes(error.code)
-              const flagTwo = ErrorStatusCodes.includes(get(error, 'response.statusCode', 0))
+              const flagOne = ERROR_CODES.includes(error.code)
+              const flagTwo = ERROR_STATUS_CODES.includes(get(error, 'response.statusCode', 0))
               if ((flagOne || flagTwo) && (_options.retry < 0 || _options.retry > retry)) return
             }
             if (instance.isCanceled) {
@@ -186,7 +188,8 @@ export async function requestDefault<T = string>(options: string | DefaultOption
  * }
  * ensureConnected();
  *
- * @param {number=} [total=10000] The timeout in milliseconds for individual connection attempts and the sleep duration between retry cycles if both checks fail.
+ * @param {number=} [total=10000] The timeout in milliseconds for individual connection attempts and
+ *   the sleep duration between retry cycles if both checks fail.
  * @returns {Promise<void>} A promise that resolves when a connection is established.
  */
 export async function waitForConnection(total: number = 10_000): Promise<void> {
@@ -221,8 +224,8 @@ type ExcludeOptions = 'prefixUrl' | 'retry' | 'timeout' | 'resolveBodyOnly'
 export interface DefaultOptions extends Omit<Options, ExcludeOptions> {
   /**
    * Number of retry attempts for the request.
-   * This controls how many times {@link requestDefault} will retry on specific errors (listed in {@link ErrorCodes})
-   * or HTTP status codes (listed in {@link ErrorStatusCodes}).
+   * This controls how many times {@link requestDefault} will retry on specific errors (listed in {@link ERROR_CODES})
+   * or HTTP status codes (listed in {@link ERROR_STATUS_CODES}).
    * A negative value means retry indefinitely.
    */
   retry?: number
