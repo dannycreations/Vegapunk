@@ -23,7 +23,7 @@
     "@changesets/cli": "^2.29.4",
     "@sapphire/ts-config": "^5.0.1",
     "@swc/core": "^1.11.29",
-    "@types/node": "22.15.21",
+    "@types/node": "22.15.29",
     "lerna": "^8.2.2",
     "npm-check-updates": "^18.0.1",
     "rimraf": "^6.0.1",
