@@ -14,9 +14,9 @@ const PING_INTERVAL_MS: number = 30_000
 const REQUEST_RETRY_MS: number = 1_000
 const REQUEST_TIMEOUT_MS: number = 10_000
 const REQUEST_MAX_ATTEMPTS: number = 3
-const RECONNECT_MAX_ATTEMPTS: number = Infinity
 const RECONNECT_BASE_MS: number = 1_000
 const RECONNECT_MAX_MS: number = 60_000
+const RECONNECT_MAX_ATTEMPTS: number = Infinity
 const BUFFERED_THRESHOLD_AMOUNT: number = 1_048_576
 const GRACEFUL_DISCONNECT_CODE: number = 1000
 
@@ -64,11 +64,12 @@ export abstract class WebSocket<UserOptions extends object = object> {
     this.options.logger(`WebSocket: Connecting to ${this.options.url}.`)
 
     try {
-      this.ws = new ws(this.options.url, this.options.socketOptions)
-      this.ws.once('open', this.handleOpen.bind(this))
-      this.ws.once('close', this.handleClose.bind(this))
-      this.ws.on('error', this.handleError.bind(this))
-      this.ws.on('message', this.handleMessage.bind(this))
+      const newWs = new ws(this.options.url, this.options.socketOptions)
+      newWs.once('open', this.handleOpen.bind(this))
+      newWs.once('close', this.handleClose.bind(this))
+      newWs.on('error', this.handleError.bind(this))
+      newWs.on('message', this.handleMessage.bind(this))
+      this.ws = newWs
     } catch (error: unknown) {
       const connectError = new Error(`WebSocket: Connection attempt to ${this.options.url} failed.`)
       Object.assign(connectError, { error })
@@ -83,7 +84,7 @@ export abstract class WebSocket<UserOptions extends object = object> {
   }
 
   public disconnect(graceful: boolean = false): void {
-    if (this.isDisposed || this.state === WebSocketState.CLOSED || !this.ws) {
+    if (!this.ws || this.state === WebSocketState.CLOSED) {
       return
     }
 
@@ -109,12 +110,12 @@ export abstract class WebSocket<UserOptions extends object = object> {
     }
 
     this.options.logger('WebSocket: Disposing client.')
-    this.disconnect(true)
     this.isDisposed = true
+    this.disconnect(true)
   }
 
   private handleOpen(): void {
-    if (this.isDisposed) {
+    if (this.state !== WebSocketState.CONNECTING) {
       return
     }
 
@@ -125,7 +126,7 @@ export abstract class WebSocket<UserOptions extends object = object> {
 
     Promise.resolve(this.onOpen())
       .then(() => {
-        if (this.isDisposed || this.state !== WebSocketState.OPEN) {
+        if (this.state !== WebSocketState.OPEN) {
           this.options.logger('WebSocket: State changed during onOpen handler execution or client disposed.')
           this.disconnect(false)
           return
@@ -141,13 +142,18 @@ export abstract class WebSocket<UserOptions extends object = object> {
   }
 
   private handleClose(event: CloseEvent): void {
-    this.state = WebSocketState.CLOSED
-    if (this.ws && this.ws.readyState !== ws.CLOSING && this.ws.readyState !== ws.CLOSED) {
-      this.options.logger('WebSocket: Terminating existing connection.')
-      this.ws.removeAllListeners()
-      this.ws.once('error', () => {})
-      this.ws.terminate()
+    if (!this.ws || this.state === WebSocketState.CLOSED) {
+      return
     }
+
+    this.state = WebSocketState.CLOSED
+    const oldWs = this.ws
+    this.ws = undefined
+
+    this.options.logger('WebSocket: Terminating existing connection.')
+    oldWs.removeAllListeners()
+    oldWs.once('error', Boolean)
+    oldWs.terminate()
 
     this.stopPingSystem()
     this.stopReconnectSystem()
@@ -161,7 +167,6 @@ export abstract class WebSocket<UserOptions extends object = object> {
         this.options.logger(error, 'WebSocket: Error during onClose handler.')
       })
       .finally(() => {
-        this.ws = undefined
         if (this.isDisposed) {
           this.options.logger('WebSocket: Connection closed post-disposal.')
         } else if (event.code === GRACEFUL_DISCONNECT_CODE || this.options.reconnectMaxAttempts === 0) {
@@ -181,7 +186,7 @@ export abstract class WebSocket<UserOptions extends object = object> {
   }
 
   private handleMessage(data: unknown): void {
-    if (this.isDisposed || this.state !== WebSocketState.OPEN) {
+    if (this.state !== WebSocketState.OPEN) {
       return
     }
 
@@ -192,7 +197,7 @@ export abstract class WebSocket<UserOptions extends object = object> {
 
   private startQueueSystem(): void {
     queueMicrotask(() => {
-      if (this.isDisposed || this.state !== WebSocketState.OPEN || this.isRequestActive || this.requestQueue.length === 0) {
+      if (this.state !== WebSocketState.OPEN || this.isRequestActive || this.requestQueue.length === 0) {
         return
       } else if (!this.ws || this.ws.readyState !== ws.OPEN) {
         this.options.logger('WebSocket: Socket not open despite Open state, forcing reconnect.')
@@ -205,14 +210,14 @@ export abstract class WebSocket<UserOptions extends object = object> {
         this.options.logger(
           `WebSocket: Send request (${currentRequest.description}) paused due to high bufferedAmount: ${this.ws.bufferedAmount}, retrying.`,
         )
-        this.startQueueSystem()
+        setTimeout(() => this.startQueueSystem(), 100)
         return
       }
 
       this.isRequestActive = true
       currentRequest.attempts += 1
 
-      new Promise<void>((resolve, reject) => {
+      const sendPromise = new Promise<void>((resolve, reject) => {
         if (!this.ws || this.ws.readyState !== ws.OPEN) {
           reject(new Error('WebSocket: Connection closed before send.'))
           return
@@ -238,22 +243,24 @@ export abstract class WebSocket<UserOptions extends object = object> {
           }
         })
       })
+
+      sendPromise
         .then(() => {
           currentRequest.resolve()
-          this.isRequestActive = false
           this.requestQueue.shift()
+          this.isRequestActive = false
           this.startQueueSystem()
         })
         .catch((error) => {
           if (currentRequest.attempts >= this.options.requestMaxAttempts) {
             currentRequest.reject(error)
-            this.isRequestActive = false
             this.requestQueue.shift()
+            this.isRequestActive = false
             this.startQueueSystem()
           } else {
+            this.isRequestActive = false
             currentRequest.timeoutId = setTimeout(() => {
               currentRequest.timeoutId = undefined
-              this.isRequestActive = false
               this.startQueueSystem()
             }, this.options.requestRetryMs)
           }
@@ -266,22 +273,24 @@ export abstract class WebSocket<UserOptions extends object = object> {
       return
     }
 
-    this.isRequestActive = false
     this.options.logger(`WebSocket: Rejecting ${this.requestQueue.length} queued. Reason: ${reason.message}`)
     const requestToReject = [...this.requestQueue]
     this.requestQueue.length = 0
-    requestToReject.forEach((req) => {
+
+    for (let i = 0; i < requestToReject.length; i++) {
+      const req = requestToReject[i]
       if (req.timeoutId) {
         clearTimeout(req.timeoutId)
         req.timeoutId = undefined
       }
       req.reject(reason)
-    })
+    }
+    this.isRequestActive = false
   }
 
   private startPingSystem(): void {
     this.stopPingSystem()
-    if (this.isDisposed || this.state !== WebSocketState.OPEN) {
+    if (this.state !== WebSocketState.OPEN) {
       return
     }
 
@@ -290,7 +299,7 @@ export abstract class WebSocket<UserOptions extends object = object> {
         this.options.logger(error, 'WebSocket: Error during onPing handler.')
       })
       .finally(() => {
-        if (!this.isDisposed && this.state === WebSocketState.OPEN) {
+        if (this.state === WebSocketState.OPEN) {
           this.pingTimeoutId = setTimeout(() => {
             this.pingTimeoutId = undefined
             this.startPingSystem()
@@ -321,20 +330,20 @@ export abstract class WebSocket<UserOptions extends object = object> {
     this.reconnectAttempts += 1
 
     const baseDelay = this.options.reconnectBaseMs * 1.5 ** (this.reconnectAttempts - 1)
-    const jitter = baseDelay * 0.4 * (Math.random() * 2 - 1)
-    const reconnectDelay = Math.min(Math.max(Math.floor(baseDelay + jitter), this.options.reconnectBaseMs / 2), this.options.reconnectMaxMs)
+    const jitter = baseDelay * 0.4 * (Math.random() - 0.5)
+    const delay = Math.min(this.options.reconnectMaxMs, Math.floor(baseDelay + jitter))
 
-    const maxAttempts = this.options.reconnectMaxAttempts === RECONNECT_MAX_ATTEMPTS ? '∞' : this.options.reconnectMaxAttempts
-    this.options.logger(`WebSocket: Scheduling reconnect attempt ${this.reconnectAttempts}/${maxAttempts} in ${reconnectDelay}ms.`)
+    const maxAttempts = this.options.reconnectMaxAttempts === Infinity ? '∞' : this.options.reconnectMaxAttempts
+    this.options.logger(`WebSocket: Reconnect attempt ${this.reconnectAttempts}/${maxAttempts} in ${delay}ms.`)
 
     this.reconnectTimeoutId = setTimeout(() => {
       this.reconnectTimeoutId = undefined
-      if (!this.isDisposed && this.state === WebSocketState.RECONNECTING) {
+      if (this.state === WebSocketState.RECONNECTING) {
         this.connect()
       } else {
         this.options.logger('WebSocket: Reconnect aborted due to disposal or state change from reconnecting.')
       }
-    }, reconnectDelay)
+    }, delay)
   }
 
   private stopReconnectSystem(): void {
