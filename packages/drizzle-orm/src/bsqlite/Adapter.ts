@@ -6,7 +6,7 @@ import { type SQLiteSyncDialect } from 'drizzle-orm/sqlite-core'
 
 export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert extends InferInsertModel<A>> {
   public constructor(db: BetterSQLite3Database, table: A) {
-    Result.assert('id' in table, `The "${getTableName(table)}" table must have a primary key column "id"`)
+    Result.assert('id' in table, `Table "${getTableName(table)}" must have a primary key column "id".`)
 
     this.db = db
     this.table = table
@@ -77,6 +77,13 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
   }
 
   public findOneAndUpdate<B extends Table, R extends ReturnFilter<A, B>>(
+    filter: Partial<InferSelect<A>>,
+    data: Partial<Omit<Insert, 'id'>>,
+    options: Omit<QueryOptions<A, B, R>, 'limit' | 'joins'> & {
+      upsert: true
+    },
+  ): Result<ReturnAlias<A, B, R> | null, Error>
+  public findOneAndUpdate<B extends Table, R extends ReturnFilter<A, B>>(
     filter: QueryFilter<A>,
     data: Partial<Omit<Insert, 'id'>>,
     options: Omit<QueryOptions<A, B, R>, 'limit' | 'joins'> & {
@@ -90,8 +97,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
     const record = this.findOne(filter, { ...options, select: undefined })
     return record.mapInto((r) => {
       if (options.upsert && r === null) {
-        // ! TODO: normalize QueryFilter before using it as { ...filter, ...data }
-        const inserted = this.insert({ ...data } as Insert, options)
+        const inserted = this.insert({ ...filter, ...data } as Insert, options)
         return inserted.map((r) => r[0] as ReturnAlias<A, B, R>)
       } else {
         const updated = this.update({ ...r, ...data } as Select, options)
