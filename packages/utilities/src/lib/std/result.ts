@@ -1,39 +1,44 @@
 import { Option, Result } from '@sapphire/result'
-import { isError, isObjectLike } from 'es-toolkit/compat'
+import { isError, isFunction, isObjectLike } from 'es-toolkit/compat'
 
 export { Option, Result }
 
 export function isErrorLike<T>(error: unknown): error is Error & { code: string } & T {
-  if (isError(error)) return true
+  if (isError(error)) {
+    return true
+  } else if (!isObjectLike(error)) {
+    return false
+  }
 
-  const isObject = isObjectLike(error)
-  const hasCode = isObject && 'code' in error
-  const hasStack = isObject && 'stack' in error
-  const hasMessage = isObject && 'message' in error
-  return [hasCode, hasStack, hasMessage].filter(Boolean).length >= 2
+  const hasCode = 'code' in error
+  const hasStack = 'stack' in error
+  const hasMessage = 'message' in error
+  return hasMessage && (hasStack || hasCode)
 }
 
-function assert<T>(op: T | (() => T), message?: string, ...args: object[]): void {
-  const result = typeof op === 'function' ? (op as Function)() : op
-  if (!result) throw new ResultAssert(message, ...args)
+function assert<T>(op: T | (() => T), message?: string, ...args: object[]): void | never {
+  if (!(isFunction(op) ? op() : op)) {
+    throw new ResultError(message, ...args)
+  }
 }
 
 Object.assign(Result, { assert })
 
-const stackTraceLimit = Error.stackTraceLimit
+const STACK_TRACE_LIMIT: number = Error.stackTraceLimit
 
-export class ResultAssert extends Error {
-  public override name: string = 'ResultAssert'
+export class ResultError extends Error {
+  public override name: string = 'ResultError'
+  public code: string = 'RESULT_ERROR'
 
   public constructor(message?: string, ...args: object[]) {
     Error.stackTraceLimit = 0
     super(message)
     Error.stackTraceLimit = 1
-    Error.captureStackTrace(this, assert)
-    Error.stackTraceLimit = stackTraceLimit
+    Error.captureStackTrace(this, Result.assert)
+    Error.stackTraceLimit = STACK_TRACE_LIMIT
     Object.assign(this, ...args, {
       name: this.name,
-      code: 'RESULT_ASSERT',
+      code: this.code,
       stack: this.stack,
     })
   }
@@ -41,6 +46,6 @@ export class ResultAssert extends Error {
 
 declare module '@sapphire/result' {
   namespace Result {
-    function assert<T>(op: T | (() => T), message?: string, ...args: object[]): void
+    function assert<T>(op: T | (() => T), message?: string, ...args: object[]): void | never
   }
 }
