@@ -112,7 +112,7 @@ export class Collector {
       const timeoutId = setTimeout(() => {
         cleanup()
         max > 0 && errors ? reject(errors) : resolve(collections)
-      }, timeout).unref()
+      }, timeout)
 
       this.gathers.add(dispose)
       this.emitter.on(key, listener)

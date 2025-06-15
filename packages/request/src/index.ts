@@ -134,11 +134,11 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 
         const start = Date.now()
         const { initial, transmission, total } = _options.timeout
-        const totalTimeout = setTimeout(() => instance.cancel(), total).unref()
-        let initialTimeout = setTimeout(() => instance.cancel(), initial).unref()
+        const totalTimeout = setTimeout(() => instance.cancel(), total)
+        let initialTimeout = setTimeout(() => instance.cancel(), initial)
         const resetTimeout = () => {
           clearTimeout(initialTimeout)
-          initialTimeout = setTimeout(() => instance.cancel(), transmission).unref()
+          initialTimeout = setTimeout(() => instance.cancel(), transmission)
         }
 
         await instance

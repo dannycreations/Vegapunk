@@ -29,7 +29,7 @@ import { type Awaitable } from '../types'
  */
 export function sleep<T>(ms: number, value?: T, options: SleepOptions = {}): Promise<T> {
   return new Promise((resolve, reject) => {
-    const { signal = null, ref = false } = options
+    const { signal = null, ref = true } = options
     if (signal) {
       if (signal.aborted) {
         reject(signal.reason)
@@ -47,7 +47,7 @@ export function sleep<T>(ms: number, value?: T, options: SleepOptions = {}): Pro
     }
 
     const timer = setTimeout(() => resolve(value!), ms)
-    if (!ref) timer.unref()
+    if (ref === false) timer.unref()
   })
 }
 
@@ -108,7 +108,7 @@ export async function waitUntil(fn: (release: () => void, i: number) => Awaitabl
     let i = 0,
       done = false,
       timer: NodeJS.Timeout
-    const { delay = 10, ref = false } = options
+    const { delay = 10, ref = true } = options
     const release = () => ((done = true), clearTimeout(timer))
     const waiting = async () => {
       try {
@@ -118,7 +118,7 @@ export async function waitUntil(fn: (release: () => void, i: number) => Awaitabl
           process.nextTick(waiting)
         } else {
           timer = setTimeout(waiting, delay)
-          if (!ref) timer.unref()
+          if (ref === false) timer.unref()
         }
       } catch (error) {
         release(), reject(error)
