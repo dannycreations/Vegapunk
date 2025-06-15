@@ -1,3 +1,4 @@
+import { Result } from '@vegapunk/utilities/result'
 import { EventEmitter } from 'node:events'
 
 /**
@@ -66,7 +67,7 @@ export class Collector {
    *       filter: (s) => s.startsWith('a'),
    *       max: 1, // Max is > 0
    *       timeout: 500,
-   *       errors: ['Timeout: No string starting with "a" received.']
+   *       error: 'Timeout: No string starting with "a" received.'
    *     }, 'stringChannel');
    *   } catch (error) {
    *     console.error(error); // Expected: ['Timeout: No string starting with "a" received.']
@@ -75,28 +76,25 @@ export class Collector {
    * collectWithTimeoutError();
    *
    * @template T The type of data to be collected.
-   * @param {GatherOptions<T>} options The options for gathering data, including `filter`, `max` count, `timeout`, and `errors`.
+   * @param {GatherOptions<T>} options The options for gathering data, including `filter`, `max` count, `timeout`, and `error`.
    *   See {@link GatherOptions}.
    * @param {(string | symbol)=} [key=this.id] The event key to listen for data on. If not provided, `this.id` is used.
-   * @returns {Promise<T[]>} A promise that resolves with an array of collected items.
-   * @throws {(string | string[] | Error)} The promise may reject with a reason string (e.g., internal disposal),
-   *   an array of error strings (if `options.errors` is provided and timeout occurs under specific conditions),
-   *   or an {@link Error} instance (e.g., if {@link Collector.dispose} is called globally).
+   * @returns {Promise<Result<T[], Error>>} A promise that resolves with an array of collected items.
    */
-  public async gather<T>(options: GatherOptions<T>, key: string | symbol = this.id): Promise<T[]> {
-    const { filter, max = 0, timeout = 60_000, errors } = options
+  public async gather<T>(options: GatherOptions<T>, key: string | symbol = this.id): Promise<Result<T[], Error>> {
+    const { filter, max = 0, timeout = 60_000, error } = options
 
     const collections: T[] = []
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const cleanup = (): void => {
         clearTimeout(timeoutId)
         this.gathers.delete(dispose)
         this.emitter.off(key, listener)
       }
 
-      const dispose = (reason: string): void => {
+      const dispose = (reason: Error): void => {
         cleanup()
-        reject(reason)
+        resolve(Result.err(reason))
       }
 
       const listener = (data: T): void => {
@@ -106,12 +104,12 @@ export class Collector {
         if (max <= 0 || collections.length < max) return
 
         cleanup()
-        resolve(collections)
+        resolve(Result.ok(collections))
       }
 
       const timeoutId = setTimeout(() => {
         cleanup()
-        max > 0 && errors ? reject(errors) : resolve(collections)
+        resolve(max > 0 && error ? Result.err(new Error(error)) : Result.ok(collections))
       }, timeout)
 
       this.gathers.add(dispose)
@@ -146,7 +144,7 @@ export class Collector {
     const gathers = [...this.gathers.values()]
     this.gathers.clear()
 
-    gathers.forEach((reject) => reject(new Error('Collector disposed')))
+    gathers.forEach((reject) => reject(new Error('Collector disposed!')))
     this.emitter.removeAllListeners()
   }
 
@@ -176,9 +174,9 @@ export interface GatherOptions<T> {
    */
   timeout?: number
   /**
-   * An array of strings to be used as the rejection reason if the operation times out,
+   * An message to be used as the rejection reason if the operation times out,
    * `max` is greater than 0, and the number of collected items is less than `max`.
    * If not provided under these timeout conditions, the promise resolves with the items collected so far.
    */
-  errors?: string[]
+  error?: string
 }

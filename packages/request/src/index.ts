@@ -1,6 +1,6 @@
 import { defaultsDeep } from '@vegapunk/utilities'
 import { get } from '@vegapunk/utilities/common'
-import { isErrorLike } from '@vegapunk/utilities/result'
+import { isErrorLike, Result } from '@vegapunk/utilities/result'
 import { sleep, waitUntil } from '@vegapunk/utilities/sleep'
 import got, { type CancelableRequest, type Got, type Options, type RequestError, type Response } from 'got'
 import { TimeoutError } from 'got/dist/source/core/utils/timed-out'
@@ -99,11 +99,9 @@ const userAgent = new UserAgent({ deviceCategory: 'desktop' })
  *
  * @template T The expected type of the response body. Defaults to `string`.
  * @param {string | DefaultOptions} options The URL to request as a string, or a {@link DefaultOptions} object for more control.
- * @returns {Promise<Response<T>>} A promise that resolves with the HTTP {@link Response} object, where the body is of type `T`.
- * @throws {RequestError | TimeoutError | unknown} When the request ultimately fails after all retries,
- *   due to network issues, timeouts, or other errors.
+ * @returns {Promise<Result<Response<T>, Error>>} A promise that resolves with the HTTP {@link Response} object, where the body is of type `T`.
  */
-export async function requestDefault<T = string>(options: string | DefaultOptions): Promise<Response<T>> {
+export async function requestDefault<T = string>(options: string | DefaultOptions): Promise<Result<Response<T>, Error>> {
   const _options = defaultsDeep(
     {},
     {
@@ -122,7 +120,7 @@ export async function requestDefault<T = string>(options: string | DefaultOption
     },
   )
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     return waitUntil(
       async (cancel, retry) => {
         const instance = request({
@@ -144,7 +142,7 @@ export async function requestDefault<T = string>(options: string | DefaultOption
         await instance
           .on('uploadProgress', () => resetTimeout())
           .on('downloadProgress', () => resetTimeout())
-          .then((res) => (cancel(), resolve(res)))
+          .then((res) => (cancel(), resolve(Result.ok(res))))
           .catch((error) => {
             if (isErrorLike<RequestError>(error)) {
               const flagOne = ERROR_CODES.includes(error.code)
@@ -157,7 +155,7 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 
             // internal got error is hard to trace
             Error.captureStackTrace(error, requestDefault)
-            cancel(), reject(error)
+            cancel(), resolve(Result.err(error))
           })
           .finally(() => {
             clearTimeout(totalTimeout)

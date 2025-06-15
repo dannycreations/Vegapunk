@@ -1,6 +1,8 @@
-import { type ValueOf } from '@vegapunk/utilities'
-import { type ClientRequestArgs } from 'node:http'
-import { type ClientOptions, type CloseEvent, type ErrorEvent, WebSocket as ws } from 'ws'
+import { WebSocket as ws } from 'ws'
+
+import type { ValueOf } from '@vegapunk/utilities'
+import type { ClientRequestArgs } from 'node:http'
+import type { ClientOptions, CloseEvent, ErrorEvent } from 'ws'
 
 export const WebSocketState = {
   IDLE: 'IDLE',
