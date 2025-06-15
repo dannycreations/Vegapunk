@@ -82,7 +82,7 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
       this.#start().finally(() => this.#update())
     }, this.#delay)
 
-    if (!this.options.ref) {
+    if (this.options.ref === false) {
       this.#timeout.unref()
     }
   }

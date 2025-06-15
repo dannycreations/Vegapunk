@@ -48,7 +48,7 @@ export class Mutex {
     if (typeof timeout === 'number') {
       lockEntry.timeoutId = setTimeout(() => {
         this.release(key)
-      }, timeout).unref()
+      }, timeout)
     }
     this.locks.set(key, lockEntry)
     return false
@@ -116,7 +116,7 @@ export class Mutex {
         if (typeof timeout === 'number') {
           lockEntry.timeoutId = setTimeout(() => {
             this.release(key)
-          }, timeout).unref()
+          }, timeout)
         }
         this.locks.set(key, lockEntry)
         resolve()
