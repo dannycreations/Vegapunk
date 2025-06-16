@@ -9,6 +9,10 @@ import { type Comparator } from '../utils/comparators'
  * @template T The type of elements held in the queue.
  */
 export class Queue<T> {
+  protected lastHeap?: T
+  protected readonly heap: T[] = []
+  protected readonly compare: Comparator<T>
+
   /**
    * Initializes a new instance of the {@link Queue} class.
    *
@@ -368,8 +372,4 @@ export class Queue<T> {
     }
     return index
   }
-
-  protected lastHeap?: T
-  protected readonly heap: T[] = []
-  protected readonly compare: Comparator<T>
 }

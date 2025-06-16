@@ -6,6 +6,10 @@ import type { BetterSQLite3Database, BetterSQLiteSession } from 'drizzle-orm/bet
 import type { SQLiteSyncDialect } from 'drizzle-orm/sqlite-core'
 
 export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert extends InferInsertModel<A>> {
+  protected readonly table: A
+  protected readonly trace: boolean
+  protected readonly db: BetterSQLite3Database
+
   public constructor(db: BetterSQLite3Database, table: A, trace: boolean = false) {
     // @ts-expect-error
     Result.assert('id' in table && table.id.primary, `Table "${getTableName(table)}" must have a primary key "id".`)
@@ -49,9 +53,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
           }
 
           const isCrossJoin = join.type === 'cross'
-          if (!isCrossJoin && (!join.on || !this.hasKeys(join.on))) {
-            throw new Error(`Join conditions (on) must be specified for join type "${join.type}"`)
-          }
+          Result.assert(isCrossJoin || (join.on && this.hasKeys(join.on)), `Join conditions (on) must be specified for join type "${join.type}"`)
 
           let joinMethod: 'leftJoin' | 'rightJoin' | 'fullJoin' | 'innerJoin'
           switch (join.type) {
@@ -74,9 +76,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
             const conds = Object.entries(join.on).map(([leftKey, rightKey]) => {
               const leftCol = this.table[leftKey as keyof A]
               const rightCol = (join.table as unknown as Record<string, unknown>)[rightKey!]
-              if (!leftCol || !rightCol) {
-                throw new Error(`Invalid join keys: ${leftKey}, ${rightKey}`)
-              }
+              Result.assert(leftCol && rightCol, `Invalid join keys: ${leftKey}, ${rightKey}`)
               return sql`${leftCol} = ${rightCol}`
             })
             query[joinMethod](join.table, sql`(${sql.join(conds, sql.raw(' AND '))})`)
@@ -185,9 +185,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
         const { target, set, resolution } = options.conflict
         const columns = target.map((r) => {
           const column = this.table[r as keyof A]
-          if (!column) {
-            throw new Error(`Conflict target column ${String(r)} does not exist in table.`)
-          }
+          Result.assert(column, `Conflict target column ${String(r)} does not exist in table.`)
           return sql`${column}`
         })
 
@@ -204,9 +202,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
             set: Object.fromEntries(
               Object.entries(rest).map(([key, value]) => {
                 const column = this.table[key as keyof A]
-                if (!column) {
-                  throw new Error(`Conflict set column ${key} does not exist in table.`)
-                }
+                Result.assert(column, `Conflict set column ${key} does not exist in table.`)
                 return [key, sql`COALESCE(${column}, ${sql`${value}`})`]
               }),
             ) as Record<string, SQL>,
@@ -226,9 +222,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
   ): Result<Array<ReturnAlias<A, B, S>>, Error> {
     let querySql: unknown | undefined
     return Result.from(() => {
-      if (record?.id == null) {
-        throw new Error('Missing required "id" for update operation.')
-      }
+      Result.assert(record?.id != null, 'Missing required "id" for update operation.')
 
       const query = this.db.update(this.table).set(record)
       query.where(this.buildWhereClause({ id: record.id }))
@@ -246,9 +240,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
   ): Result<Array<ReturnAlias<A, B, S>>, Error> {
     let querySql: unknown | undefined
     return Result.from(() => {
-      if (record?.id == null) {
-        throw new Error('Missing required "id" for delete operation.')
-      }
+      Result.assert(record?.id != null, 'Missing required "id" for delete operation.')
 
       const query = this.db.delete(this.table)
       query.where(this.buildWhereClause({ id: record.id }))
@@ -482,10 +474,6 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
     // @ts-expect-error
     return this.db.session
   }
-
-  protected readonly table: A
-  protected readonly trace: boolean
-  protected readonly db: BetterSQLite3Database
 }
 
 interface ComparisonOperator<T> {

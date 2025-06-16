@@ -8,6 +8,7 @@ const baseOptions = {
     exclude: [...configDefaults.exclude],
     watch: false,
     testTimeout: 10_000,
+    passWithNoTests: true,
   },
 } satisfies ViteUserConfig
 

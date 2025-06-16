@@ -7,6 +7,10 @@ import { EventEmitter } from 'node:events'
  * such as filtering, maximum count, and timeout.
  */
 export class Collector {
+  protected readonly id: symbol = Symbol(Collector.name)
+  protected readonly emitter: EventEmitter = new EventEmitter()
+  protected readonly gathers: Set<Function> = new Set<Function>()
+
   /**
    * Emits data through the internal event emitter on a specified or default key.
    * This method is used to provide data that can be potentially collected by one or more
@@ -147,10 +151,6 @@ export class Collector {
     gathers.forEach((reject) => reject(new Error('Collector disposed!')))
     this.emitter.removeAllListeners()
   }
-
-  protected readonly id: symbol = Symbol(Collector.name)
-  protected readonly emitter: EventEmitter = new EventEmitter()
-  protected readonly gathers: Set<Function> = new Set<Function>()
 }
 
 /**
