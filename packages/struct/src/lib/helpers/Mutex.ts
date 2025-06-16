@@ -6,6 +6,10 @@
  * Requests can be prioritized, and locks can have an automatic release timeout.
  */
 export class Mutex {
+  protected readonly id: symbol = Symbol(Mutex.name)
+  protected readonly locks: Map<string | symbol, MutexEntry> = new Map()
+  protected readonly queues: Map<string | symbol, MutexItem[]> = new Map()
+
   /**
    * Attempts to acquire a lock synchronously.
    * If the lock is already held for the given key or there are pending requests in its queue,
@@ -217,10 +221,6 @@ export class Mutex {
     this.queues.forEach((r) => r.forEach((s) => s.reject(new Error('Mutex disposed'))))
     this.queues.clear()
   }
-
-  protected readonly id: symbol = Symbol(Mutex.name)
-  protected readonly locks: Map<string | symbol, MutexEntry> = new Map()
-  protected readonly queues: Map<string | symbol, MutexItem[]> = new Map()
 }
 
 /**

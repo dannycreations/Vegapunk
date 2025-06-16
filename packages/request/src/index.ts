@@ -2,10 +2,12 @@ import { defaultsDeep } from '@vegapunk/utilities'
 import { get } from '@vegapunk/utilities/common'
 import { isErrorLike, Result } from '@vegapunk/utilities/result'
 import { sleep, waitUntil } from '@vegapunk/utilities/sleep'
-import got, { type CancelableRequest, type Got, type Options, type RequestError, type Response } from 'got'
+import got from 'got'
 import { TimeoutError } from 'got/dist/source/core/utils/timed-out'
 import { lookup } from 'node:dns/promises'
 import UserAgent from 'user-agents'
+
+import type { CancelableRequest, Got, Options, RequestError, Response } from 'got'
 
 export * from 'got'
 export { UserAgent }
@@ -132,11 +134,11 @@ export async function requestDefault<T = string>(options: string | DefaultOption
 
         const start = Date.now()
         const { initial, transmission, total } = _options.timeout
-        const totalTimeout = setTimeout(() => instance.cancel(), total)
-        let initialTimeout = setTimeout(() => instance.cancel(), initial)
+        const totalTimeoutId = setTimeout(() => instance.cancel(), total)
+        let initTimeoutId = setTimeout(() => instance.cancel(), initial)
         const resetTimeout = () => {
-          clearTimeout(initialTimeout)
-          initialTimeout = setTimeout(() => instance.cancel(), transmission)
+          clearTimeout(initTimeoutId)
+          initTimeoutId = setTimeout(() => instance.cancel(), transmission)
         }
 
         await instance
@@ -158,8 +160,8 @@ export async function requestDefault<T = string>(options: string | DefaultOption
             cancel(), resolve(Result.err(error))
           })
           .finally(() => {
-            clearTimeout(totalTimeout)
-            clearTimeout(initialTimeout)
+            clearTimeout(totalTimeoutId)
+            clearTimeout(initTimeoutId)
           })
       },
       { delay: 0 },
@@ -192,15 +194,15 @@ export async function requestDefault<T = string>(options: string | DefaultOption
  */
 export async function waitForConnection(total: number = 10_000): Promise<void> {
   const checkGoogle = async (resolve: () => void): Promise<void> => {
-    return lookup('google.com').then(resolve)
+    await lookup('google.com').then(() => resolve())
   }
   const checkApple = async (resolve: () => void): Promise<void> => {
-    return requestDefault({
+    await requestDefault({
       url: 'https://captive.apple.com/hotspot-detect.html',
       headers: { 'user-agent': 'CaptiveNetworkSupport/1.0 wispr' },
       timeout: { total },
       retry: 0,
-    }).then(resolve)
+    }).then((r) => r.inspect(() => resolve()))
   }
 
   return waitUntil(async (resolve) => {
