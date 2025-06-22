@@ -21,10 +21,10 @@
   },
   "homepage": "https://github.com/dannycreations/Vegapunk",
   "devDependencies": {
-    "@changesets/cli": "^2.29.4",
+    "@changesets/cli": "^2.29.5",
     "@sapphire/ts-config": "^5.0.1",
-    "@swc/core": "^1.12.1",
-    "@types/node": "22.15.31",
+    "@swc/core": "^1.12.5",
+    "@types/node": "22.15.32",
     "lerna": "^8.2.2",
     "npm-check-updates": "^18.0.1",
     "rimraf": "^6.0.1",
@@ -32,7 +32,7 @@
     "tsx": "^4.20.3",
     "turbo": "^2.5.4",
     "typescript": "^5.8.3",
-    "vitest": "^3.2.3"
+    "vitest": "^3.2.4"
   },
   "packageManager": "pnpm@10.12.1"
 }
