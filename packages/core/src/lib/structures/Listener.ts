@@ -17,9 +17,9 @@ export abstract class Listener<
     this.emitter =
       typeof options.emitter === 'undefined'
         ? this.container.client
-        : (typeof options.emitter === 'string'
+        : ((typeof options.emitter === 'string'
             ? (Reflect.get(this.container.client, options.emitter) as EventEmitter)
-            : (options.emitter as EventEmitter)) ?? null
+            : (options.emitter as EventEmitter)) ?? null)
     this.event = options.event ?? this.name
     this.once = options.once ?? false
 
