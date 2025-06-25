@@ -550,11 +550,12 @@ type JoinClause<A extends Table, B extends Array<Table>> = {
   }
 }
 
-type ReturnAlias<A extends Table, B extends Array<Table>, S> = S extends Record<keyof S, number>
-  ? Omit<SelectMerge<A, B>, Exclude<keyof SelectMerge<A, B>, { [K in keyof S]: S[K] extends 1 ? K : never }[keyof S]>>
-  : B extends [infer _A, ...infer _B]
-  ? { [K in A['_']['name']]: InferSelect<A> } & ReturnTuple<B>
-  : InferSelect<A>
+type ReturnAlias<A extends Table, B extends Array<Table>, S> =
+  S extends Record<keyof S, number>
+    ? Omit<SelectMerge<A, B>, Exclude<keyof SelectMerge<A, B>, { [K in keyof S]: S[K] extends 1 ? K : never }[keyof S]>>
+    : B extends [infer _A, ...infer _B]
+      ? { [K in A['_']['name']]: InferSelect<A> } & ReturnTuple<B>
+      : InferSelect<A>
 
 type ReturnTuple<T extends Array<unknown>> = T extends [infer Head, ...infer Tail]
   ? Head extends Table
