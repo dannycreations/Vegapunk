@@ -100,11 +100,11 @@ const userAgent = new UserAgent({ deviceCategory: 'desktop' })
  * fetchDataWithDefaults();
  *
  * @template T The expected type of the response body. Defaults to `string`.
- * @template E The expected type of Error. Defaults to Error.
+ * @template E The expected type of Error. Defaults to unknown.
  * @param {string | DefaultOptions} options The URL to request as a string, or a {@link DefaultOptions} object for more control.
  * @returns {Promise<Result<Response<T>, E>>} A promise that resolves with the HTTP {@link Response} object, where the body is of type `T`.
  */
-export async function requestDefault<T = string, E extends Error = Error>(options: string | DefaultOptions): Promise<Result<Response<T>, E>> {
+export async function requestDefault<T = string, E = unknown>(options: string | DefaultOptions): Promise<Result<Response<T>, E>> {
   const _options = defaultsDeep(
     {},
     {
