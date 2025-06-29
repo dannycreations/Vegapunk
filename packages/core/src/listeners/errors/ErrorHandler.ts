@@ -1,5 +1,7 @@
-import { container, type Piece } from '@sapphire/pieces'
+import { container } from '@sapphire/pieces'
 import { Listener } from '../../lib/structures/Listener'
+
+import type { Piece } from '@sapphire/pieces'
 
 export class CoreListener extends Listener<'internalError'> {
   public constructor(context: Listener.LoaderContext) {

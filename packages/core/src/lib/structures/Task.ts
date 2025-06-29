@@ -1,8 +1,10 @@
-import { container, type Piece } from '@sapphire/pieces'
+import { container } from '@sapphire/pieces'
 import { Snowflake } from '../helpers/common.helper'
 import { HookPath } from './internal/StoreBase'
 import { TaskBase } from './internal/TaskBase'
 import { TaskStore } from './TaskStore'
+
+import type { Piece } from '@sapphire/pieces'
 
 export abstract class Task<Options extends Task.Options = Task.Options> extends TaskBase<Options> {
   public static readonly MIN_DELAY: number = 20

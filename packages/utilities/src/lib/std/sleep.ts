@@ -1,4 +1,4 @@
-import { type Awaitable } from '../types'
+import type { Awaitable } from '../types'
 
 /**
  * Pauses execution for a specified duration.

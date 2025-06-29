@@ -1,8 +1,10 @@
 import { BetterSqliteDriver } from '@mikro-orm/better-sqlite'
-import { MikroORM, type Options } from '@mikro-orm/core'
+import { MikroORM } from '@mikro-orm/core'
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection'
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter'
-import { defaultsDeep } from '@vegapunk/utilities'
+import { defaultsDeep } from '@vegapunk/utilities/common'
+
+import type { Options } from '@mikro-orm/core'
 
 export * from '@mikro-orm/better-sqlite'
 

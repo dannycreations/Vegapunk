@@ -1,11 +1,14 @@
 import '../listeners/_load'
 
-import { container, getRootData, Store, type StoreRegistry } from '@sapphire/pieces'
-import { logger, type Logger } from '@vegapunk/logger'
+import { container, getRootData, Store } from '@sapphire/pieces'
+import { logger } from '@vegapunk/logger'
 import EventEmitter from 'node:events'
-import type { ClientEvents, ClientOptions } from './constants/types'
 import { ListenerStore } from './structures/ListenerStore'
 import { TaskStore } from './structures/TaskStore'
+
+import type { StoreRegistry } from '@sapphire/pieces'
+import type { Logger } from '@vegapunk/logger'
+import type { ClientEvents, ClientOptions } from './constants/types'
 
 export class Vegapunk extends EventEmitter<ClientEvents> {
   public readonly stores: StoreRegistry
