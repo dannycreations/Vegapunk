@@ -1,8 +1,10 @@
-import { defaultsDeep } from '@vegapunk/utilities'
+import { defaultsDeep } from '@vegapunk/utilities/common'
 import Database from 'better-sqlite3'
-import { drizzle, type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
+import { drizzle } from 'drizzle-orm/better-sqlite3'
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator'
 import { Adapter } from './Adapter'
+
+import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
 
 export * from 'drizzle-orm/better-sqlite3'
 export * from 'drizzle-orm/sqlite-core'

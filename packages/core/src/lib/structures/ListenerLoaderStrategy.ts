@@ -1,4 +1,5 @@
 import { LoaderStrategy } from '@sapphire/pieces'
+
 import type { Listener } from './Listener'
 import type { ListenerStore } from './ListenerStore'
 

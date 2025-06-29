@@ -73,6 +73,7 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
   }
 
   #update(): void {
+    this.#clear()
     if (!this.enabled || this.#isRunning) {
       return
     }

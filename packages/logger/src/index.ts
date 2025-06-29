@@ -1,5 +1,7 @@
-import pino, { type Level, type Logger, type StreamEntry } from 'pino'
+import pino from 'pino'
 import pinoPretty from 'pino-pretty'
+
+import type { Level, Logger, StreamEntry } from 'pino'
 
 export * from 'pino'
 export { pinoPretty }

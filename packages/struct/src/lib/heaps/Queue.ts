@@ -1,6 +1,7 @@
+import { swap } from '@vegapunk/utilities'
 import { isObjectLike, merge } from '@vegapunk/utilities/common'
-import { swap } from '../utils/common'
-import { type Comparator } from '../utils/comparators'
+
+import type { Comparator } from '@vegapunk/utilities'
 
 /**
  * A generic priority queue implementation. Elements are ordered based on a

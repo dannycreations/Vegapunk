@@ -1,5 +1,4 @@
-import { defaultsDeep } from '@vegapunk/utilities'
-import { get } from '@vegapunk/utilities/common'
+import { defaultsDeep, get } from '@vegapunk/utilities/common'
 import { isErrorLike, Result } from '@vegapunk/utilities/result'
 import { sleep, waitUntil } from '@vegapunk/utilities/sleep'
 import got from 'got'
