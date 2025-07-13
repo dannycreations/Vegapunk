@@ -112,8 +112,8 @@ importers:
         specifier: 11.8.6
         version: 11.8.6
       user-agents:
-        specifier: ^1.1.598
-        version: 1.1.598
+        specifier: ^1.1.599
+        version: 1.1.599
     devDependencies:
       '@types/user-agents':
         specifier: ^1.0.4
@@ -3555,8 +3555,8 @@ packages:
     resolution: {integrity: sha512-1uEe95xksV1O0CYKXo8vQvN1JEbtJp7lb7C5U9HMsIp6IVwntkH/oNUzyVNQSd4S1sYk2FpSSW44FqMc8qee5w==}
     engines: {node: '>=4'}
 
-  user-agents@1.1.598:
-    resolution: {integrity: sha512-d9n6CUWnTOtZ/m0pg3CKlDT/tlqkqugNSeNB2/S5ZF/zwDNdS/qw8+WBgqZ+slLy4ndopLGaQ4slewEROgxvAQ==}
+  user-agents@1.1.599:
+    resolution: {integrity: sha512-JkImlUAmjaN+8sLBcLjRdJ0yXRMDBkmYxy5S/b+WNCfFXEwOI0vaTuZG04laQtHOB+O/KRYwYWeGTx829dUz7g==}
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
@@ -7316,7 +7316,7 @@ snapshots:
 
   upath@2.0.1: {}
 
-  user-agents@1.1.598:
+  user-agents@1.1.599:
     dependencies:
       lodash.clonedeep: 4.5.0
 
