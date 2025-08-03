@@ -2,7 +2,7 @@ import { sql } from 'drizzle-orm';
 import { integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
-import { Adapter, BetterSQLite3Database, Database, drizzle } from '../src/bsqlite';
+import { Adapter, BetterSQLite3Database, Database, drizzle } from '.';
 
 const officesTable = sqliteTable('offices', {
   id: integer('id').primaryKey({ autoIncrement: true }),

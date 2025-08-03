@@ -2,7 +2,7 @@
   "name": "vegapunk-monorepo",
   "version": "0.0.0",
   "author": "dannycreations",
-  "license": "GPL-3.0",
+  "license": "GPL",
   "private": true,
   "scripts": {
     "start:watch": "turbo watch dev",

@@ -7,7 +7,7 @@ import type { ViteUserConfig } from 'vitest/config';
 const baseOptions = {
   test: {
     name,
-    include: ['test/*.{test,spec}.{ts,mts,cts}'],
+    include: ['src/**/*.{test,spec}.{ts,mts,cts}'],
     exclude: [...configDefaults.exclude],
     watch: false,
     testTimeout: 10_000,

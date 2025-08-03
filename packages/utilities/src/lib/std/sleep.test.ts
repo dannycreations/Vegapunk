@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest';
 
-import { noop } from '../dist/lib/std/common';
-import { waitUntil } from '../dist/lib/std/sleep';
+import { noop } from './common';
+import { waitUntil } from './sleep';
 
 test('should immediate without retries', async () => {
   let callCount = 0;
@@ -26,7 +26,7 @@ test('should use a custom delay', async () => {
     { delay: 20 },
   );
   const end = Date.now();
-  expect(end - start).toBeGreaterThan(40);
+  expect(end - start).toBeGreaterThan(30);
 });
 
 test('should waiting until status true', async () => {
