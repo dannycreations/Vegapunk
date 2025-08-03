@@ -176,7 +176,7 @@ export {
   type DebouncedFunction,
   type MemoizeCache,
   type ThrottledFunction,
-} from 'es-toolkit'
+} from 'es-toolkit';
 
 export {
   add,
@@ -336,9 +336,9 @@ export {
   valuesIn,
   wrap,
   zipObjectDeep,
-} from 'es-toolkit/compat'
+} from 'es-toolkit/compat';
 
 declare module 'es-toolkit/compat' {
-  function defaultsDeep<A, B extends A = A>(target: Partial<A>, ...sources: Partial<B>[]): A & B
-  function isObjectLike(value?: unknown): value is object
+  function defaultsDeep<A, B extends A = A>(target: Partial<A>, ...sources: Partial<B>[]): A & B;
+  function isObjectLike(value?: unknown): value is object;
 }

@@ -1,10 +1,10 @@
-import pino from 'pino'
-import pinoPretty from 'pino-pretty'
+import pino from 'pino';
+import pinoPretty from 'pino-pretty';
 
-import type { Level, Logger, StreamEntry } from 'pino'
+import type { Level, Logger, StreamEntry } from 'pino';
 
-export * from 'pino'
-export { pinoPretty }
+export * from 'pino';
+export { pinoPretty };
 
 /**
  * Creates and configures a Pino {@link Logger} instance.
@@ -54,7 +54,7 @@ export function logger(options: LoggerOptions = {}): Logger {
     exception: true,
     rejection: true,
     ...options,
-  }
+  };
 
   const streams: StreamEntry[] = [
     {
@@ -64,7 +64,7 @@ export function logger(options: LoggerOptions = {}): Logger {
         dest: `${process.cwd()}/logs/errors.log`,
       }),
     },
-  ]
+  ];
 
   if (options.trace) {
     streams.push({
@@ -73,7 +73,7 @@ export function logger(options: LoggerOptions = {}): Logger {
         mkdir: true,
         dest: `${process.cwd()}/logs/traces.log`,
       }),
-    })
+    });
   }
   if (options.pretty) {
     streams.push({
@@ -84,12 +84,12 @@ export function logger(options: LoggerOptions = {}): Logger {
         sync: process.env.NODE_ENV === 'development',
         singleLine: process.env.NODE_ENV === 'production',
       }),
-    })
+    });
   } else {
     streams.push({
       level: options.level,
       stream: process.stdout,
-    })
+    });
   }
 
   const instance = pino(
@@ -101,33 +101,33 @@ export function logger(options: LoggerOptions = {}): Logger {
         logMethod(args, method) {
           // Winston style
           if (args.length >= 2) {
-            const [arg0, arg1, ...rest] = args
+            const [arg0, arg1, ...rest] = args;
             if (typeof arg0 === 'string' && typeof arg1 === 'object') {
-              return method.apply(this, [arg1, arg0, ...rest])
+              return method.apply(this, [arg1, arg0, ...rest]);
             } else if (args.every((r) => typeof r === 'string')) {
-              return method.apply(this, [args.join(' ')])
+              return method.apply(this, [args.join(' ')]);
             }
           }
 
           // Pino style
-          return method.apply(this, args)
+          return method.apply(this, args);
         },
       },
     },
     pino.multistream(streams),
-  )
+  );
 
   if (options.exception) {
     process.on('uncaughtException', (error, origin) => {
-      instance.fatal({ error, origin }, 'UncaughtException')
-    })
+      instance.fatal({ error, origin }, 'UncaughtException');
+    });
   }
   if (options.rejection) {
     process.on('unhandledRejection', (reason, promise) => {
-      instance.fatal({ reason, promise }, 'UnhandledRejection')
-    })
+      instance.fatal({ reason, promise }, 'UnhandledRejection');
+    });
   }
-  return instance
+  return instance;
 }
 
 /**
@@ -143,32 +143,32 @@ export interface LoggerOptions {
    * Refer to Pino {@link Level} for possible values (e.g., 'trace', 'debug', 'info', 'warn', 'error', 'fatal').
    * If undefined, defaults to 'debug' if `process.env.NODE_ENV` is 'development', otherwise 'info'.
    */
-  level?: Level
+  level?: Level;
   /**
    * Enables trace logging to a dedicated file (`logs/traces.log`).
    * If true, a separate stream is configured to write 'trace' level logs to this file.
    * If undefined or false, this trace file logging is disabled. Defaults to false.
    */
-  trace?: boolean
+  trace?: boolean;
   /**
    * Enables pretty-printing of log messages to the console using {@link pinoPretty}.
    * If true, console logs are formatted for enhanced readability, with colorization and structured output.
    * If false, console logs are written to `process.stdout` in standard Pino JSON format.
    * If undefined, pretty-printing is enabled. Defaults to true.
    */
-  pretty?: boolean
+  pretty?: boolean;
   /**
    * Enables automatic logging of uncaught exceptions as fatal errors.
    * If true, a global 'uncaughtException' handler is registered, which uses the logger
    * to record the exception details before the process potentially terminates.
    * If undefined or false, this feature is disabled. Defaults to true.
    */
-  exception?: boolean
+  exception?: boolean;
   /**
    * Enables automatic logging of unhandled promise rejections as fatal errors.
    * If true, a global 'unhandledRejection' handler is registered, which uses the logger
    * to record the rejection reason and associated promise.
    * If undefined or false, this feature is disabled. Defaults to true.
    */
-  rejection?: boolean
+  rejection?: boolean;
 }

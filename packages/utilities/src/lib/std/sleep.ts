@@ -1,4 +1,4 @@
-import type { Awaitable } from '../types'
+import type { Awaitable } from '../types';
 
 /**
  * Pauses execution for a specified duration.
@@ -29,26 +29,26 @@ import type { Awaitable } from '../types'
  */
 export function sleep<T>(ms: number, value?: T, options: SleepOptions = {}): Promise<T> {
   return new Promise((resolve, reject) => {
-    const { signal = null, ref = true } = options
+    const { signal = null, ref = true } = options;
     if (signal) {
       if (signal.aborted) {
-        reject(signal.reason)
-        return
+        reject(signal.reason);
+        return;
       }
 
       signal.addEventListener(
         'abort',
         () => {
-          clearTimeout(timer)
-          reject(signal.reason)
+          clearTimeout(timer);
+          reject(signal.reason);
         },
         { once: true },
-      )
+      );
     }
 
-    const timer = setTimeout(() => resolve(value!), ms)
-    if (ref === false) timer.unref()
-  })
+    const timer = setTimeout(() => resolve(value!), ms);
+    if (ref === false) timer.unref();
+  });
 }
 
 /**
@@ -59,12 +59,12 @@ export interface SleepOptions {
    * An optional `AbortSignal` that can be used to cancel the sleep operation.
    * If the signal is aborted, the `sleep` promise will reject.
    */
-  signal?: AbortSignal
+  signal?: AbortSignal;
   /**
    * When `false` (default), the `setTimeout` timer used by `sleep` will not keep the Node.js event loop active.
    * Set to `true` to have the timer keep the event loop active.
    */
-  ref?: boolean
+  ref?: boolean;
 }
 
 /**
@@ -107,25 +107,25 @@ export async function waitUntil(fn: (release: () => void, i: number) => Awaitabl
   return new Promise((resolve, reject) => {
     let i = 0,
       done = false,
-      timer: NodeJS.Timeout
-    const { delay = 10, ref = true } = options
-    const release = () => ((done = true), clearTimeout(timer))
+      timer: NodeJS.Timeout;
+    const { delay = 10, ref = true } = options;
+    const release = () => ((done = true), clearTimeout(timer));
     const waiting = async () => {
       try {
-        if (await fn(release, i++)) release()
-        if (done) resolve()
+        if (await fn(release, i++)) release();
+        if (done) resolve();
         else if (delay <= 0) {
-          process.nextTick(waiting)
+          process.nextTick(waiting);
         } else {
-          timer = setTimeout(waiting, delay)
-          if (ref === false) timer.unref()
+          timer = setTimeout(waiting, delay);
+          if (ref === false) timer.unref();
         }
       } catch (error) {
-        release(), reject(error)
+        (release(), reject(error));
       }
-    }
-    return waiting()
-  })
+    };
+    return waiting();
+  });
 }
 
 /**
@@ -137,12 +137,12 @@ export interface WaitUntilOptions {
    * If `delay` is less than or equal to `0`, `process.nextTick` is used for subsequent calls instead of `setTimeout`.
    * Defaults to `10`.
    */
-  delay?: number
+  delay?: number;
   /**
    * When `false` (default), the `setTimeout` timer (if `delay > 0`) used by `waitUntil` will not keep the Node.js event loop active.
    * Set to `true` to have the timer keep the event loop active. This has no effect if `delay <= 0`.
    */
-  ref?: boolean
+  ref?: boolean;
 }
 
 /**
@@ -176,7 +176,7 @@ export interface WaitUntilOptions {
  * @throws {unknown} Rejects if the provided function `fn` throws an error during its execution.
  */
 export async function waitForIter(val: number, fn: (val: number, release: () => void) => Awaitable<boolean | void>): Promise<void> {
-  return waitUntil((release, i) => (i < val ? fn(i, release) : release()), { delay: 0 })
+  return waitUntil((release, i) => (i < val ? fn(i, release) : release()), { delay: 0 });
 }
 
 /**
@@ -210,5 +210,5 @@ export async function waitForIter(val: number, fn: (val: number, release: () => 
  * @throws {unknown} Rejects if the provided function `fn` throws an error during its execution.
  */
 export async function waitForEach<T>(val: T[], fn: (val: T, i: number, release: () => void) => Awaitable<boolean | void>): Promise<void> {
-  return waitUntil((release, i) => (i < val.length ? fn(val[i], i, release) : release()), { delay: 0 })
+  return waitUntil((release, i) => (i < val.length ? fn(val[i], i, release) : release()), { delay: 0 });
 }

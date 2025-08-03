@@ -1,3 +1,3 @@
-import './errors/ErrorHandler'
-import './errors/ExceptionHandler'
-import './errors/RejectionHandler'
+import './errors/ErrorHandler';
+import './errors/ExceptionHandler';
+import './errors/RejectionHandler';

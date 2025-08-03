@@ -1,5 +1,8 @@
-import { configDefaults, defineConfig, mergeConfig, type ViteUserConfig } from 'vitest/config'
-import { name } from '../package.json'
+import { configDefaults, defineConfig, mergeConfig } from 'vitest/config';
+
+import { name } from '../package.json';
+
+import type { ViteUserConfig } from 'vitest/config';
 
 const baseOptions = {
   test: {
@@ -10,8 +13,8 @@ const baseOptions = {
     testTimeout: 10_000,
     passWithNoTests: true,
   },
-} satisfies ViteUserConfig
+} satisfies ViteUserConfig;
 
 export function createVitestConfig(options: ViteUserConfig = {}): unknown {
-  return defineConfig(mergeConfig(baseOptions, options))
+  return defineConfig(mergeConfig(baseOptions, options));
 }

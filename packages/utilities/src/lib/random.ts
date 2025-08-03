@@ -1,4 +1,4 @@
-import { customAlphabet } from 'nanoid'
+import { customAlphabet } from 'nanoid';
 
 /**
  * A constant object defining various character sets.
@@ -13,7 +13,7 @@ export const Alphabet = {
   UPPERCASE: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
   NUMBERS: '0123456789',
   SYMBOLS: '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~',
-} as const
+} as const;
 
 /**
  * The default character set used for generating random strings if no custom
@@ -21,7 +21,7 @@ export const Alphabet = {
  * This set is derived from {@link Alphabet.LOWERCASE}, {@link Alphabet.UPPERCASE},
  * and {@link Alphabet.NUMBERS}.
  */
-export const DEFAULT_ALPHABET: string = [Alphabet.LOWERCASE, Alphabet.UPPERCASE, Alphabet.NUMBERS].join('')
+export const DEFAULT_ALPHABET: string = [Alphabet.LOWERCASE, Alphabet.UPPERCASE, Alphabet.NUMBERS].join('');
 
 /**
  * Generates a cryptographically strong random string of a specified length using a
@@ -53,6 +53,6 @@ export const DEFAULT_ALPHABET: string = [Alphabet.LOWERCASE, Alphabet.UPPERCASE,
  *   This error originates from the underlying `nanoid` library.
  */
 export function randomString(length: number = 30, ...args: string[]): string {
-  const charSet = args.length ? args.join('') : DEFAULT_ALPHABET
-  return customAlphabet(charSet, length)()
+  const charSet = args.length ? args.join('') : DEFAULT_ALPHABET;
+  return customAlphabet(charSet, length)();
 }

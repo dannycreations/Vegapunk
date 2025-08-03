@@ -3,6 +3,7 @@
   "extends": ["config:recommended", "group:allNonMajor"],
   "labels": ["dependencies"],
   "schedule": ["before 12pm on sunday"],
+  "dependencyDashboard": false,
   "cloneSubmodules": true,
   "npm": {
     "postUpdateOptions": ["pnpmDedupe"],

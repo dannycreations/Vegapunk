@@ -25,10 +25,10 @@
  */
 export function swap<T>(heap: T[], a: number, b: number): void {
   if (a < 0 || b < 0 || a >= heap.length || b >= heap.length) {
-    throw new RangeError('Index out of bounds')
+    throw new RangeError('Index out of bounds');
   }
 
-  ;[heap[a], heap[b]] = [heap[b], heap[a]]
+  [heap[a], heap[b]] = [heap[b], heap[a]];
 }
 
 /**
@@ -51,7 +51,7 @@ export function swap<T>(heap: T[], a: number, b: number): void {
  *   or 0 if they are equal.
  */
 export function ascend(a: number, b: number): number {
-  return a < b ? -1 : a > b ? 1 : 0
+  return a < b ? -1 : a > b ? 1 : 0;
 }
 
 /**
@@ -74,7 +74,7 @@ export function ascend(a: number, b: number): number {
  *   or 0 if they are equal.
  */
 export function descend(a: number, b: number): number {
-  return a > b ? -1 : a < b ? 1 : 0
+  return a > b ? -1 : a < b ? 1 : 0;
 }
 
 /**
@@ -88,4 +88,4 @@ export function descend(a: number, b: number): number {
  *
  * @template T The type of the items to be compared by the function.
  */
-export type Comparator<T> = (a: T, b: T) => number
+export type Comparator<T> = (a: T, b: T) => number;

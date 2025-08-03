@@ -1,5 +1,5 @@
-import { Result } from '@vegapunk/utilities/result'
-import { EventEmitter } from 'node:events'
+import { EventEmitter } from 'node:events';
+import { Result } from '@vegapunk/utilities/result';
 
 /**
  * A class that collects and manages data emitted through an internal {@link EventEmitter}.
@@ -7,9 +7,9 @@ import { EventEmitter } from 'node:events'
  * such as filtering, maximum count, and timeout.
  */
 export class Collector {
-  protected readonly id: symbol = Symbol(Collector.name)
-  protected readonly emitter: EventEmitter = new EventEmitter()
-  protected readonly gathers: Set<Function> = new Set<Function>()
+  protected readonly id: symbol = Symbol(Collector.name);
+  protected readonly emitter: EventEmitter = new EventEmitter();
+  protected readonly gathers: Set<Function> = new Set<Function>();
 
   /**
    * Emits data through the internal event emitter on a specified or default key.
@@ -31,7 +31,7 @@ export class Collector {
    * @returns {void}
    */
   public inspect<T>(data: T, key: string | symbol = this.id): void {
-    this.emitter.emit(key, data)
+    this.emitter.emit(key, data);
   }
 
   /**
@@ -86,39 +86,39 @@ export class Collector {
    * @returns {Promise<Result<T[], Error>>} A promise that resolves with an array of collected items.
    */
   public async gather<T>(options: GatherOptions<T>, key: string | symbol = this.id): Promise<Result<T[], Error>> {
-    const { filter, max = 0, timeout = 60_000, error } = options
+    const { filter, max = 0, timeout = 60_000, error } = options;
 
-    const collections: T[] = []
+    const collections: T[] = [];
     return new Promise((resolve) => {
       const cleanup = (): void => {
-        clearTimeout(timeoutId)
-        this.gathers.delete(dispose)
-        this.emitter.off(key, listener)
-      }
+        clearTimeout(timeoutId);
+        this.gathers.delete(dispose);
+        this.emitter.off(key, listener);
+      };
 
       const dispose = (reason: Error): void => {
-        cleanup()
-        resolve(Result.err(reason))
-      }
+        cleanup();
+        resolve(Result.err(reason));
+      };
 
       const listener = (data: T): void => {
-        if (!filter(data)) return
+        if (!filter(data)) return;
 
-        collections.push(data)
-        if (max <= 0 || collections.length < max) return
+        collections.push(data);
+        if (max <= 0 || collections.length < max) return;
 
-        cleanup()
-        resolve(Result.ok(collections))
-      }
+        cleanup();
+        resolve(Result.ok(collections));
+      };
 
       const timeoutId = setTimeout(() => {
-        cleanup()
-        resolve(max > 0 && error ? Result.err(new Error(error)) : Result.ok(collections))
-      }, timeout)
+        cleanup();
+        resolve(max > 0 && error ? Result.err(new Error(error)) : Result.ok(collections));
+      }, timeout);
 
-      this.gathers.add(dispose)
-      this.emitter.on(key, listener)
-    })
+      this.gathers.add(dispose);
+      this.emitter.on(key, listener);
+    });
   }
 
   /**
@@ -145,11 +145,11 @@ export class Collector {
    * @returns {void}
    */
   public dispose(): void {
-    const gathers = [...this.gathers.values()]
-    this.gathers.clear()
+    const gathers = [...this.gathers.values()];
+    this.gathers.clear();
 
-    gathers.forEach((reject) => reject(new Error('Collector disposed!')))
-    this.emitter.removeAllListeners()
+    gathers.forEach((reject) => reject(new Error('Collector disposed!')));
+    this.emitter.removeAllListeners();
   }
 }
 
@@ -161,22 +161,22 @@ export interface GatherOptions<T> {
   /**
    * A function to filter the data. Only data for which this function returns true will be collected.
    */
-  filter: (data: T) => boolean
+  filter: (data: T) => boolean;
   /**
    * The maximum number of items to collect.
    * If `undefined` or `0`, the collection is not limited by the number of items,
    * though it may still be limited by `timeout`. The default value if not specified is `0`.
    */
-  max?: number
+  max?: number;
   /**
    * The maximum time in milliseconds to wait for data before the promise is settled.
    * If `undefined`, defaults to 60,000ms.
    */
-  timeout?: number
+  timeout?: number;
   /**
    * An message to be used as the rejection reason if the operation times out,
    * `max` is greater than 0, and the number of collected items is less than `max`.
    * If not provided under these timeout conditions, the promise resolves with the items collected so far.
    */
-  error?: string
+  error?: string;
 }

@@ -6,9 +6,9 @@
  * Requests can be prioritized, and locks can have an automatic release timeout.
  */
 export class Mutex {
-  protected readonly id: symbol = Symbol(Mutex.name)
-  protected readonly locks: Map<string | symbol, MutexEntry> = new Map()
-  protected readonly queues: Map<string | symbol, MutexItem[]> = new Map()
+  protected readonly id: symbol = Symbol(Mutex.name);
+  protected readonly locks: Map<string | symbol, MutexEntry> = new Map();
+  protected readonly queues: Map<string | symbol, MutexItem[]> = new Map();
 
   /**
    * Attempts to acquire a lock synchronously.
@@ -43,19 +43,19 @@ export class Mutex {
    *   `false` if the lock was successfully acquired by this call.
    */
   public lock(key: string | symbol = this.id, timeout?: number): boolean {
-    if (this.locks.has(key)) return true
+    if (this.locks.has(key)) return true;
 
-    const keyQueue = this.queues.get(key)
-    if (keyQueue && keyQueue.length > 0) return true
+    const keyQueue = this.queues.get(key);
+    if (keyQueue && keyQueue.length > 0) return true;
 
-    const lockEntry: MutexEntry = {}
+    const lockEntry: MutexEntry = {};
     if (typeof timeout === 'number') {
       lockEntry.timeoutId = setTimeout(() => {
-        this.release(key)
-      }, timeout)
+        this.release(key);
+      }, timeout);
     }
-    this.locks.set(key, lockEntry)
-    return false
+    this.locks.set(key, lockEntry);
+    return false;
   }
 
   /**
@@ -116,30 +116,30 @@ export class Mutex {
   public async acquire(key: string | symbol = this.id, priority: number = 0, timeout?: number): Promise<void> {
     return new Promise((resolve, reject) => {
       const attempt = (): void => {
-        const lockEntry: MutexEntry = {}
+        const lockEntry: MutexEntry = {};
         if (typeof timeout === 'number') {
           lockEntry.timeoutId = setTimeout(() => {
-            this.release(key)
-          }, timeout)
+            this.release(key);
+          }, timeout);
         }
-        this.locks.set(key, lockEntry)
-        resolve()
-      }
+        this.locks.set(key, lockEntry);
+        resolve();
+      };
 
-      const keyQueue = this.queues.get(key)
+      const keyQueue = this.queues.get(key);
       if (this.locks.has(key) || (keyQueue && keyQueue.length > 0)) {
-        let queue = keyQueue
+        let queue = keyQueue;
         if (!queue) {
-          queue = []
-          this.queues.set(key, queue)
+          queue = [];
+          this.queues.set(key, queue);
         }
 
-        queue.push({ attempt, reject, priority, timestamp: Date.now() })
-        queue.sort((a, b) => b.priority - a.priority || a.timestamp - b.timestamp)
+        queue.push({ attempt, reject, priority, timestamp: Date.now() });
+        queue.sort((a, b) => b.priority - a.priority || a.timestamp - b.timestamp);
       } else {
-        attempt()
+        attempt();
       }
-    })
+    });
   }
 
   /**
@@ -166,17 +166,17 @@ export class Mutex {
    * @returns {void}
    */
   public release(key: string | symbol = this.id): void {
-    const currentLock = this.locks.get(key)
-    if (!currentLock) return
+    const currentLock = this.locks.get(key);
+    if (!currentLock) return;
 
-    clearTimeout(currentLock.timeoutId)
-    this.locks.delete(key)
+    clearTimeout(currentLock.timeoutId);
+    this.locks.delete(key);
 
-    const keyQueue = this.queues.get(key)
+    const keyQueue = this.queues.get(key);
     if (keyQueue && keyQueue.length > 0) {
-      keyQueue.shift()!.attempt()
+      keyQueue.shift()!.attempt();
       if (keyQueue.length === 0) {
-        this.queues.delete(key)
+        this.queues.delete(key);
       }
     }
   }
@@ -215,11 +215,11 @@ export class Mutex {
    * @returns {void}
    */
   public dispose(): void {
-    this.locks.forEach((r) => clearTimeout(r.timeoutId))
-    this.locks.clear()
+    this.locks.forEach((r) => clearTimeout(r.timeoutId));
+    this.locks.clear();
 
-    this.queues.forEach((r) => r.forEach((s) => s.reject(new Error('Mutex disposed'))))
-    this.queues.clear()
+    this.queues.forEach((r) => r.forEach((s) => s.reject(new Error('Mutex disposed'))));
+    this.queues.clear();
   }
 }
 
@@ -231,7 +231,7 @@ export interface MutexEntry {
    * The timeout identifier for the lock, if a timeout is set.
    * This is used to automatically release the lock after a specified duration.
    */
-  timeoutId?: NodeJS.Timeout
+  timeoutId?: NodeJS.Timeout;
 }
 
 /**
@@ -242,20 +242,20 @@ export interface MutexItem {
    * The function to execute to attempt acquiring the lock.
    * Calling this function will set the lock as active for the corresponding key.
    */
-  readonly attempt: () => void
+  readonly attempt: () => void;
   /**
    * The function to call to reject the promise associated with the lock acquisition attempt.
    * @param {Error=} [reason] The reason for rejection.
    */
-  readonly reject: (reason?: Error) => void
+  readonly reject: (reason?: Error) => void;
   /**
    * The priority of the lock request. Higher numbers indicate higher priority.
    * This is used to determine the order in which queued requests are processed.
    */
-  readonly priority: number
+  readonly priority: number;
   /**
    * The timestamp when the lock request was made.
    * This is used as a tie-breaker if multiple requests have the same priority.
    */
-  readonly timestamp: number
+  readonly timestamp: number;
 }

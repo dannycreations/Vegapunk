@@ -1,15 +1,15 @@
-import { type Sub } from './internal/types'
+import { type Sub } from './internal/types';
 
 // https://github.com/sapphiredev/utilities/blob/main/packages/utilities/src/lib/types.ts
-export type Nullish = null | undefined
+export type Nullish = null | undefined;
 
-export type Awaitable<T> = PromiseLike<T> | T
+export type Awaitable<T> = PromiseLike<T> | T;
 
-export type Primitive = string | number | boolean | bigint | symbol | undefined | null
+export type Primitive = string | number | boolean | bigint | symbol | undefined | null;
 
-export type Builtin = Primitive | Function | Date | Error | RegExp
+export type Builtin = Primitive | Function | Date | Error | RegExp;
 
-export type AbstractConstructor<T> = abstract new (...args: any[]) => T
+export type AbstractConstructor<T> = abstract new (...args: any[]) => T;
 
 export type DeepReadonly<T> = T extends Builtin
   ? T
@@ -29,7 +29,7 @@ export type DeepReadonly<T> = T extends Builtin
                 ? ReadonlyArray<DeepReadonly<U>>
                 : T extends object
                   ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
-                  : unknown
+                  : unknown;
 
 export type DeepRequired<T> = T extends Builtin
   ? NonNullable<T>
@@ -49,38 +49,38 @@ export type DeepRequired<T> = T extends Builtin
                 ? Promise<DeepRequired<U>>
                 : T extends {}
                   ? { [K in keyof T]-?: DeepRequired<T[K]> }
-                  : NonNullable<T>
+                  : NonNullable<T>;
 
 export type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends Array<infer U>
     ? Array<DeepPartial<U>>
     : T[P] extends ReadonlyArray<infer U>
       ? ReadonlyArray<DeepPartial<U>>
-      : DeepPartial<T[P]>
-}
+      : DeepPartial<T[P]>;
+};
 
-export type RequiredExcept<T, K extends keyof T> = Partial<Pick<T, K>> & Required<Omit<T, K>>
+export type RequiredExcept<T, K extends keyof T> = Partial<Pick<T, K>> & Required<Omit<T, K>>;
 
-export type PartialExcept<T, K extends keyof T> = Partial<Omit<T, K>> & Required<Pick<T, K>>
+export type PartialExcept<T, K extends keyof T> = Partial<Omit<T, K>> & Required<Pick<T, K>>;
 
 export type NonNullableFields<T> = {
-  [P in keyof T]: NonNullable<T[P]>
-}
+  [P in keyof T]: NonNullable<T[P]>;
+};
 
 export type StrictFields<T> = {
-  [P in keyof T]-?: NonNullable<T[P]>
-}
+  [P in keyof T]-?: NonNullable<T[P]>;
+};
 
 export type MutableFields<T> = {
-  -readonly [P in keyof T]: T[P] extends Array<unknown> | object ? MutableFields<T[P]> : T[P]
-}
+  -readonly [P in keyof T]: T[P] extends Array<unknown> | object ? MutableFields<T[P]> : T[P];
+};
 
 export type OnlyRequired<T, K extends keyof T = never> = {
-  [P in keyof T as P extends K ? P : T[P] extends Required<T>[P] ? P : never]-?: Exclude<T[P], undefined>
-}
+  [P in keyof T as P extends K ? P : T[P] extends Required<T>[P] ? P : never]-?: Exclude<T[P], undefined>;
+};
 
 export type OnlyOneRequired<T, Key extends keyof T> = Pick<T, Exclude<keyof T, Key>> &
-  { [K in Key]-?: Partial<Record<Exclude<Key, K>, never>> & Required<Pick<T, K>> }[Key]
+  { [K in Key]-?: Partial<Record<Exclude<Key, K>, never>> & Required<Pick<T, K>> }[Key];
 
 export type NestedKeyOf<T, D extends number = 5> = D extends 0
   ? never
@@ -88,7 +88,7 @@ export type NestedKeyOf<T, D extends number = 5> = D extends 0
     ? `${number}.${NestedKeyOf<I, Sub<D, 1>>}` | `${number}`
     : T extends object
       ? { [K in keyof T]: K extends string ? `${K}.${NestedKeyOf<T[K], Sub<D, 1>>}` | K : never }[keyof T]
-      : never
+      : never;
 
 export type ValueAtPath<T, P, D extends number = 5> = D extends 0
   ? never
@@ -100,6 +100,6 @@ export type ValueAtPath<T, P, D extends number = 5> = D extends 0
         : never
     : P extends keyof T
       ? T[P]
-      : never
+      : never;
 
-export type ValueOf<T> = T[keyof T]
+export type ValueOf<T> = T[keyof T];

@@ -1,7 +1,7 @@
-import { swap } from '@vegapunk/utilities'
-import { isObjectLike, merge } from '@vegapunk/utilities/common'
+import { swap } from '@vegapunk/utilities';
+import { isObjectLike, merge } from '@vegapunk/utilities/common';
 
-import type { Comparator } from '@vegapunk/utilities'
+import type { Comparator } from '@vegapunk/utilities';
 
 /**
  * A generic priority queue implementation. Elements are ordered based on a
@@ -10,9 +10,9 @@ import type { Comparator } from '@vegapunk/utilities'
  * @template T The type of elements held in the queue.
  */
 export class Queue<T> {
-  protected lastHeap?: T
-  protected readonly heap: T[] = []
-  protected readonly compare: Comparator<T>
+  protected lastHeap?: T;
+  protected readonly heap: T[] = [];
+  protected readonly compare: Comparator<T>;
 
   /**
    * Initializes a new instance of the {@link Queue} class.
@@ -39,7 +39,7 @@ export class Queue<T> {
    *   a default comparator is used which treats all elements as having equal priority.
    */
   public constructor(compare: Comparator<T> = () => 0) {
-    this.compare = compare
+    this.compare = compare;
   }
 
   /**
@@ -55,7 +55,7 @@ export class Queue<T> {
    * @returns {number} The total number of elements in the queue.
    */
   public get size(): number {
-    return this.heap.length
+    return this.heap.length;
   }
 
   /**
@@ -73,7 +73,7 @@ export class Queue<T> {
    *   has been dequeued yet or the queue was empty at the last dequeue operation.
    */
   public get last(): T | undefined {
-    return this.lastHeap
+    return this.lastHeap;
   }
 
   /**
@@ -97,7 +97,7 @@ export class Queue<T> {
    *   if the index is out of bounds.
    */
   public peek(index: number = 0): T | undefined {
-    return this.heap[index]
+    return this.heap[index];
   }
 
   /**
@@ -116,8 +116,8 @@ export class Queue<T> {
    */
   public enqueue(...values: T[]): void {
     for (let i = 0; i < values.length; i++) {
-      this.heap.push(values[i])
-      this.heapifyUp(this.size - 1)
+      this.heap.push(values[i]);
+      this.heapifyUp(this.size - 1);
     }
   }
 
@@ -139,20 +139,20 @@ export class Queue<T> {
    */
   public dequeue(): T | undefined {
     if (this.size === 0) {
-      return undefined
+      return undefined;
     }
 
-    const root = this.heap[0]!
+    const root = this.heap[0]!;
     if (this.size <= 1) {
-      this.heap.pop()
-      this.lastHeap = root
-      return root
+      this.heap.pop();
+      this.lastHeap = root;
+      return root;
     }
 
-    this.heap[0] = this.heap.pop()!
-    this.heapifyDown(0)
-    this.lastHeap = root
-    return root
+    this.heap[0] = this.heap.pop()!;
+    this.heapifyDown(0);
+    this.lastHeap = root;
+    return root;
   }
 
   /**
@@ -169,7 +169,7 @@ export class Queue<T> {
    * @returns {void}
    */
   public clear(): void {
-    this.heap.length = 0
+    this.heap.length = 0;
   }
 
   /**
@@ -191,7 +191,7 @@ export class Queue<T> {
    *   `undefined` if no such element is found.
    */
   public find(predicate: (value: T) => boolean): T | undefined {
-    return this.heap.find(predicate)
+    return this.heap.find(predicate);
   }
 
   /**
@@ -226,26 +226,26 @@ export class Queue<T> {
    *   if no element was found and `upsert` is `false`.
    */
   public update(predicate: (value: T) => boolean, value: T, upsert: boolean = false): T | undefined {
-    const index = this.heap.findIndex(predicate)
+    const index = this.heap.findIndex(predicate);
     if (index === -1) {
       if (upsert) {
-        this.enqueue(value)
-        return value
+        this.enqueue(value);
+        return value;
       }
-      return undefined
+      return undefined;
     }
 
-    let item = this.heap[index]!
+    let item = this.heap[index]!;
     if (isObjectLike(item) && isObjectLike(value)) {
-      merge(item, value)
+      merge(item, value);
     } else {
-      this.heap[index] = value
-      item = value!
+      this.heap[index] = value;
+      item = value!;
     }
 
-    const newIndex = this.heapifyUp(index)
-    this.heapifyDown(newIndex)
-    return item
+    const newIndex = this.heapifyUp(index);
+    this.heapifyDown(newIndex);
+    return item;
   }
 
   /**
@@ -268,21 +268,21 @@ export class Queue<T> {
    *   matches the `predicate`.
    */
   public delete(predicate: (value: T) => boolean): T | undefined {
-    const index = this.heap.findIndex(predicate)
+    const index = this.heap.findIndex(predicate);
     if (index === -1) {
-      return undefined
+      return undefined;
     }
 
-    const removed = this.heap[index]!
+    const removed = this.heap[index]!;
     if (index === this.size - 1) {
-      this.heap.pop()
-      return removed
+      this.heap.pop();
+      return removed;
     }
 
-    this.heap[index] = this.heap.pop()!
-    const newIndex = this.heapifyUp(index)
-    this.heapifyDown(newIndex)
-    return removed
+    this.heap[index] = this.heap.pop()!;
+    const newIndex = this.heapifyUp(index);
+    this.heapifyDown(newIndex);
+    return removed;
   }
 
   /**
@@ -305,7 +305,7 @@ export class Queue<T> {
    */
   public *[Symbol.iterator](): IterableIterator<T> {
     while (this.size !== 0) {
-      yield this.dequeue()!
+      yield this.dequeue()!;
     }
   }
 
@@ -326,15 +326,15 @@ export class Queue<T> {
    */
   protected heapifyUp(index: number): number {
     while (index > 0) {
-      const parentIndex = Math.floor((index - 1) / 2)
+      const parentIndex = Math.floor((index - 1) / 2);
       if (this.compare(this.heap[index]!, this.heap[parentIndex]!) <= 0) {
-        break
+        break;
       }
 
-      swap(this.heap, index, parentIndex)
-      index = parentIndex
+      swap(this.heap, index, parentIndex);
+      index = parentIndex;
     }
-    return index
+    return index;
   }
 
   /**
@@ -353,24 +353,24 @@ export class Queue<T> {
    * @returns {number} The new index of the element after heapifying down.
    */
   protected heapifyDown(index: number): number {
-    const size = this.size
+    const size = this.size;
     while (index < size) {
-      let highestIndex = index
-      const leftIndex = 2 * index + 1
-      const rightIndex = 2 * index + 2
+      let highestIndex = index;
+      const leftIndex = 2 * index + 1;
+      const rightIndex = 2 * index + 2;
       if (leftIndex < size && this.compare(this.heap[leftIndex]!, this.heap[highestIndex]!) > 0) {
-        highestIndex = leftIndex
+        highestIndex = leftIndex;
       }
       if (rightIndex < size && this.compare(this.heap[rightIndex]!, this.heap[highestIndex]!) > 0) {
-        highestIndex = rightIndex
+        highestIndex = rightIndex;
       }
       if (highestIndex === index) {
-        break
+        break;
       }
 
-      swap(this.heap, index, highestIndex)
-      index = highestIndex
+      swap(this.heap, index, highestIndex);
+      index = highestIndex;
     }
-    return index
+    return index;
   }
 }

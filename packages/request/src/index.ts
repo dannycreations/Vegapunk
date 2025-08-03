@@ -1,15 +1,15 @@
-import { defaultsDeep, get } from '@vegapunk/utilities/common'
-import { isErrorLike, Result } from '@vegapunk/utilities/result'
-import { sleep, waitUntil } from '@vegapunk/utilities/sleep'
-import got from 'got'
-import { TimeoutError } from 'got/dist/source/core/utils/timed-out'
-import { lookup } from 'node:dns/promises'
-import UserAgent from 'user-agents'
+import { lookup } from 'node:dns/promises';
+import { defaultsDeep, get } from '@vegapunk/utilities/common';
+import { isErrorLike, Result } from '@vegapunk/utilities/result';
+import { sleep, waitUntil } from '@vegapunk/utilities/sleep';
+import got from 'got';
+import { TimeoutError } from 'got/dist/source/core/utils/timed-out';
+import UserAgent from 'user-agents';
 
-import type { CancelableRequest, Got, Options, RequestError, Response } from 'got'
+import type { CancelableRequest, Got, Options, RequestError, Response } from 'got';
 
-export * from 'got'
-export { UserAgent }
+export * from 'got';
+export { UserAgent };
 
 /**
  * Readonly array of error codes that may trigger retries in {@link requestDefault}.
@@ -31,13 +31,13 @@ export const ERROR_CODES: readonly string[] = [
 
   // Other
   'ECONNABORTED',
-]
+];
 
 /**
  * Readonly array of HTTP status codes that may trigger retries in {@link requestDefault}.
  * These status codes often indicate temporary server-side issues.
  */
-export const ERROR_STATUS_CODES: readonly number[] = [408, 413, 429, 500, 502, 503, 504, 521, 522, 524]
+export const ERROR_STATUS_CODES: readonly number[] = [408, 413, 429, 500, 502, 503, 504, 521, 522, 524];
 
 /**
  * The core `got` function instance, pre-bound.
@@ -69,9 +69,9 @@ export const ERROR_STATUS_CODES: readonly number[] = [408, 413, 429, 500, 502, 5
  * @throws {RequestError | TimeoutError | unknown} When the request fails due to network issues, timeouts,
  *   or other errors originating from `got`.
  */
-export const request: Got = got.bind(got)
+export const request: Got = got.bind(got);
 
-const userAgent = new UserAgent({ deviceCategory: 'desktop' })
+const userAgent = new UserAgent({ deviceCategory: 'desktop' });
 
 /**
  * Makes an HTTP request with default behaviors, including automatic retries for specific
@@ -120,7 +120,7 @@ export async function requestDefault<T = string, E = unknown>(options: string | 
       },
       http2: true,
     },
-  )
+  );
 
   return new Promise((resolve) => {
     return waitUntil(
@@ -130,16 +130,16 @@ export async function requestDefault<T = string, E = unknown>(options: string | 
           retry: 0,
           timeout: undefined,
           resolveBodyOnly: false,
-        } as Options) as CancelableRequest<Response<T>>
+        } as Options) as CancelableRequest<Response<T>>;
 
-        const start = Date.now()
-        const { initial, transmission, total } = _options.timeout
-        const totalTimeoutId = setTimeout(() => instance.cancel(), total)
-        let initTimeoutId = setTimeout(() => instance.cancel(), initial)
+        const start = Date.now();
+        const { initial, transmission, total } = _options.timeout;
+        const totalTimeoutId = setTimeout(() => instance.cancel(), total);
+        let initTimeoutId = setTimeout(() => instance.cancel(), initial);
         const resetTimeout = () => {
-          clearTimeout(initTimeoutId)
-          initTimeoutId = setTimeout(() => instance.cancel(), transmission)
-        }
+          clearTimeout(initTimeoutId);
+          initTimeoutId = setTimeout(() => instance.cancel(), transmission);
+        };
 
         await instance
           .on('uploadProgress', () => resetTimeout())
@@ -147,26 +147,26 @@ export async function requestDefault<T = string, E = unknown>(options: string | 
           .then((res) => (cancel(), resolve(Result.ok(res))))
           .catch((error) => {
             if (isErrorLike<RequestError>(error)) {
-              const flagOne = ERROR_CODES.includes(error.code)
-              const flagTwo = ERROR_STATUS_CODES.includes(get(error, 'response.statusCode', 0))
-              if ((flagOne || flagTwo) && (_options.retry < 0 || _options.retry > retry)) return
+              const flagOne = ERROR_CODES.includes(error.code);
+              const flagTwo = ERROR_STATUS_CODES.includes(get(error, 'response.statusCode', 0));
+              if ((flagOne || flagTwo) && (_options.retry < 0 || _options.retry > retry)) return;
             }
             if (instance.isCanceled) {
-              error = new TimeoutError(Date.now() - start, 'request')
+              error = new TimeoutError(Date.now() - start, 'request');
             }
 
             // internal got error is hard to trace
-            Error.captureStackTrace(error, requestDefault)
-            cancel(), resolve(Result.err(error))
+            Error.captureStackTrace(error, requestDefault);
+            (cancel(), resolve(Result.err(error)));
           })
           .finally(() => {
-            clearTimeout(totalTimeoutId)
-            clearTimeout(initTimeoutId)
-          })
+            clearTimeout(totalTimeoutId);
+            clearTimeout(initTimeoutId);
+          });
       },
       { delay: 0 },
-    )
-  })
+    );
+  });
 }
 
 /**
@@ -194,27 +194,27 @@ export async function requestDefault<T = string, E = unknown>(options: string | 
  */
 export async function waitForConnection(total: number = 10_000): Promise<void> {
   const checkGoogle = async (resolve: () => void): Promise<void> => {
-    await lookup('google.com').then(() => resolve())
-  }
+    await lookup('google.com').then(() => resolve());
+  };
   const checkApple = async (resolve: () => void): Promise<void> => {
     await requestDefault({
       url: 'https://captive.apple.com/hotspot-detect.html',
       headers: { 'user-agent': 'CaptiveNetworkSupport/1.0 wispr' },
       timeout: { total },
       retry: 0,
-    }).then((r) => r.inspect(() => resolve()))
-  }
+    }).then((r) => r.inspect(() => resolve()));
+  };
 
   return waitUntil(async (resolve) => {
     try {
-      await Promise.race([checkGoogle(resolve), checkApple(resolve)])
+      await Promise.race([checkGoogle(resolve), checkApple(resolve)]);
     } catch {
-      await sleep(total)
+      await sleep(total);
     }
-  })
+  });
 }
 
-type ExcludeOptions = 'prefixUrl' | 'retry' | 'timeout' | 'resolveBodyOnly'
+type ExcludeOptions = 'prefixUrl' | 'retry' | 'timeout' | 'resolveBodyOnly';
 
 /**
  * Configuration options for {@link requestDefault}.
@@ -228,7 +228,7 @@ export interface DefaultOptions extends Omit<Options, ExcludeOptions> {
    * or HTTP status codes (listed in {@link ERROR_STATUS_CODES}).
    * A negative value means retry indefinitely.
    */
-  retry?: number
+  retry?: number;
   /**
    * Timeout settings for the request, managed by {@link requestDefault}.
    * These provide granular control over different phases of the request lifecycle.
@@ -239,18 +239,18 @@ export interface DefaultOptions extends Omit<Options, ExcludeOptions> {
      * before the request is considered timed out. This timeout applies from the start of the request
      * until the first byte of the response headers is received or the request body starts sending.
      */
-    initial: number
+    initial: number;
     /**
      * Milliseconds to wait for data to be transmitted (either sending the request body
      * or receiving the response body) after the initial connection has been made.
      * This timeout resets upon any data activity (e.g., 'uploadProgress', 'downloadProgress').
      * If no data is sent or received within this period, the request is cancelled.
      */
-    transmission: number
+    transmission: number;
     /**
      * Total milliseconds for the entire request lifecycle, from the moment the request is initiated
      * until the response body is fully downloaded. This acts as an overall deadline for the request.
      */
-    total: number
-  }>
+    total: number;
+  }>;
 }

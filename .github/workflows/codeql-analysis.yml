@@ -10,10 +10,6 @@ on:
   schedule:
     - cron: '30 1 * * 0'
 
-concurrency:
-  group: codeql
-  cancel-in-progress: true
-
 jobs:
   codeql:
     name: Analysis
