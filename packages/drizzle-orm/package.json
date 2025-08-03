@@ -2,7 +2,7 @@
   "name": "@vegapunk/drizzle-orm",
   "version": "1.0.23",
   "author": "dannycreations",
-  "license": "GPL-3.0",
+  "license": "GPL",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

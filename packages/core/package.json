@@ -2,7 +2,7 @@
   "name": "@vegapunk/core",
   "version": "1.0.48",
   "author": "dannycreations",
-  "license": "GPL-3.0",
+  "license": "GPL",
   "exports": {
     "types": "./dist/index.d.ts",
     "default": "./dist/index.js"
@@ -27,7 +27,7 @@
     "@vegapunk/logger": "workspace:*",
     "@vegapunk/utilities": "workspace:*"
   },
-  "sideEffects": false,
+  "sideEffects": true,
   "engines": {
     "node": ">=20"
   },

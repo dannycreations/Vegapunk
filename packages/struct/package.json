@@ -2,7 +2,7 @@
   "name": "@vegapunk/struct",
   "version": "1.0.12",
   "author": "dannycreations",
-  "license": "GPL-3.0",
+  "license": "GPL",
   "exports": {
     "types": "./dist/index.d.ts",
     "default": "./dist/index.js"
