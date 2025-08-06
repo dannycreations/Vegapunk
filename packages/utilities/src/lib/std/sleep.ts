@@ -47,7 +47,9 @@ export function sleep<T>(ms: number, value?: T, options: SleepOptions = {}): Pro
     }
 
     const timer = setTimeout(() => resolve(value!), ms);
-    if (ref === false) timer.unref();
+    if (ref === false) {
+      timer.unref();
+    }
   });
 }
 
@@ -104,21 +106,26 @@ export interface SleepOptions {
  * @throws {unknown} Rejects if the predicate function `fn` throws an error during its execution.
  */
 export async function waitUntil(fn: (release: () => void, i: number) => Awaitable<boolean | void>, options: WaitUntilOptions = {}): Promise<void> {
+  let i = 0,
+    done = false,
+    timer: NodeJS.Timeout;
+  const { delay = 10, ref = true } = options;
+  const release = () => ((done = true), clearTimeout(timer));
   return new Promise((resolve, reject) => {
-    let i = 0,
-      done = false,
-      timer: NodeJS.Timeout;
-    const { delay = 10, ref = true } = options;
-    const release = () => ((done = true), clearTimeout(timer));
     const waiting = async () => {
       try {
-        if (await fn(release, i++)) release();
-        if (done) resolve();
-        else if (delay <= 0) {
+        if (await fn(release, i++)) {
+          release();
+        }
+        if (done) {
+          resolve();
+        } else if (delay <= 0) {
           process.nextTick(waiting);
         } else {
           timer = setTimeout(waiting, delay);
-          if (ref === false) timer.unref();
+          if (ref === false) {
+            timer.unref();
+          }
         }
       } catch (error) {
         (release(), reject(error));

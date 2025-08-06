@@ -19,7 +19,10 @@ test('should use a custom delay', async () => {
   const start = Date.now();
   await waitUntil(
     (_, i) => {
-      if (i > 1) return true;
+      if (i > 1) {
+        return true;
+      }
+
       setTimeout(noop, 25);
       return false;
     },
