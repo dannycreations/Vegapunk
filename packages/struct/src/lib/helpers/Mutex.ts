@@ -1,3 +1,42 @@
+import { Queue } from '../heaps/Queue';
+
+/**
+ * Represents an entry for an active lock in the {@link Mutex}.
+ */
+export interface MutexEntry {
+  /**
+   * The timeout identifier for the lock, if a timeout is set.
+   * This is used to automatically release the lock after a specified duration.
+   */
+  timeoutId?: NodeJS.Timeout;
+}
+
+/**
+ * Represents an item in the queue for a lock request in the {@link Mutex}.
+ */
+export interface MutexItem {
+  /**
+   * The function to execute to attempt acquiring the lock.
+   * Calling this function will set the lock as active for the corresponding key.
+   */
+  readonly attempt: () => void;
+  /**
+   * The function to call to reject the promise associated with the lock acquisition attempt.
+   * @param {Error=} [reason] The reason for rejection.
+   */
+  readonly reject: (reason?: Error) => void;
+  /**
+   * The priority of the lock request. Higher numbers indicate higher priority.
+   * This is used to determine the order in which queued requests are processed.
+   */
+  readonly priority: number;
+  /**
+   * The timestamp when the lock request was made.
+   * This is used as a tie-breaker if multiple requests have the same priority.
+   */
+  readonly timestamp: number;
+}
+
 /**
  * Provides a mutual exclusion mechanism to control access to shared resources.
  * It allows ensuring that only one operation can access a particular resource
@@ -8,7 +47,7 @@
 export class Mutex {
   protected readonly id: symbol = Symbol(Mutex.name);
   protected readonly locks: Map<string | symbol, MutexEntry> = new Map();
-  protected readonly queues: Map<string | symbol, MutexItem[]> = new Map();
+  protected readonly queues: Map<string | symbol, Queue<MutexItem>> = new Map();
 
   /**
    * Attempts to acquire a lock synchronously.
@@ -46,7 +85,7 @@ export class Mutex {
     if (this.locks.has(key)) return true;
 
     const keyQueue = this.queues.get(key);
-    if (keyQueue && keyQueue.length > 0) return true;
+    if (keyQueue && keyQueue.size > 0) return true;
 
     const lockEntry: MutexEntry = {};
     if (typeof timeout === 'number') {
@@ -127,15 +166,14 @@ export class Mutex {
       };
 
       const keyQueue = this.queues.get(key);
-      if (this.locks.has(key) || (keyQueue && keyQueue.length > 0)) {
+      if (this.locks.has(key) || (keyQueue && keyQueue.size > 0)) {
         let queue = keyQueue;
         if (!queue) {
-          queue = [];
+          queue = new Queue<MutexItem>((a: MutexItem, b: MutexItem) => b.priority - a.priority || a.timestamp - b.timestamp);
           this.queues.set(key, queue);
         }
 
-        queue.push({ attempt, reject, priority, timestamp: Date.now() });
-        queue.sort((a, b) => b.priority - a.priority || a.timestamp - b.timestamp);
+        queue.enqueue({ attempt, reject, priority, timestamp: Date.now() });
       } else {
         attempt();
       }
@@ -173,9 +211,9 @@ export class Mutex {
     this.locks.delete(key);
 
     const keyQueue = this.queues.get(key);
-    if (keyQueue && keyQueue.length > 0) {
-      keyQueue.shift()!.attempt();
-      if (keyQueue.length === 0) {
+    if (keyQueue && keyQueue.size > 0) {
+      keyQueue.dequeue()!.attempt();
+      if (keyQueue.size === 0) {
         this.queues.delete(key);
       }
     }
@@ -218,44 +256,11 @@ export class Mutex {
     this.locks.forEach((r) => clearTimeout(r.timeoutId));
     this.locks.clear();
 
-    this.queues.forEach((r) => r.forEach((s) => s.reject(new Error('Mutex disposed'))));
+    this.queues.forEach((queue) => {
+      while (queue.size > 0) {
+        queue.dequeue()!.reject(new Error('Mutex disposed'));
+      }
+    });
     this.queues.clear();
   }
-}
-
-/**
- * Represents an entry for an active lock in the {@link Mutex}.
- */
-export interface MutexEntry {
-  /**
-   * The timeout identifier for the lock, if a timeout is set.
-   * This is used to automatically release the lock after a specified duration.
-   */
-  timeoutId?: NodeJS.Timeout;
-}
-
-/**
- * Represents an item in the queue for a lock request in the {@link Mutex}.
- */
-export interface MutexItem {
-  /**
-   * The function to execute to attempt acquiring the lock.
-   * Calling this function will set the lock as active for the corresponding key.
-   */
-  readonly attempt: () => void;
-  /**
-   * The function to call to reject the promise associated with the lock acquisition attempt.
-   * @param {Error=} [reason] The reason for rejection.
-   */
-  readonly reject: (reason?: Error) => void;
-  /**
-   * The priority of the lock request. Higher numbers indicate higher priority.
-   * This is used to determine the order in which queued requests are processed.
-   */
-  readonly priority: number;
-  /**
-   * The timestamp when the lock request was made.
-   * This is used as a tie-breaker if multiple requests have the same priority.
-   */
-  readonly timestamp: number;
 }

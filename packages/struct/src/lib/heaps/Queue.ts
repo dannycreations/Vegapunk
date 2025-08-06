@@ -143,15 +143,15 @@ export class Queue<T> {
     }
 
     const root = this.heap[0]!;
+    this.lastHeap = root;
+
     if (this.size <= 1) {
       this.heap.pop();
-      this.lastHeap = root;
       return root;
     }
 
     this.heap[0] = this.heap.pop()!;
     this.heapifyDown(0);
-    this.lastHeap = root;
     return root;
   }
 
@@ -315,12 +315,6 @@ export class Queue<T> {
    * element is added to the end of the heap (as in {@link enqueue}) or an
    * element's priority is increased (as in {@link update}).
    *
-   * @example
-   * // Internal method: Not intended for direct external use.
-   * // Called, for example, within enqueue(value):
-   * // this.heap.push(value);
-   * // this.newIndex = this.heapifyUp(this.size - 1);
-   *
    * @param {number} index The starting index of the element to move upwards.
    * @returns {number} The new index of the element after heapifying up.
    */
@@ -342,12 +336,6 @@ export class Queue<T> {
    * index until its correct position is found. This is typically called after the
    * root element is replaced with the last element in the heap (as in {@link dequeue})
    * or an element's priority is decreased (as in {@link update}).
-   *
-   * @example
-   * // Internal method: Not intended for direct external use.
-   * // Called, for example, within dequeue():
-   * // this.heap[0] = this.heap.pop();
-   * // this.newIndex = this.heapifyDown(0);
    *
    * @param {number} index The starting index of the element to move downwards.
    * @returns {number} The new index of the element after heapifying down.
