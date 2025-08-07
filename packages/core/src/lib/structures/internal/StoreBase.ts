@@ -9,6 +9,7 @@ export class StoreBase<T extends Piece, StoreName extends StoreRegistryKey> exte
     if ([HookPath, VirtualPath].includes(root)) {
       return [];
     }
+
     return super.load(root, path);
   }
 }

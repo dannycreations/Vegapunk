@@ -1,6 +1,23 @@
 import type { Awaitable } from '../types';
 
 /**
+ * Options for the {@link sleep} function.
+ */
+export interface SleepOptions {
+  /**
+   * An optional `AbortSignal` that can be used to cancel the sleep operation.
+   * If the signal is aborted, the `sleep` promise will reject.
+   */
+  signal?: AbortSignal;
+
+  /**
+   * When `false` (default), the `setTimeout` timer used by `sleep` will not keep the Node.js event loop active.
+   * Set to `true` to have the timer keep the event loop active.
+   */
+  ref?: boolean;
+}
+
+/**
  * Pauses execution for a specified duration.
  * This promise can be optionally aborted using an AbortSignal.
  * @link https://github.com/sapphiredev/utilities/blob/main/packages/utilities/src/lib/sleep.ts
@@ -30,6 +47,7 @@ import type { Awaitable } from '../types';
 export function sleep<T>(ms: number, value?: T, options: SleepOptions = {}): Promise<T> {
   return new Promise((resolve, reject) => {
     const { signal = null, ref = true } = options;
+
     if (signal) {
       if (signal.aborted) {
         reject(signal.reason);
@@ -54,17 +72,19 @@ export function sleep<T>(ms: number, value?: T, options: SleepOptions = {}): Pro
 }
 
 /**
- * Options for the {@link sleep} function.
+ * Options for the {@link waitUntil} function.
  */
-export interface SleepOptions {
+export interface WaitUntilOptions {
   /**
-   * An optional `AbortSignal` that can be used to cancel the sleep operation.
-   * If the signal is aborted, the `sleep` promise will reject.
+   * The delay in milliseconds between calls to the predicate function.
+   * If `delay` is less than or equal to `0`, `process.nextTick` is used for subsequent calls instead of `setTimeout`.
+   * Defaults to `10`.
    */
-  signal?: AbortSignal;
+  delay?: number;
+
   /**
-   * When `false` (default), the `setTimeout` timer used by `sleep` will not keep the Node.js event loop active.
-   * Set to `true` to have the timer keep the event loop active.
+   * When `false` (default), the `setTimeout` timer (if `delay > 0`) used by `waitUntil` will not keep the Node.js event loop active.
+   * Set to `true` to have the timer keep the event loop active. This has no effect if `delay <= 0`.
    */
   ref?: boolean;
 }
@@ -106,17 +126,24 @@ export interface SleepOptions {
  * @throws {unknown} Rejects if the predicate function `fn` throws an error during its execution.
  */
 export async function waitUntil(fn: (release: () => void, i: number) => Awaitable<boolean | void>, options: WaitUntilOptions = {}): Promise<void> {
-  let i = 0,
-    done = false,
-    timer: NodeJS.Timeout;
   const { delay = 10, ref = true } = options;
-  const release = () => ((done = true), clearTimeout(timer));
+
+  let i = 0;
+  let done = false;
+  let timer: NodeJS.Timeout;
+
+  const release = () => {
+    done = true;
+    clearTimeout(timer);
+  };
+
   return new Promise((resolve, reject) => {
     const waiting = async () => {
       try {
         if (await fn(release, i++)) {
           release();
         }
+
         if (done) {
           resolve();
         } else if (delay <= 0) {
@@ -128,28 +155,13 @@ export async function waitUntil(fn: (release: () => void, i: number) => Awaitabl
           }
         }
       } catch (error) {
-        (release(), reject(error));
+        release();
+        reject(error);
       }
     };
-    return waiting();
-  });
-}
 
-/**
- * Options for the {@link waitUntil} function.
- */
-export interface WaitUntilOptions {
-  /**
-   * The delay in milliseconds between calls to the predicate function.
-   * If `delay` is less than or equal to `0`, `process.nextTick` is used for subsequent calls instead of `setTimeout`.
-   * Defaults to `10`.
-   */
-  delay?: number;
-  /**
-   * When `false` (default), the `setTimeout` timer (if `delay > 0`) used by `waitUntil` will not keep the Node.js event loop active.
-   * Set to `true` to have the timer keep the event loop active. This has no effect if `delay <= 0`.
-   */
-  ref?: boolean;
+    void waiting();
+  });
 }
 
 /**

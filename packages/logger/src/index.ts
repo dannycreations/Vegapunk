@@ -7,6 +7,53 @@ export * from 'pino';
 export { pinoPretty };
 
 /**
+ * Interface for configuring the {@link logger} instance.
+ * Defines various settings that control the logger's behavior, output formatting,
+ * file logging, and automatic error capturing features.
+ */
+export interface LoggerOptions {
+  /**
+   * The minimum log level to be output by the primary streams (console/pretty).
+   * When set, only logs at this level or higher will be processed by these streams.
+   * Specific streams (like the 'warn' stream to `errors.log`) may have their own fixed levels.
+   * Refer to Pino {@link Level} for possible values (e.g., 'trace', 'debug', 'info', 'warn', 'error', 'fatal').
+   * If undefined, defaults to 'debug' if `process.env.NODE_ENV` is 'development', otherwise 'info'.
+   */
+  level?: Level;
+
+  /**
+   * Enables trace logging to a dedicated file (`logs/traces.log`).
+   * If true, a separate stream is configured to write 'trace' level logs to this file.
+   * If undefined or false, this trace file logging is disabled. Defaults to false.
+   */
+  trace?: boolean;
+
+  /**
+   * Enables pretty-printing of log messages to the console using {@link pinoPretty}.
+   * If true, console logs are formatted for enhanced readability, with colorization and structured output.
+   * If false, console logs are written to `process.stdout` in standard Pino JSON format.
+   * If undefined, pretty-printing is enabled. Defaults to true.
+   */
+  pretty?: boolean;
+
+  /**
+   * Enables automatic logging of uncaught exceptions as fatal errors.
+   * If true, a global 'uncaughtException' handler is registered, which uses the logger
+   * to record the exception details before the process potentially terminates.
+   * If undefined or false, this feature is disabled. Defaults to true.
+   */
+  exception?: boolean;
+
+  /**
+   * Enables automatic logging of unhandled promise rejections as fatal errors.
+   * If true, a global 'unhandledRejection' handler is registered, which uses the logger
+   * to record the rejection reason and associated promise.
+   * If undefined or false, this feature is disabled. Defaults to true.
+   */
+  rejection?: boolean;
+}
+
+/**
  * Creates and configures a Pino {@link Logger} instance.
  * This function sets up a logger with multiple streams for different log levels
  * and destinations. It includes console output, which can be pretty-printed using
@@ -128,47 +175,4 @@ export function logger(options: LoggerOptions = {}): Logger {
     });
   }
   return instance;
-}
-
-/**
- * Interface for configuring the {@link logger} instance.
- * Defines various settings that control the logger's behavior, output formatting,
- * file logging, and automatic error capturing features.
- */
-export interface LoggerOptions {
-  /**
-   * The minimum log level to be output by the primary streams (console/pretty).
-   * When set, only logs at this level or higher will be processed by these streams.
-   * Specific streams (like the 'warn' stream to `errors.log`) may have their own fixed levels.
-   * Refer to Pino {@link Level} for possible values (e.g., 'trace', 'debug', 'info', 'warn', 'error', 'fatal').
-   * If undefined, defaults to 'debug' if `process.env.NODE_ENV` is 'development', otherwise 'info'.
-   */
-  level?: Level;
-  /**
-   * Enables trace logging to a dedicated file (`logs/traces.log`).
-   * If true, a separate stream is configured to write 'trace' level logs to this file.
-   * If undefined or false, this trace file logging is disabled. Defaults to false.
-   */
-  trace?: boolean;
-  /**
-   * Enables pretty-printing of log messages to the console using {@link pinoPretty}.
-   * If true, console logs are formatted for enhanced readability, with colorization and structured output.
-   * If false, console logs are written to `process.stdout` in standard Pino JSON format.
-   * If undefined, pretty-printing is enabled. Defaults to true.
-   */
-  pretty?: boolean;
-  /**
-   * Enables automatic logging of uncaught exceptions as fatal errors.
-   * If true, a global 'uncaughtException' handler is registered, which uses the logger
-   * to record the exception details before the process potentially terminates.
-   * If undefined or false, this feature is disabled. Defaults to true.
-   */
-  exception?: boolean;
-  /**
-   * Enables automatic logging of unhandled promise rejections as fatal errors.
-   * If true, a global 'unhandledRejection' handler is registered, which uses the logger
-   * to record the rejection reason and associated promise.
-   * If undefined or false, this feature is disabled. Defaults to true.
-   */
-  rejection?: boolean;
 }

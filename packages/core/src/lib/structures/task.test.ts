@@ -1,4 +1,7 @@
-import { Task, Vegapunk } from '../dist';
+import { expect, test, vi } from 'vitest';
+
+import { Vegapunk } from '../Vegapunk';
+import { Task } from './Task';
 
 const expectedOutput = [
   '1 0.1 awake',
@@ -21,27 +24,20 @@ const expectedOutput = [
   '18 6.3 update 6 test',
 ];
 
-const capturedLogs: string[] = [];
-const originalLog = console.log;
-console.log = (...args) => {
-  capturedLogs.push(args.join(' '));
-  originalLog(...args);
-};
+test('Task sequence test', async () => {
+  let i = 0;
+  const capturedLogs: string[] = [];
+  const consoleSpy = vi.spyOn(console, 'log').mockImplementation((...args) => {
+    capturedLogs.push(args.join(' '));
+  });
 
-async function main(i = 0) {
   const client = new Vegapunk();
   await client.start();
 
   const OBSERVER_TASK = await Task.createTask({
     async update() {
       if (i < expectedOutput.length) return;
-      if (JSON.stringify(capturedLogs) === JSON.stringify(expectedOutput)) {
-        console.log('[v] Output matches the expected sequence!');
-      } else {
-        console.error('[x] Output does not match the expected sequence!');
-        console.error('Captured output:', capturedLogs);
-      }
-
+      expect(capturedLogs).toEqual(expectedOutput);
       await OBSERVER_TASK.unload();
     },
     options: { ref: true },
@@ -122,5 +118,6 @@ async function main(i = 0) {
     options: { delay: 1700, enabled: false },
   });
   sevenTask.startTask(true);
-}
-main().catch(console.trace.bind(console));
+
+  consoleSpy.mockRestore();
+});

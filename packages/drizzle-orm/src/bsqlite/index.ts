@@ -11,7 +11,7 @@ export * from 'drizzle-orm/better-sqlite3';
 export * from 'drizzle-orm/sqlite-core';
 export { Adapter, Database };
 
-export type BSqliteOptions = {
+export interface BSqliteOptions {
   out: string;
   schema: string | string[];
   dbCredentials: { url: string };
@@ -31,7 +31,7 @@ export type BSqliteOptions = {
   introspect?: {
     casing: 'camel' | 'preserve';
   };
-};
+}
 
 const baseOptions = {
   dialect: 'sqlite',

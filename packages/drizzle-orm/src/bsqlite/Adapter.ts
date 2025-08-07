@@ -477,28 +477,28 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 }
 
 interface ComparisonOperator<T> {
-  $eq?: T;
-  $ne?: T;
-  $gt?: T;
-  $gte?: T;
-  $lt?: T;
-  $lte?: T;
-  $like?: T;
-  $nlike?: T;
-  $glob?: T;
-  $nglob?: T;
-  $in?: Array<T>;
-  $nin?: Array<T>;
-  $null?: boolean;
-  $not?: ComparisonOperator<T>;
+  readonly $eq?: T;
+  readonly $ne?: T;
+  readonly $gt?: T;
+  readonly $gte?: T;
+  readonly $lt?: T;
+  readonly $lte?: T;
+  readonly $like?: T;
+  readonly $nlike?: T;
+  readonly $glob?: T;
+  readonly $nglob?: T;
+  readonly $in?: Array<T>;
+  readonly $nin?: Array<T>;
+  readonly $null?: boolean;
+  readonly $not?: ComparisonOperator<T>;
 }
 
 interface LogicalOperator<T extends Table> {
-  $and?: Array<QueryBaseFilter<T> & LogicalOperator<T>>;
-  $nand?: Array<QueryBaseFilter<T> & LogicalOperator<T>>;
-  $or?: Array<QueryBaseFilter<T> & LogicalOperator<T>>;
-  $nor?: Array<QueryBaseFilter<T> & LogicalOperator<T>>;
-  $not?: QueryBaseFilter<T> & LogicalOperator<T>;
+  readonly $and?: Array<QueryBaseFilter<T> & LogicalOperator<T>>;
+  readonly $nand?: Array<QueryBaseFilter<T> & LogicalOperator<T>>;
+  readonly $or?: Array<QueryBaseFilter<T> & LogicalOperator<T>>;
+  readonly $nor?: Array<QueryBaseFilter<T> & LogicalOperator<T>>;
+  readonly $not?: QueryBaseFilter<T> & LogicalOperator<T>;
 }
 
 type QueryBaseFilter<A extends Table> = {
@@ -508,11 +508,11 @@ type QueryBaseFilter<A extends Table> = {
 type QueryFilter<A extends Table> = QueryBaseFilter<A> & LogicalOperator<A>;
 
 interface QueryOptions<A extends Table, B extends Array<Table>, S> {
-  select?: S;
-  limit?: number;
-  offset?: number;
-  order?: OrderClause<A, B>;
-  joins?: JoinClause<A, B>;
+  readonly select?: S;
+  readonly limit?: number;
+  readonly offset?: number;
+  readonly order?: OrderClause<A, B>;
+  readonly joins?: JoinClause<A, B>;
 }
 
 type SelectClause<A extends Table, B extends Array<Table>, S> = Partial<Record<keyof SelectMerge<A, B>, 0 | 1>> &
@@ -544,9 +544,9 @@ type OrderType<T extends Table> = {
 
 type JoinClause<A extends Table, B extends Array<Table>> = {
   [K in keyof B]: {
-    table: B[K];
-    on: { [L in keyof InferSelect<A>]?: keyof InferSelect<B[K]> };
-    type?: 'left' | 'right' | 'cross' | 'full' | 'inner';
+    readonly table: B[K];
+    readonly on: { [L in keyof InferSelect<A>]?: keyof InferSelect<B[K]> };
+    readonly type?: 'left' | 'right' | 'cross' | 'full' | 'inner';
   };
 };
 

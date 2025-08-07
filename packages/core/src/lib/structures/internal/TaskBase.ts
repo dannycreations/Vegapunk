@@ -98,7 +98,7 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
 }
 
 export interface TaskStatus {
-  idle: boolean;
-  enabled: boolean;
-  running: boolean;
+  readonly idle: boolean;
+  readonly enabled: boolean;
+  readonly running: boolean;
 }

@@ -20,16 +20,19 @@ export interface MutexItem {
    * Calling this function will set the lock as active for the corresponding key.
    */
   readonly attempt: () => void;
+
   /**
    * The function to call to reject the promise associated with the lock acquisition attempt.
    * @param {Error=} [reason] The reason for rejection.
    */
   readonly reject: (reason?: Error) => void;
+
   /**
    * The priority of the lock request. Higher numbers indicate higher priority.
    * This is used to determine the order in which queued requests are processed.
    */
   readonly priority: number;
+
   /**
    * The timestamp when the lock request was made.
    * This is used as a tie-breaker if multiple requests have the same priority.

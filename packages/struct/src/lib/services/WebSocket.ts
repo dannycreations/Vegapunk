@@ -36,7 +36,7 @@ export interface WebSocketOptions {
   readonly reconnectMaxAttempts?: number;
   readonly bufferedThresholdAmount?: number;
   readonly socketOptions?: ClientOptions | ClientRequestArgs;
-  logger?(...args: unknown[]): void;
+  readonly logger?: (...args: unknown[]) => void;
 }
 
 interface RequestPromise {
@@ -46,6 +46,7 @@ interface RequestPromise {
 
   readonly resolve: () => void;
   readonly reject: (reason: unknown) => void;
+
   attempts: number;
   timeoutId?: NodeJS.Timeout;
 }

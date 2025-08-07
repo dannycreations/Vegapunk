@@ -9,24 +9,27 @@ export interface GatherOptions<T> {
   /**
    * A function to filter the data. Only data for which this function returns true will be collected.
    */
-  filter: (data: T) => boolean;
+  readonly filter: (data: T) => boolean;
+
   /**
    * The maximum number of items to collect.
    * If `undefined` or `0`, the collection is not limited by the number of items,
    * though it may still be limited by `timeout`. The default value if not specified is `0`.
    */
-  max?: number;
+  readonly max?: number;
+
   /**
    * The maximum time in milliseconds to wait for data before the promise is settled.
    * If `undefined`, defaults to 60,000ms.
    */
-  timeout?: number;
+  readonly timeout?: number;
+
   /**
    * An message to be used as the rejection reason if the operation times out,
    * `max` is greater than 0, and the number of collected items is less than `max`.
    * If not provided under these timeout conditions, the promise resolves with the items collected so far.
    */
-  error?: string;
+  readonly error?: string;
 }
 
 /**

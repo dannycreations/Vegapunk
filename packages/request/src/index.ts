@@ -17,14 +17,14 @@ export { UserAgent };
  */
 export const ERROR_CODES: readonly string[] = [
   // Got internal
-  'ETIMEDOUT',
-  'ECONNRESET',
   'EADDRINUSE',
-  'ECONNREFUSED',
-  'EPIPE',
-  'ENOTFOUND',
-  'ENETUNREACH',
   'EAI_AGAIN',
+  'ECONNREFUSED',
+  'ECONNRESET',
+  'EPIPE',
+  'ENETUNREACH',
+  'ENOTFOUND',
+  'ETIMEDOUT',
 
   // Got custom
   'ERR_CANCELED',
@@ -38,6 +38,48 @@ export const ERROR_CODES: readonly string[] = [
  * These status codes often indicate temporary server-side issues.
  */
 export const ERROR_STATUS_CODES: readonly number[] = [408, 413, 429, 500, 502, 503, 504, 521, 522, 524];
+
+/**
+ * Configuration options for {@link requestDefault}.
+ * This interface extends `got`'s {@link Options} but omits certain fields (`prefixUrl`, `retry`, `timeout`, `resolveBodyOnly`)
+ * that are managed internally by {@link requestDefault} or have specific handling within it.
+ */
+export interface DefaultOptions extends Omit<Options, 'prefixUrl' | 'retry' | 'timeout' | 'resolveBodyOnly'> {
+  /**
+   * Number of retry attempts for the request.
+   * This controls how many times {@link requestDefault} will retry on specific errors (listed in {@link ERROR_CODES})
+   * or HTTP status codes (listed in {@link ERROR_STATUS_CODES}).
+   * A negative value means retry indefinitely.
+   */
+  retry?: number;
+
+  /**
+   * Timeout settings for the request, managed by {@link requestDefault}.
+   * These provide granular control over different phases of the request lifecycle.
+   */
+  timeout?: Partial<{
+    /**
+     * Milliseconds to wait for the initial server connection to be established
+     * before the request is considered timed out. This timeout applies from the start of the request
+     * until the first byte of the response headers is received or the request body starts sending.
+     */
+    initial: number;
+
+    /**
+     * Milliseconds to wait for data to be transmitted (either sending the request body
+     * or receiving the response body) after the initial connection has been made.
+     * This timeout resets upon any data activity (e.g., 'uploadProgress', 'downloadProgress').
+     * If no data is sent or received within this period, the request is cancelled.
+     */
+    transmission: number;
+
+    /**
+     * Total milliseconds for the entire request lifecycle, from the moment the request is initiated
+     * until the response body is fully downloaded. This acts as an overall deadline for the request.
+     */
+    total: number;
+  }>;
+}
 
 /**
  * The core `got` function instance, pre-bound.
@@ -144,12 +186,17 @@ export async function requestDefault<T = string, E = unknown>(options: string | 
         await instance
           .on('uploadProgress', () => resetTimeout())
           .on('downloadProgress', () => resetTimeout())
-          .then((res) => (cancel(), resolve(Result.ok(res))))
+          .then((res) => {
+            cancel();
+            resolve(Result.ok(res));
+          })
           .catch((error) => {
             if (isErrorLike<RequestError>(error)) {
               const flagOne = ERROR_CODES.includes(error.code);
               const flagTwo = ERROR_STATUS_CODES.includes(get(error, 'response.statusCode', 0));
-              if ((flagOne || flagTwo) && (_options.retry < 0 || _options.retry > retry)) return;
+              if ((flagOne || flagTwo) && (_options.retry < 0 || _options.retry > retry)) {
+                return;
+              }
             }
             if (instance.isCanceled) {
               error = new TimeoutError(Date.now() - start, 'request');
@@ -157,7 +204,8 @@ export async function requestDefault<T = string, E = unknown>(options: string | 
 
             // internal got error is hard to trace
             Error.captureStackTrace(error, requestDefault);
-            (cancel(), resolve(Result.err(error)));
+            cancel();
+            resolve(Result.err(error));
           })
           .finally(() => {
             clearTimeout(totalTimeoutId);
@@ -212,45 +260,4 @@ export async function waitForConnection(total: number = 10_000): Promise<void> {
       await sleep(total);
     }
   });
-}
-
-type ExcludeOptions = 'prefixUrl' | 'retry' | 'timeout' | 'resolveBodyOnly';
-
-/**
- * Configuration options for {@link requestDefault}.
- * This interface extends `got`'s {@link Options} but omits certain fields (`prefixUrl`, `retry`, `timeout`, `resolveBodyOnly`)
- * that are managed internally by {@link requestDefault} or have specific handling within it.
- */
-export interface DefaultOptions extends Omit<Options, ExcludeOptions> {
-  /**
-   * Number of retry attempts for the request.
-   * This controls how many times {@link requestDefault} will retry on specific errors (listed in {@link ERROR_CODES})
-   * or HTTP status codes (listed in {@link ERROR_STATUS_CODES}).
-   * A negative value means retry indefinitely.
-   */
-  retry?: number;
-  /**
-   * Timeout settings for the request, managed by {@link requestDefault}.
-   * These provide granular control over different phases of the request lifecycle.
-   */
-  timeout?: Partial<{
-    /**
-     * Milliseconds to wait for the initial server connection to be established
-     * before the request is considered timed out. This timeout applies from the start of the request
-     * until the first byte of the response headers is received or the request body starts sending.
-     */
-    initial: number;
-    /**
-     * Milliseconds to wait for data to be transmitted (either sending the request body
-     * or receiving the response body) after the initial connection has been made.
-     * This timeout resets upon any data activity (e.g., 'uploadProgress', 'downloadProgress').
-     * If no data is sent or received within this period, the request is cancelled.
-     */
-    transmission: number;
-    /**
-     * Total milliseconds for the entire request lifecycle, from the moment the request is initiated
-     * until the response body is fully downloaded. This acts as an overall deadline for the request.
-     */
-    total: number;
-  }>;
 }
