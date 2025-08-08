@@ -3,8 +3,8 @@ import pinoPretty from 'pino-pretty';
 
 import type { Level, Logger, StreamEntry } from 'pino';
 
-export * from 'pino';
-export { pinoPretty };
+export { pino, pinoPretty };
+export type { Level, Logger, StreamEntry };
 
 /**
  * Interface for configuring the {@link logger} instance.
@@ -177,4 +177,14 @@ export function logger(options: LoggerOptions = {}): Logger {
     });
   }
   return instance;
+}
+
+declare module 'pino' {
+  interface LogFn {
+    // Pino style
+    (obj: object, msg: string): void;
+    // Winston style
+    (msg: string, obj: object): void;
+    (...args: string[]): void;
+  }
 }
