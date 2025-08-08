@@ -12,8 +12,8 @@ importers:
         specifier: ^2.29.5
         version: 2.29.5
       '@ianvs/prettier-plugin-sort-imports':
-        specifier: ^4.6.0
-        version: 4.6.0(prettier@3.6.2)
+        specifier: ^4.6.1
+        version: 4.6.1(prettier@3.6.2)
       '@sapphire/ts-config':
         specifier: ^5.0.1
         version: 5.0.1
@@ -85,8 +85,8 @@ importers:
   packages/logger:
     dependencies:
       pino:
-        specifier: ^9.7.0
-        version: 9.7.0
+        specifier: ^9.8.0
+        version: 9.8.0
       pino-pretty:
         specifier: ^13.1.1
         version: 13.1.1
@@ -118,8 +118,8 @@ importers:
         specifier: 11.8.6
         version: 11.8.6
       user-agents:
-        specifier: ^1.1.623
-        version: 1.1.623
+        specifier: ^1.1.625
+        version: 1.1.625
     devDependencies:
       '@types/user-agents':
         specifier: ^1.0.4
@@ -440,8 +440,8 @@ packages:
     resolution: {integrity: sha512-H9XAx3hc0BQHY6l+IFSWHDySypcXsvsuLhgYLUGywmJ5pswRVQJUHpOsobnLYp2ZUaUlKiKDrgWWhosOwAEM8Q==}
     engines: {node: '>=6.9.0'}
 
-  '@ianvs/prettier-plugin-sort-imports@4.6.0':
-    resolution: {integrity: sha512-ZGhdOuMv6Y0dqv5eaKMBfHR3cwTY11fFEUhiTDpx7v2m1FrfgqZsBOrLd/zA0lTEKAo9ltNlHd6jx5h3eh4Htg==}
+  '@ianvs/prettier-plugin-sort-imports@4.6.1':
+    resolution: {integrity: sha512-Q0gujs/g6tw1uOGd1bTVLGDzAwb/UwrCehhPCQevTCYDkho8+eQSOhA0zcy9AM0XnXM1ChBWsZeE4P7Nym0pyw==}
     peerDependencies:
       '@prettier/plugin-oxc': ^0.0.4
       '@vue/compiler-sfc': 2.7.x || 3.x
@@ -2913,8 +2913,8 @@ packages:
   pino-std-serializers@7.0.0:
     resolution: {integrity: sha512-e906FRY0+tV27iq4juKzSYPbUj2do2X2JX4EzSca1631EB2QJQUqGbDuERal7LCtOpxl6x3+nvo9NPZcmjkiFA==}
 
-  pino@9.7.0:
-    resolution: {integrity: sha512-vnMCM6xZTb1WDmLvtG2lE/2p+t9hDEIvTWJsu6FejkE62vB7gDhvzrpFR4Cw2to+9JNQxVnkAKVPA1KPB98vWg==}
+  pino@9.8.0:
+    resolution: {integrity: sha512-L5+rV1wL7vGAcxXP7sPpN5lrJ07Piruka6ArXr7EWBXxdVWjJshGVX8suFsiusJVcGKDGUFfbgbnKdg+VAC+0g==}
     hasBin: true
 
   pirates@4.0.7:
@@ -3625,8 +3625,8 @@ packages:
     resolution: {integrity: sha512-1uEe95xksV1O0CYKXo8vQvN1JEbtJp7lb7C5U9HMsIp6IVwntkH/oNUzyVNQSd4S1sYk2FpSSW44FqMc8qee5w==}
     engines: {node: '>=4'}
 
-  user-agents@1.1.623:
-    resolution: {integrity: sha512-42sKtUqf/DDNdjJzbRsamZgBrZvgoyzEJEoEsnsqksddwEDMMziHlCzvpjJdeIzizIiAPXrEDtFVBmDf4SVqcA==}
+  user-agents@1.1.625:
+    resolution: {integrity: sha512-boXFQ6sQ4Cjee4dRYQVixGpTVq7EBAdU4FNY4eT0hLbjqdEXqVYasHWF6ogvPAJPlAQ5rZRzKYtifG8ZSYezjg==}
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
@@ -4124,7 +4124,7 @@ snapshots:
 
   '@hutson/parse-repository-url@3.0.2': {}
 
-  '@ianvs/prettier-plugin-sort-imports@4.6.0(prettier@3.6.2)':
+  '@ianvs/prettier-plugin-sort-imports@4.6.1(prettier@3.6.2)':
     dependencies:
       '@babel/generator': 7.28.0
       '@babel/parser': 7.28.0
@@ -6761,7 +6761,7 @@ snapshots:
 
   pino-std-serializers@7.0.0: {}
 
-  pino@9.7.0:
+  pino@9.8.0:
     dependencies:
       atomic-sleep: 1.0.0
       fast-redact: 3.5.0
@@ -7450,7 +7450,7 @@ snapshots:
 
   upath@2.0.1: {}
 
-  user-agents@1.1.623:
+  user-agents@1.1.625:
     dependencies:
       lodash.clonedeep: 4.5.0
 
