@@ -23,6 +23,7 @@ export interface SleepOptions {
  * @link https://github.com/sapphiredev/utilities/blob/main/packages/utilities/src/lib/sleep.ts
  *
  * @example
+ * ```typescript
  * await sleep(1000); // Sleeps for 1 second
  *
  * const result = await sleep(500, 'hello'); // Sleeps for 500ms and resolves to 'hello'
@@ -35,6 +36,7 @@ export interface SleepOptions {
  *   .catch(reason => console.log(`Sleep aborted: ${reason.message || reason}`));
  * // To abort the sleep:
  * // setTimeout(() => controller.abort(new Error('Cancelled by timeout')), 1000);
+ * ```
  *
  * @template T The type of the value the promise will resolve to.
  * @param {number} ms The duration to sleep in milliseconds.
@@ -94,6 +96,7 @@ export interface WaitUntilOptions {
  * The predicate function is called repeatedly with a delay between calls.
  *
  * @example
+ * ```typescript
  * let conditionMet = false;
  * setTimeout(() => { conditionMet = true; }, 1000);
  *
@@ -116,6 +119,7 @@ export interface WaitUntilOptions {
  *    console.log(`Iteration ${i}, still waiting...`);
  *  }
  * }, { delay: 50 });
+ * ```
  *
  * @param {(release: () => void, i: number) => Awaitable<boolean | void>} fn A function that is called repeatedly.
  *   It receives a `release` function (call to stop waiting) and the current iteration count `i` (0-indexed).
@@ -170,6 +174,7 @@ export async function waitUntil(fn: (release: () => void, i: number) => Awaitabl
  * This function is a specialized use case of {@link waitUntil} with `delay: 0`.
  *
  * @example
+ * ```typescript
  * await waitForIter(3, async (iterationIndex, release) => {
  *   console.log(`Starting iteration ${iterationIndex}`);
  *   await sleep(100); // Simulate async work
@@ -186,6 +191,7 @@ export async function waitUntil(fn: (release: () => void, i: number) => Awaitabl
  * // Finished iteration 0
  * // Starting iteration 1
  * // Deciding to release early during iteration 1.
+ * ```
  *
  * @param {number} val The number of iterations to perform (exclusive, e.g., `val = 3` means iterations 0, 1, 2).
  * @param {(val: number, release: () => void) => Awaitable<boolean | void>} fn A function called for each iteration.
@@ -204,6 +210,7 @@ export async function waitForIter(val: number, fn: (val: number, release: () => 
  * This function is a specialized use case of {@link waitUntil} with `delay: 0`.
  *
  * @example
+ * ```typescript
  * const items = ['alpha', 'beta', 'gamma'];
  * await waitForEach(items, async (item, index, release) => {
  *   console.log(`Processing item: ${item} at index: ${index}`);
@@ -219,6 +226,7 @@ export async function waitForIter(val: number, fn: (val: number, release: () => 
  * // Processing item: alpha at index: 0
  * // Processing item: beta at index: 1
  * // Found "beta", releasing early.
+ * ```
  *
  * @template T The type of elements in the input array.
  * @param {T[]} val The array of items to iterate over.

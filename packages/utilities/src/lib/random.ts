@@ -30,6 +30,7 @@ export const DEFAULT_ALPHABET: string = [Alphabet.LOWERCASE, Alphabet.UPPERCASE,
  * This function utilizes `nanoid`'s `customAlphabet` for the generation process.
  *
  * @example
+ * ```typescript
  * // Generate a random string of default length (30) using default characters.
  * const id1 = randomString();
  *
@@ -41,6 +42,7 @@ export const DEFAULT_ALPHABET: string = [Alphabet.LOWERCASE, Alphabet.UPPERCASE,
  *
  * // Generate an 8-character random string using only lowercase letters.
  * const lowercaseId = randomString(8, Alphabet.LOWERCASE);
+ * ```
  *
  * @param {number=} [length=30] The desired length of the random string.
  *   Must be a positive integer.

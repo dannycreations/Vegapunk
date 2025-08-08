@@ -12,6 +12,10 @@
       "types": "./dist/lib/std/common.d.ts",
       "default": "./dist/lib/std/common.js"
     },
+    "./decorator": {
+      "types": "./dist/lib/std/decorator.d.ts",
+      "default": "./dist/lib/std/decorator.js"
+    },
     "./result": {
       "types": "./dist/lib/std/result.d.ts",
       "default": "./dist/lib/std/result.js"

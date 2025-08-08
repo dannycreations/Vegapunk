@@ -3,6 +3,7 @@
  * This operation is performed in-place.
  *
  * @example
+ * ```typescript
  * const numbers = [10, 20, 30, 40];
  * swap(numbers, 0, 3);
  * console.log(numbers); // Output: [40, 20, 30, 10]
@@ -14,6 +15,7 @@
  *     console.error(e.message); // Output: Index out of bounds
  *   }
  * }
+ * ```
  *
  * @template T The type of elements in the array.
  * @param {T[]} heap The array, often representing a heap, in which elements will be swapped.
@@ -38,12 +40,14 @@ export function swap<T>(heap: T[], a: number, b: number): void {
  * It returns -1 if `a` is less than `b`, 1 if `a` is greater than `b`, and 0 if they are equal.
  *
  * @example
+ * ```typescript
  * const numbers = [3, 1, 4, 1, 5, 9];
  * numbers.sort(ascend); // numbers will be [1, 1, 3, 4, 5, 9]
  *
  * console.log(ascend(2, 5)); // -1
  * console.log(ascend(5, 2)); // 1
  * console.log(ascend(5, 5)); // 0
+ * ```
  *
  * @param {number} a The first number to compare.
  * @param {number} b The second number to compare.
@@ -61,12 +65,14 @@ export function ascend(a: number, b: number): number {
  * It returns -1 if `a` is greater than `b`, 1 if `a` is less than `b`, and 0 if they are equal.
  *
  * @example
+ * ```typescript
  * const numbers = [3, 1, 4, 1, 5, 9];
  * numbers.sort(descend); // numbers will be [9, 5, 4, 3, 1, 1]
  *
  * console.log(descend(2, 5)); // 1
  * console.log(descend(5, 2)); // -1
  * console.log(descend(5, 5)); // 0
+ * ```
  *
  * @param {number} a The first number to compare.
  * @param {number} b The second number to compare.
