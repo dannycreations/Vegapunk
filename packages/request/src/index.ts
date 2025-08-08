@@ -88,6 +88,7 @@ export interface DefaultOptions extends Omit<Options, 'prefixUrl' | 'retry' | 't
  * consider using {@link requestDefault}.
  *
  * @example
+ * ```typescript
  * async function fetchData() {
  *   try {
  *     // Simple GET request
@@ -104,6 +105,7 @@ export interface DefaultOptions extends Omit<Options, 'prefixUrl' | 'retry' | 't
  *   }
  * }
  * fetchData();
+ * ```
  *
  * @param {string | URL | Options} urlOrOptions The URL to request or a `got` {@link Options} object.
  * @param {Options=} options Additional `got` {@link Options}, used if the first argument is a URL string or `URL` object.
@@ -121,6 +123,7 @@ const userAgent = new UserAgent({ deviceCategory: 'desktop' });
  * It wraps the {@link request} function to provide a more resilient request mechanism.
  *
  * @example
+ * ```typescript
  * async function fetchDataWithDefaults() {
  *   try {
  *     // Request with default string response body
@@ -139,6 +142,7 @@ const userAgent = new UserAgent({ deviceCategory: 'desktop' });
  *   }
  * }
  * fetchDataWithDefaults();
+ * ```
  *
  * @template T The expected type of the response body. Defaults to `string`.
  * @template E The expected type of Error. Defaults to unknown.
@@ -223,6 +227,7 @@ export async function requestDefault<T = string, E = unknown>(options: string | 
  * The function resolves once either check succeeds. If checks fail, it waits for a specified duration before retrying.
  *
  * @example
+ * ```typescript
  * async function ensureConnected() {
  *   try {
  *     console.log('Checking for internet connection...');
@@ -235,6 +240,7 @@ export async function requestDefault<T = string, E = unknown>(options: string | 
  *   }
  * }
  * ensureConnected();
+ * ```
  *
  * @param {number=} [total=10000] The timeout in milliseconds for individual connection attempts and
  *   the sleep duration between retry cycles if both checks fail.
