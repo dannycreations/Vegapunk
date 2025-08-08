@@ -18,6 +18,7 @@ export class Queue<T> {
    * Initializes a new instance of the {@link Queue} class.
    *
    * @example
+   * ```typescript
    * // Max-heap for numbers (higher numbers have higher priority)
    * const numberMaxHeap = new Queue<number>((a, b) => b - a);
    * numberMaxHeap.enqueue(10, 50, 20);
@@ -32,6 +33,7 @@ export class Queue<T> {
    * const defaultQueue = new Queue<number>();
    * defaultQueue.enqueue(3, 1, 2);
    * // console.log(defaultQueue.dequeue()); // Behavior depends on default () => 0 comparator.
+   * ```
    *
    * @param {Comparator<T>} [compare=() => 0] A {@link Comparator} function that
    *   defines the priority order of elements. If `compare(a, b)` returns a
@@ -46,11 +48,13 @@ export class Queue<T> {
    * Gets the number of elements currently in the queue.
    *
    * @example
+   * ```typescript
    * const queue = new Queue<number>();
    * queue.enqueue(1, 2);
    * console.log(queue.size); // 2
    * queue.dequeue();
    * console.log(queue.size); // 1
+   * ```
    *
    * @returns {number} The total number of elements in the queue.
    */
@@ -62,12 +66,14 @@ export class Queue<T> {
    * Gets the last element that was removed from the queue via {@link dequeue}.
    *
    * @example
+   * ```typescript
    * const queue = new Queue<number>((a, b) => b - a); // Max-heap
    * queue.enqueue(10, 20);
    * const dequeuedItem = queue.dequeue(); // dequeuedItem will be 20
    * console.log(queue.last); // 20
    * console.log(queue.dequeue()); // 10
    * console.log(queue.last); // 10
+   * ```
    *
    * @returns {T | undefined} The last element dequeued, or `undefined` if no element
    *   has been dequeued yet or the queue was empty at the last dequeue operation.
@@ -81,6 +87,7 @@ export class Queue<T> {
    * without removing it. By default (index 0), it retrieves the highest-priority element.
    *
    * @example
+   * ```typescript
    * const queue = new Queue<number>((a, b) => b - a); // Max-heap
    * queue.enqueue(10, 5, 20);
    * console.log(queue.peek());    // 20 (highest priority element)
@@ -90,6 +97,7 @@ export class Queue<T> {
    * if (anElement !== undefined) {
    *   console.log('Element at index 1:', anElement); // e.g., 10 or 5
    * }
+   * ```
    *
    * @param {number} [index=0] The zero-based index of the element to retrieve
    *   from the internal heap array.
@@ -105,11 +113,13 @@ export class Queue<T> {
    * according to its priority defined by the {@link Comparator}.
    *
    * @example
+   * ```typescript
    * const queue = new Queue<string>();
    * queue.enqueue('apple', 'banana');
    * console.log(queue.size); // 2
    * queue.enqueue('cherry');
    * console.log(queue.size); // 3
+   * ```
    *
    * @param {...T[]} values The elements to add to the queue.
    * @returns {void}
@@ -126,6 +136,7 @@ export class Queue<T> {
    * The `last` property is updated with the dequeued element.
    *
    * @example
+   * ```typescript
    * const queue = new Queue<number>((a, b) => b - a); // Max-heap
    * queue.enqueue(10, 20, 5);
    * console.log(queue.dequeue()); // 20
@@ -133,6 +144,7 @@ export class Queue<T> {
    * console.log(queue.last);      // 10
    * console.log(queue.dequeue()); // 5
    * console.log(queue.dequeue()); // undefined
+   * ```
    *
    * @returns {T | undefined} The element with the highest priority, or `undefined`
    *   if the queue is empty.
@@ -159,12 +171,14 @@ export class Queue<T> {
    * Removes all elements from the queue.
    *
    * @example
+   * ```typescript
    * const queue = new Queue<number>();
    * queue.enqueue(1, 2, 3);
    * console.log(queue.size); // 3
    * queue.clear();
    * console.log(queue.size); // 0
    * console.log(queue.peek()); // undefined
+   * ```
    *
    * @returns {void}
    */
@@ -178,12 +192,14 @@ export class Queue<T> {
    * not necessarily the priority order.
    *
    * @example
+   * ```typescript
    * const queue = new Queue<{ id: number; name: string }>();
    * queue.enqueue({ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' });
    * const bob = queue.find(item => item.name === 'Bob');
    * console.log(bob); // { id: 2, name: 'Bob' } or undefined if not found
    * const charlie = queue.find(item => item.name === 'Charlie');
    * console.log(charlie); // undefined
+   * ```
    *
    * @param {(value: T) => boolean} predicate A function to execute on each element,
    *   taking the element as an argument. It should return `true` to indicate a match.
@@ -202,6 +218,7 @@ export class Queue<T> {
    * the new value is enqueued using {@link enqueue}.
    *
    * @example
+   * ```typescript
    * const queue = new Queue<{ id: number; value: string }>((a, b) => b.id - a.id);
    * queue.enqueue({ id: 1, value: 'one' }, { id: 2, value: 'two' });
    *
@@ -217,6 +234,7 @@ export class Queue<T> {
    * const upserted = queue.update(item => item.id === 3, { id: 3, value: 'tres' }, true);
    * console.log(upserted); // { id: 3, value: 'tres' }
    * console.log(queue.size); // 3
+   * ```
    *
    * @param {(value: T) => boolean} predicate A function to find the element to update.
    * @param {T} value The new value for the element.
@@ -253,6 +271,7 @@ export class Queue<T> {
    * After deletion, heap properties are restored.
    *
    * @example
+   * ```typescript
    * const queue = new Queue<string>();
    * queue.enqueue('cat', 'dog', 'fish', 'bird');
    * const deleted = queue.delete(item => item === 'dog');
@@ -262,6 +281,7 @@ export class Queue<T> {
    *
    * const notFound = queue.delete(item => item === 'lion');
    * console.log(notFound); // undefined
+   * ```
    *
    * @param {(value: T) => boolean} predicate A function to find the element to delete.
    * @returns {T | undefined} The deleted element, or `undefined` if no element
@@ -290,6 +310,7 @@ export class Queue<T> {
    * in priority order (highest priority first). This process empties the queue.
    *
    * @example
+   * ```typescript
    * const queue = new Queue<number>((a, b) => b - a); // Max-heap
    * queue.enqueue(10, 5, 20);
    *
@@ -299,6 +320,7 @@ export class Queue<T> {
    * }
    * console.log(sortedElements); // [20, 10, 5]
    * console.log(queue.size); // 0, as the iterator consumes the queue
+   * ```
    *
    * @returns {IterableIterator<T>} An iterator for the elements in the queue,
    *   ordered by priority.

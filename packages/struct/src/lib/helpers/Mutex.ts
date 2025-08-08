@@ -60,6 +60,7 @@ export class Mutex {
    * An optional timeout can be specified to automatically release the lock.
    *
    * @example
+   * ```typescript
    * const mutex = new Mutex();
    * const resourceKey = 'myResource';
    *
@@ -76,6 +77,7 @@ export class Mutex {
    *   console.log('timedResource lock acquired, will auto-release in 5s.');
    *   // If not manually released, it will be released after 5 seconds.
    * }
+   * ```
    *
    * @param {string | symbol=} [key] The identifier for the resource to lock.
    *   Defaults to an internal unique ID for this {@link Mutex} instance if not provided.
@@ -108,6 +110,7 @@ export class Mutex {
    * An optional timeout can be specified to automatically release the lock after it's acquired.
    *
    * @example
+   * ```typescript
    * const mutex = new Mutex();
    * const resourceKey = 'sharedResource';
    *
@@ -146,6 +149,7 @@ export class Mutex {
    *   }
    * }
    * timedCriticalTask('T1');
+   * ```
    *
    * @param {string | symbol=} [key] The identifier for the resource to lock.
    *   Defaults to an internal unique ID for this {@link Mutex} instance if not provided.
@@ -190,6 +194,7 @@ export class Mutex {
    * If no lock is held for the key, this method does nothing.
    *
    * @example
+   * ```typescript
    * const mutex = new Mutex();
    * const resourceKey = 'myResource';
    *
@@ -201,6 +206,7 @@ export class Mutex {
    *   mutex.release(resourceKey);
    * }
    * useResource();
+   * ```
    *
    * @param {string | symbol=} [key] The identifier for the resource to release.
    *   Defaults to an internal unique ID for this {@link Mutex} instance if not provided.
@@ -229,6 +235,7 @@ export class Mutex {
    * from {@link Mutex#acquire} calls will be rejected with an error.
    *
    * @example
+   * ```typescript
    * const mutex = new Mutex();
    *
    * mutex.lock('permanentLock', 60000); // Lock for 1 minute
@@ -252,6 +259,7 @@ export class Mutex {
    * // resourceX acquisition failed: Mutex disposed
    * // resourceY acquisition failed: Mutex disposed
    * // Mutex has been disposed.
+   * ```
    *
    * @returns {void}
    */

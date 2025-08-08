@@ -48,6 +48,7 @@ export class Collector {
    * active {@link Collector.gather} operations listening on the same key.
    *
    * @example
+   * ```typescript
    * const collector = new Collector();
    *
    * // Inspect a string with a custom key
@@ -55,6 +56,7 @@ export class Collector {
    *
    * // Inspect a number using the default collector ID as key
    * collector.inspect<number>(123);
+   * ```
    *
    * @template T The type of data to inspect.
    * @param {T} data The data to be emitted.
@@ -70,6 +72,7 @@ export class Collector {
    * and collects them until a maximum count is reached or a timeout occurs.
    *
    * @example
+   * ```typescript
    * const collector = new Collector();
    *
    * async function collectNumbers() {
@@ -109,6 +112,7 @@ export class Collector {
    *   }
    * }
    * collectWithTimeoutError();
+   * ```
    *
    * @template T The type of data to be collected.
    * @param {GatherOptions<T>} options The options for gathering data, including `filter`, `max` count, `timeout`, and `error`.
@@ -158,6 +162,7 @@ export class Collector {
    * indicating that the collector was disposed.
    *
    * @example
+   * ```typescript
    * const collector = new Collector();
    * const promise = collector.gather<number>({
    *   filter: () => true,
@@ -172,6 +177,7 @@ export class Collector {
    *
    * // Sometime later, before the promise resolves or rejects naturally:
    * collector.dispose();
+   * ```
    *
    * @returns {void}
    */
