@@ -19,14 +19,14 @@ export interface LoggerOptions {
    * Refer to Pino {@link Level} for possible values (e.g., 'trace', 'debug', 'info', 'warn', 'error', 'fatal').
    * If undefined, defaults to 'debug' if `process.env.NODE_ENV` is 'development', otherwise 'info'.
    */
-  level?: Level;
+  readonly level?: Level;
 
   /**
    * Enables trace logging to a dedicated file (`logs/traces.log`).
    * If true, a separate stream is configured to write 'trace' level logs to this file.
    * If undefined or false, this trace file logging is disabled. Defaults to false.
    */
-  trace?: boolean;
+  readonly trace?: boolean;
 
   /**
    * Enables pretty-printing of log messages to the console using {@link pinoPretty}.
@@ -34,7 +34,7 @@ export interface LoggerOptions {
    * If false, console logs are written to `process.stdout` in standard Pino JSON format.
    * If undefined, pretty-printing is enabled. Defaults to true.
    */
-  pretty?: boolean;
+  readonly pretty?: boolean;
 
   /**
    * Enables automatic logging of uncaught exceptions as fatal errors.
@@ -42,7 +42,7 @@ export interface LoggerOptions {
    * to record the exception details before the process potentially terminates.
    * If undefined or false, this feature is disabled. Defaults to true.
    */
-  exception?: boolean;
+  readonly exception?: boolean;
 
   /**
    * Enables automatic logging of unhandled promise rejections as fatal errors.
@@ -50,7 +50,7 @@ export interface LoggerOptions {
    * to record the rejection reason and associated promise.
    * If undefined or false, this feature is disabled. Defaults to true.
    */
-  rejection?: boolean;
+  readonly rejection?: boolean;
 }
 
 /**
@@ -62,6 +62,7 @@ export interface LoggerOptions {
  * automatically log uncaught exceptions and unhandled promise rejections.
  *
  * @example
+ * ```typescript
  * // Initialize logger with default settings.
  * // In development, this defaults to 'debug' level with pretty printing.
  * // In production, this defaults to 'info' level with single-line JSON pretty printing.
@@ -85,6 +86,7 @@ export interface LoggerOptions {
  * } catch (e) {
  *   customLog.error(e, 'An error was caught and logged.');
  * }
+ * ```
  *
  * @param {LoggerOptions=} [options={}] Configuration for the logger.
  *   Consult {@link LoggerOptions} for details on available properties and their impact on logger behavior.
