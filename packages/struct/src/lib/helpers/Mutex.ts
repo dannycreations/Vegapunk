@@ -1,51 +1,44 @@
 import { Queue } from '../heaps/Queue';
 
 /**
- * Represents an entry for an active lock in the {@link Mutex}.
+ * Represents an entry for a held lock, which may include a timeout for auto-release.
  */
 export interface MutexEntry {
   /**
-   * The timeout identifier for the lock, if a timeout is set.
-   * This is used to automatically release the lock after a specified duration.
+   * The timeout identifier returned by `setTimeout` for auto-releasing the lock.
    */
   timeoutId?: NodeJS.Timeout;
 }
 
 /**
- * Represents an item in the queue for a lock request in the {@link Mutex}.
+ * Represents an item waiting in the queue to acquire a lock.
  */
 export interface MutexItem {
   /**
-   * The function to execute to attempt acquiring the lock.
-   * Calling this function will set the lock as active for the corresponding key.
+   * The function to execute to acquire the lock and resolve the promise.
    */
   readonly attempt: () => void;
 
   /**
-   * The function to call to reject the promise associated with the lock acquisition attempt.
-   * @param {Error=} [reason] The reason for rejection.
+   * The function to reject the promise if the mutex is disposed.
    */
   readonly reject: (reason?: Error) => void;
 
   /**
-   * The priority of the lock request. Higher numbers indicate higher priority.
-   * This is used to determine the order in which queued requests are processed.
+   * The priority of the acquisition request. Higher numbers have higher priority.
    */
   readonly priority: number;
 
   /**
-   * The timestamp when the lock request was made.
-   * This is used as a tie-breaker if multiple requests have the same priority.
+   * The timestamp of when the request was made, used as a tie-breaker for priority.
    */
   readonly timestamp: number;
 }
 
 /**
- * Provides a mutual exclusion mechanism to control access to shared resources.
- * It allows ensuring that only one operation can access a particular resource
- * at any given time, preventing race conditions. Locks can be acquired
- * synchronously (with {@link Mutex.lock}) or asynchronously (with {@link Mutex.acquire}).
- * Requests can be prioritized, and locks can have an automatic release timeout.
+ * Provides a mutual exclusion mechanism to control access to a shared resource
+ * across asynchronous operations. It supports keyed locks, priority-based queuing,
+ * and optional timeouts for automatic lock release.
  */
 export class Mutex {
   protected readonly id: symbol = Symbol(Mutex.name);
@@ -53,117 +46,99 @@ export class Mutex {
   protected readonly queues: Map<string | symbol, Queue<MutexItem>> = new Map();
 
   /**
-   * Attempts to acquire a lock synchronously.
-   * If the lock is already held for the given key or there are pending requests in its queue,
-   * this method returns `true` (indicating the lock is busy). Otherwise, it acquires the
-   * lock and returns `false`.
-   * An optional timeout can be specified to automatically release the lock.
+   * Synchronously checks if a resource is locked and acquires the lock if it is not.
+   * This method provides a non-blocking way to attempt to gain exclusive access.
+   * If the lock is acquired, it must be manually released using {@link release}.
    *
    * @example
    * ```typescript
    * const mutex = new Mutex();
-   * const resourceKey = 'myResource';
+   * const resourceKey = 'my-resource';
    *
-   * if (!mutex.lock(resourceKey)) {
-   *   console.log('Lock acquired for myResource');
-   *   // Critical section: operations on the resource
-   *   mutex.release(resourceKey);
+   * if (!mutex.lock(resourceKey, 5000)) {
+   *   try {
+   *     // Critical section: The lock was acquired successfully.
+   *     // It will be auto-released after 5 seconds if not done manually.
+   *   } finally {
+   *     mutex.release(resourceKey); // It's best practice to release manually.
+   *   }
    * } else {
-   *   console.log('myResource is currently locked by another process.');
-   * }
-   *
-   * // Lock with a 5-second timeout
-   * if (!mutex.lock('timedResource', 5000)) {
-   *   console.log('timedResource lock acquired, will auto-release in 5s.');
-   *   // If not manually released, it will be released after 5 seconds.
+   *   console.log('Resource is currently locked.');
    * }
    * ```
    *
-   * @param {string | symbol=} [key] The identifier for the resource to lock.
-   *   Defaults to an internal unique ID for this {@link Mutex} instance if not provided.
-   * @param {number=} [timeout] The duration in milliseconds after which the lock is
-   *   automatically released. If not specified, the lock must be released manually.
-   * @returns {boolean} `true` if the lock is already held or queued for the specified key,
-   *   `false` if the lock was successfully acquired by this call.
+   * @param {string | symbol=} [key=this.id] A unique key identifying the resource to lock.
+   *   If not provided, a symbol unique to the `Mutex` instance is used.
+   * @param {number=} timeout An optional duration in milliseconds after which the lock
+   *   is automatically released.
+   * @returns {boolean} `true` if the resource was already locked (or had pending requests),
+   *   `false` if the lock was successfully acquired.
    */
   public lock(key: string | symbol = this.id, timeout?: number): boolean {
-    if (this.locks.has(key)) return true;
+    const isLocked = this.locks.has(key);
+    const queue = this.queues.get(key);
+    const hasQueue = queue !== undefined && queue.size > 0;
 
-    const keyQueue = this.queues.get(key);
-    if (keyQueue && keyQueue.size > 0) return true;
+    if (isLocked || hasQueue) {
+      return true;
+    }
 
     const lockEntry: MutexEntry = {};
-    if (typeof timeout === 'number') {
+    if (typeof timeout === 'number' && timeout >= 0) {
       lockEntry.timeoutId = setTimeout(() => {
         this.release(key);
       }, timeout);
     }
     this.locks.set(key, lockEntry);
+
     return false;
   }
 
   /**
-   * Asynchronously acquires a lock for the specified key.
-   * If the lock is currently held, the request is queued. Requests are processed
-   * based on priority (higher values first) and then by the time of request (earlier first).
-   * The returned promise resolves when the lock is acquired.
-   * An optional timeout can be specified to automatically release the lock after it's acquired.
+   * Asynchronously acquires a lock, waiting in a priority queue if the resource is
+   * currently locked. Once acquired, the lock must be released using {@link release}
+   * to allow other contenders to proceed.
    *
    * @example
    * ```typescript
    * const mutex = new Mutex();
-   * const resourceKey = 'sharedResource';
+   * const resourceKey = 'database-connection';
    *
-   * async function criticalTask(taskId: string, taskPriority: number) {
-   *   console.log(`Task ${taskId} (priority ${taskPriority}) attempting to acquire lock...`);
-   *   await mutex.acquire(resourceKey, taskPriority);
-   *   console.log(`Task ${taskId} acquired lock.`);
+   * async function performTransaction(user: string, priority: number) {
+   *   console.log(`${user} attempting to acquire lock with priority ${priority}...`);
+   *   await mutex.acquire(resourceKey, priority);
    *   try {
-   *     // Simulate work
+   *     console.log(`${user} acquired the lock.`);
+   *     // Simulate work in the critical section.
    *     await new Promise(resolve => setTimeout(resolve, 500));
-   *     console.log(`Task ${taskId} completed work.`);
    *   } finally {
+   *     console.log(`${user} is releasing the lock.`);
    *     mutex.release(resourceKey);
-   *     console.log(`Task ${taskId} released lock.`);
    *   }
    * }
    *
-   * criticalTask('A', 0);
-   * criticalTask('B', 1); // Higher priority, likely to acquire lock first if 'A' is queued.
-   * criticalTask('C', 0);
-   *
-   * // Example with timeout
-   * async function timedCriticalTask(taskId: string) {
-   *   try {
-   *     console.log(`Task ${taskId} attempting to acquire lock with 2s auto-release...`);
-   *     await mutex.acquire('timedResource', 0, 2000);
-   *     console.log(`Task ${taskId} acquired timedResource lock.`);
-   *     // Work that might take longer than timeout
-   *     await new Promise(resolve => setTimeout(resolve, 3000));
-   *     console.log(`Task ${taskId} finished work (lock might have auto-released).`);
-   *   } catch (error) {
-   *     console.error(`Task ${taskId} error:`, error);
-   *   } finally {
-   *     // Attempt to release, safe even if auto-released.
-   *     mutex.release('timedResource');
-   *   }
-   * }
-   * timedCriticalTask('T1');
+   * // Higher priority task will likely run first, even if started second.
+   * performTransaction('LowPriorityUser', 1);
+   * performTransaction('HighPriorityUser', 10);
    * ```
    *
-   * @param {string | symbol=} [key] The identifier for the resource to lock.
-   *   Defaults to an internal unique ID for this {@link Mutex} instance if not provided.
-   * @param {number=} [priority=0] The priority of the lock request. Higher numbers indicate greater priority.
-   * @param {number=} [timeout] The duration in milliseconds after which the lock is automatically released,
-   *   after being acquired.
+   * @param {string | symbol=} [key=this.id] A unique key identifying the resource to lock.
+   *   If not provided, a symbol unique to the `Mutex` instance is used.
+   * @param {number=} [priority=0] The priority of the acquisition request.
+   *   Higher numbers are given precedence.
+   * @param {number=} timeout An optional duration in milliseconds after which the
+   *   acquired lock is automatically released.
    * @returns {Promise<void>} A promise that resolves when the lock has been successfully acquired.
-   * @throws {Error} If the {@link Mutex} is disposed while this acquisition request is pending.
    */
-  public async acquire(key: string | symbol = this.id, priority: number = 0, timeout?: number): Promise<void> {
-    return new Promise((resolve, reject) => {
+  public acquire(key: string | symbol = this.id, priority: number = 0, timeout?: number): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const queue = this.queues.get(key);
+      const isLocked = this.locks.has(key);
+      const hasQueue = queue !== undefined && queue.size > 0;
+
       const attempt = (): void => {
         const lockEntry: MutexEntry = {};
-        if (typeof timeout === 'number') {
+        if (typeof timeout === 'number' && timeout >= 0) {
           lockEntry.timeoutId = setTimeout(() => {
             this.release(key);
           }, timeout);
@@ -172,106 +147,110 @@ export class Mutex {
         resolve();
       };
 
-      const keyQueue = this.queues.get(key);
-      if (this.locks.has(key) || (keyQueue && keyQueue.size > 0)) {
-        let queue = keyQueue;
-        if (!queue) {
-          queue = new Queue<MutexItem>((a: MutexItem, b: MutexItem) => b.priority - a.priority || a.timestamp - b.timestamp);
-          this.queues.set(key, queue);
+      if (!isLocked && !hasQueue) {
+        attempt();
+      } else {
+        let keyQueue = this.queues.get(key);
+        if (keyQueue === undefined) {
+          const comparator = (a: MutexItem, b: MutexItem): number => b.priority - a.priority || a.timestamp - b.timestamp;
+          keyQueue = new Queue<MutexItem>(comparator);
+          this.queues.set(key, keyQueue);
         }
 
-        queue.enqueue({ attempt, reject, priority, timestamp: Date.now() });
-      } else {
-        attempt();
+        keyQueue.enqueue({
+          attempt,
+          reject,
+          priority,
+          timestamp: Date.now(),
+        });
       }
     });
   }
 
   /**
-   * Releases a previously acquired lock for the specified key.
-   * If there are pending requests in the queue for this key, the highest priority
-   * (and then oldest) request from the queue is granted the lock.
-   * If no lock is held for the key, this method does nothing.
+   * Releases a lock, allowing the next queued contender (if any) to acquire it.
+   * If a timeout was set on lock acquisition, this method cancels it.
    *
    * @example
    * ```typescript
    * const mutex = new Mutex();
-   * const resourceKey = 'myResource';
+   * const key = 'my-resource';
    *
-   * async function useResource() {
-   *   await mutex.acquire(resourceKey);
-   *   console.log('Resource acquired.');
-   *   // ... perform operations on the resource ...
-   *   console.log('Operations complete, releasing resource.');
-   *   mutex.release(resourceKey);
+   * async function doWork() {
+   *   await mutex.acquire(key);
+   *   try {
+   *     // Critical section
+   *   } finally {
+   *     mutex.release(key);
+   *   }
    * }
-   * useResource();
+   *
+   * doWork();
    * ```
    *
-   * @param {string | symbol=} [key] The identifier for the resource to release.
-   *   Defaults to an internal unique ID for this {@link Mutex} instance if not provided.
+   * @param {string | symbol=} [key=this.id] A unique key identifying the resource to release.
+   *   If not provided, the default instance-wide lock is assumed.
    * @returns {void}
    */
   public release(key: string | symbol = this.id): void {
     const currentLock = this.locks.get(key);
-    if (!currentLock) return;
+    if (currentLock === undefined) {
+      return;
+    }
 
-    clearTimeout(currentLock.timeoutId);
+    if (currentLock.timeoutId) {
+      clearTimeout(currentLock.timeoutId);
+    }
     this.locks.delete(key);
 
-    const keyQueue = this.queues.get(key);
-    if (keyQueue && keyQueue.size > 0) {
-      keyQueue.dequeue()!.attempt();
-      if (keyQueue.size === 0) {
+    const queue = this.queues.get(key);
+    if (queue !== undefined && queue.size > 0) {
+      const nextItem = queue.dequeue();
+      if (nextItem) {
+        nextItem.attempt();
+      }
+
+      if (queue.size === 0) {
         this.queues.delete(key);
       }
     }
   }
 
   /**
-   * Disposes of the mutex, releasing all active locks and rejecting all pending
-   * lock acquisition requests.
-   * After disposal, the mutex should not be used further. Any pending promises
-   * from {@link Mutex#acquire} calls will be rejected with an error.
+   * Releases all currently held locks and rejects all pending acquisition requests.
+   * This effectively resets the mutex and makes it unusable for any pending
+   * operations, which will fail with an error.
    *
    * @example
    * ```typescript
    * const mutex = new Mutex();
    *
-   * mutex.lock('permanentLock', 60000); // Lock for 1 minute
+   * mutex.acquire('task1').then(() => console.log('This will not be reached'));
    *
-   * const p1 = mutex.acquire('resourceX', 0, 5000)
-   *   .then(() => console.log('resourceX acquired (should not happen if disposed)'))
-   *   .catch(err => console.error('resourceX acquisition failed:', err.message));
-   *
-   * const p2 = mutex.acquire('resourceY')
-   *   .then(() => console.log('resourceY acquired (should not happen if disposed)'))
-   *   .catch(err => console.error('resourceY acquisition failed:', err.message));
-   *
-   * // Simulate a short delay before disposing
-   * setTimeout(() => {
-   *   mutex.dispose();
-   *   console.log('Mutex has been disposed.');
-   *   // p1 and p2 promises should be rejected.
-   * }, 100);
-   *
-   * // Expected output might include:
-   * // resourceX acquisition failed: Mutex disposed
-   * // resourceY acquisition failed: Mutex disposed
-   * // Mutex has been disposed.
+   * // Dispose of the mutex, cleaning up all state.
+   * mutex.dispose();
+   * // The pending acquire promise will be rejected with an 'Mutex disposed' error.
    * ```
    *
    * @returns {void}
    */
   public dispose(): void {
-    this.locks.forEach((r) => clearTimeout(r.timeoutId));
+    for (const lock of this.locks.values()) {
+      if (lock.timeoutId) {
+        clearTimeout(lock.timeoutId);
+      }
+    }
     this.locks.clear();
 
-    this.queues.forEach((queue) => {
+    const reason = new Error('Mutex disposed');
+    for (const queue of this.queues.values()) {
       while (queue.size > 0) {
-        queue.dequeue()!.reject(new Error('Mutex disposed'));
+        const item = queue.dequeue();
+        if (item) {
+          item.reject(reason);
+        }
       }
-    });
+    }
     this.queues.clear();
   }
 }
