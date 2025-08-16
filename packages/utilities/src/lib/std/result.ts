@@ -1,5 +1,5 @@
 import { Option, Result } from '@sapphire/result';
-import { isError, isFunction, isObjectLike } from 'es-toolkit/compat';
+import { isError, isObjectLike } from 'es-toolkit/compat';
 
 export { Option, Result };
 
@@ -16,8 +16,8 @@ export function isErrorLike<T>(error: unknown): error is T & Error & { code: str
   return hasMessage && (hasStack || hasCode);
 }
 
-function assert<T>(op: T | (() => T), message?: string, ...args: object[]): void | never {
-  if (!(isFunction(op) ? op() : op)) {
+function assert<T>(value: T, message?: string, ...args: object[]): asserts value {
+  if (!value) {
     throw new ResultError(message, ...args);
   }
 }
