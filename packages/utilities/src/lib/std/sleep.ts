@@ -8,13 +8,13 @@ export interface SleepOptions {
    * An optional `AbortSignal` that can be used to cancel the sleep operation.
    * If the signal is aborted, the `sleep` promise will reject.
    */
-  signal?: AbortSignal;
+  readonly signal?: AbortSignal;
 
   /**
    * When `false` (default), the `setTimeout` timer used by `sleep` will not keep the Node.js event loop active.
    * Set to `true` to have the timer keep the event loop active.
    */
-  ref?: boolean;
+  readonly ref?: boolean;
 }
 
 /**
@@ -82,13 +82,13 @@ export interface WaitUntilOptions {
    * If `delay` is less than or equal to `0`, `process.nextTick` is used for subsequent calls instead of `setTimeout`.
    * Defaults to `10`.
    */
-  delay?: number;
+  readonly delay?: number;
 
   /**
    * When `false` (default), the `setTimeout` timer (if `delay > 0`) used by `waitUntil` will not keep the Node.js event loop active.
    * Set to `true` to have the timer keep the event loop active. This has no effect if `delay <= 0`.
    */
-  ref?: boolean;
+  readonly ref?: boolean;
 }
 
 /**

@@ -189,6 +189,7 @@ export {
   bindKey,
   castArray,
   ceil,
+  cloneWith,
   concat,
   cond,
   conforms,
@@ -340,5 +341,5 @@ export {
 
 declare module 'es-toolkit/compat' {
   function defaultsDeep<A, B extends A = A>(target: Partial<A>, ...sources: Partial<B>[]): A & B;
-  function isObjectLike(value?: unknown): value is object;
+  function isObjectLike<T>(value: T): value is T & object;
 }

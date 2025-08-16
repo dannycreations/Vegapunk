@@ -3,7 +3,7 @@ import { isError, isFunction, isObjectLike } from 'es-toolkit/compat';
 
 export { Option, Result };
 
-export function isErrorLike<T>(error: unknown): error is Error & { code: string } & T {
+export function isErrorLike<T>(error: unknown): error is T & Error & { code: string } {
   if (isError(error)) {
     return true;
   } else if (!isObjectLike(error)) {
