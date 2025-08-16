@@ -14,7 +14,7 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
   public start?(): unknown;
   public update?(): unknown;
 
-  public get isStatus(): TaskStatus {
+  public get status(): TaskStatus {
     return {
       idle: !!this.#timeout,
       enabled: this.enabled,
@@ -43,22 +43,32 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
     this.#clear();
   }
 
+  public resetTask(): void {
+    this.#isAwakeLock = false;
+    this.#isStartLock = false;
+    this.#clear();
+  }
+
   async #start(): Promise<void> {
+    if (this.#timeout) {
+      return;
+    }
+
     this.container.logger.trace(`Task Run: ${this.name}`);
     this.#isRunning = true;
 
     const result = await Result.fromAsync(async () => {
-      if (!this.#isAwakeOnce) {
-        this.#isAwakeOnce = true;
+      if (!this.#isAwakeLock) {
+        this.#isAwakeLock = true;
         await this.awake?.();
       }
 
       if (this.enabled) {
-        if (!this.#isStartOnce) {
-          this.#isStartOnce = true;
+        if (!this.#isStartLock) {
+          this.#isStartLock = true;
           await this.start?.();
         } else {
-          await this.update!();
+          await this.update?.();
         }
       }
     });
@@ -90,8 +100,8 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
   }
 
   #isRunning: boolean = false;
-  #isAwakeOnce: boolean = false;
-  #isStartOnce: boolean = false;
+  #isAwakeLock: boolean = false;
+  #isStartLock: boolean = false;
 
   #delay: number = Task.MIN_DELAY;
   #timeout?: NodeJS.Timeout;

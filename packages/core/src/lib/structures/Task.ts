@@ -1,6 +1,6 @@
+import { randomUUID } from 'node:crypto';
 import { container } from '@sapphire/pieces';
 
-import { Snowflake } from '../helpers/common.helper';
 import { HookPath } from './internal/StoreBase';
 import { TaskBase } from './internal/TaskBase';
 import { TaskStore } from './TaskStore';
@@ -20,7 +20,7 @@ export abstract class Task<Options extends Task.Options = Task.Options> extends 
       taskStores = container.stores.get('tasks');
     }
 
-    const name = `${HookPath}${Snowflake.generate({ workerId: BigInt(taskStores.size) })}`;
+    const name = randomUUID();
     const context = { name, root: HookPath, path: HookPath, store: taskStores };
     const piece = Object.assign(new TaskBase(context, task.options), task);
 
@@ -38,10 +38,10 @@ export abstract class Task<Options extends Task.Options = Task.Options> extends 
 }
 
 export interface CreateTask {
-  awake?(): unknown;
-  start?(): unknown;
-  update(): unknown;
-  options?: Task.Options;
+  readonly awake?: () => unknown;
+  readonly start?: () => unknown;
+  readonly update: () => unknown;
+  readonly options?: Task.Options;
 }
 
 export interface TaskOptions extends Piece.Options {

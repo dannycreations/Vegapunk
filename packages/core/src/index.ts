@@ -1,7 +1,7 @@
 export * from '@sapphire/pieces';
 
-export * from './lib/constants/types';
-export * from './lib/helpers/common.helper';
+export * from './lib/core/constants';
+export * from './lib/core/types';
 export * from './lib/structures/Listener';
 export * from './lib/structures/ListenerLoaderStrategy';
 export * from './lib/structures/ListenerStore';

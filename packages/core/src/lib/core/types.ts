@@ -3,7 +3,7 @@ import type { Logger } from '@vegapunk/logger';
 
 export interface ClientOptions {
   readonly logger?: Logger;
-  readonly baseUserDirectory?: URL | string | null;
+  readonly baseDirectory?: URL | string | null;
   readonly internalError?: boolean;
   readonly internalException?: boolean;
   readonly internalRejection?: boolean;

@@ -9,7 +9,7 @@ import { TaskStore } from './structures/TaskStore';
 
 import type { StoreRegistry } from '@sapphire/pieces';
 import type { Logger } from '@vegapunk/logger';
-import type { ClientEvents, ClientOptions } from './constants/types';
+import type { ClientEvents, ClientOptions } from './core/types';
 
 export class Vegapunk extends EventEmitter<ClientEvents> {
   public readonly stores: StoreRegistry;
@@ -23,15 +23,17 @@ export class Vegapunk extends EventEmitter<ClientEvents> {
         exception: false,
         rejection: false,
       }),
-      baseUserDirectory: getRootData().root,
+      baseDirectory: getRootData().root,
       internalError: true,
       internalException: true,
       internalRejection: true,
       ...options,
     };
 
-    container.client = this;
-    container.logger = this.options.logger;
+    Object.assign(container, {
+      client: this,
+      logger: this.options.logger,
+    });
 
     if (this.options.logger.level === 'trace') {
       Store.logger = this.options.logger.trace.bind(this.options.logger);
@@ -41,13 +43,17 @@ export class Vegapunk extends EventEmitter<ClientEvents> {
     this.stores.register(new ListenerStore());
     this.stores.register(new TaskStore());
 
-    process.on('uncaughtException', (...args) => container.client.emit('internalException', ...args));
-    process.on('unhandledRejection', (...args) => container.client.emit('internalRejection', ...args));
+    process.on('uncaughtException', (...args) => {
+      container.client.emit('internalException', ...args);
+    });
+    process.on('unhandledRejection', (...args) => {
+      container.client.emit('internalRejection', ...args);
+    });
   }
 
   public async start(): Promise<void> {
-    if (this.options.baseUserDirectory !== null) {
-      this.stores.registerPath(this.options.baseUserDirectory);
+    if (this.options.baseDirectory !== null) {
+      this.stores.registerPath(this.options.baseDirectory);
     }
 
     await Promise.all([...this.stores.values()].map((store) => store.loadAll()));
@@ -60,12 +66,12 @@ export class Vegapunk extends EventEmitter<ClientEvents> {
 
 declare module '@sapphire/pieces' {
   interface Container {
-    logger: Logger;
-    client: Vegapunk;
+    readonly logger: Logger;
+    readonly client: Vegapunk;
   }
 
   interface StoreRegistryEntries {
-    listeners: ListenerStore;
-    tasks: TaskStore;
+    readonly listeners: ListenerStore;
+    readonly tasks: TaskStore;
   }
 }
