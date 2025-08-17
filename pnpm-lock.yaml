@@ -121,8 +121,8 @@ importers:
         specifier: 11.8.6
         version: 11.8.6
       user-agents:
-        specifier: ^1.1.633
-        version: 1.1.633
+        specifier: ^1.1.634
+        version: 1.1.634
     devDependencies:
       '@types/user-agents':
         specifier: ^1.0.4
@@ -153,8 +153,8 @@ importers:
         specifier: ^1.11.13
         version: 1.11.13
       es-toolkit:
-        specifier: ^1.39.9
-        version: 1.39.9
+        specifier: ^1.39.10
+        version: 1.39.10
       humanize-duration:
         specifier: ^3.33.0
         version: 3.33.0
@@ -1736,8 +1736,8 @@ packages:
     resolution: {integrity: sha512-j6vWzfrGVfyXxge+O0x5sh6cvxAog0a/4Rdd2K36zCMV5eJ+/+tOAngRO8cODMNWbVRdVlmGZQL2YS3yR8bIUA==}
     engines: {node: '>= 0.4'}
 
-  es-toolkit@1.39.9:
-    resolution: {integrity: sha512-9OtbkZmTA2Qc9groyA1PUNeb6knVTkvB2RSdr/LcJXDL8IdEakaxwXLHXa7VX/Wj0GmdMJPR3WhnPGhiP3E+qg==}
+  es-toolkit@1.39.10:
+    resolution: {integrity: sha512-E0iGnTtbDhkeczB0T+mxmoVlT4YNweEKBLq7oaU4p11mecdsZpNWOglI4895Vh4usbQ+LsJiuLuI2L0Vdmfm2w==}
 
   esbuild@0.25.8:
     resolution: {integrity: sha512-vVC0USHGtMi8+R4Kz8rt6JhEWLxsv9Rnu/lGYbPR8u47B+DCBksq9JarW0zOO7bs37hyOK1l2/oqtbciutL5+Q==}
@@ -3648,8 +3648,8 @@ packages:
     resolution: {integrity: sha512-1uEe95xksV1O0CYKXo8vQvN1JEbtJp7lb7C5U9HMsIp6IVwntkH/oNUzyVNQSd4S1sYk2FpSSW44FqMc8qee5w==}
     engines: {node: '>=4'}
 
-  user-agents@1.1.633:
-    resolution: {integrity: sha512-yblp0CTLQT29bYXHAGiZff+Z89PKxH+1ie8n55Rr0QnDRNXSn9jdgUvTOV2mU3t9m6oA/whfFVqiexcbLzIh6A==}
+  user-agents@1.1.634:
+    resolution: {integrity: sha512-qNZoQPQVNAQrHyWA1UU7lEMkvsYvrZTD0PIdQXs9tOXCXKJoVWAp2cKXJ1oc0c4+Gy8KSWaF66Pmc/yLBfgfyQ==}
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
@@ -5431,7 +5431,7 @@ snapshots:
       has-tostringtag: 1.0.2
       hasown: 2.0.2
 
-  es-toolkit@1.39.9: {}
+  es-toolkit@1.39.10: {}
 
   esbuild@0.25.8:
     optionalDependencies:
@@ -7503,7 +7503,7 @@ snapshots:
 
   upath@2.0.1: {}
 
-  user-agents@1.1.633:
+  user-agents@1.1.634:
     dependencies:
       lodash.clonedeep: 4.5.0
 
