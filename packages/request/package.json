@@ -24,7 +24,7 @@
   "dependencies": {
     "@vegapunk/utilities": "workspace:*",
     "got": "11.8.6",
-    "user-agents": "^1.1.641"
+    "user-agents": "^1.1.648"
   },
   "devDependencies": {
     "@types/user-agents": "^1.0.4"
