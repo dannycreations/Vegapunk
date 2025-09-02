@@ -11,6 +11,7 @@
     "prepare": "husky",
     "clean": "rimraf -g \"packages/*/*.tsbuildinfo\" \"packages/*/dist\"",
     "clean:nodefiles": "rimraf -g \"*-lock*\" \"node_modules\" \"packages/*/node_modules\"",
+    "format": "prettier --write .",
     "bump": "lerna version patch --no-git-tag-version --yes",
     "update": "turbo run update && npm-check-updates -u -x @types/node",
     "prepack": "pnpm run clean && pnpm run build && pnpm run test",
@@ -38,5 +39,5 @@
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   },
-  "packageManager": "pnpm@10.15.0"
+  "packageManager": "pnpm@10.15.1"
 }

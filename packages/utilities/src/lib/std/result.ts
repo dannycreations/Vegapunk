@@ -46,6 +46,6 @@ export class ResultError extends Error {
 
 declare module '@sapphire/result' {
   namespace Result {
-    function assert<T>(op: T | (() => T), message?: string, ...args: object[]): void | never;
+    function assert<T>(value: T, message?: string, ...args: object[]): asserts value;
   }
 }
