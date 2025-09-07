@@ -10,7 +10,7 @@ importers:
     devDependencies:
       '@changesets/cli':
         specifier: ^2.29.6
-        version: 2.29.6(@types/node@22.18.0)
+        version: 2.29.6(@types/node@22.18.1)
       '@ianvs/prettier-plugin-sort-imports':
         specifier: ^4.7.0
         version: 4.7.0(prettier@3.6.2)
@@ -21,8 +21,8 @@ importers:
         specifier: ^1.13.5
         version: 1.13.5
       '@types/node':
-        specifier: 22.18.0
-        version: 22.18.0
+        specifier: 22.18.1
+        version: 22.18.1
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -52,7 +52,7 @@ importers:
         version: 5.9.2
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/node@22.18.0)(tsx@4.20.5)(yaml@2.8.0)
+        version: 3.2.4(@types/node@22.18.1)(tsx@4.20.5)(yaml@2.8.0)
 
   packages/core:
     dependencies:
@@ -88,8 +88,8 @@ importers:
   packages/logger:
     dependencies:
       pino:
-        specifier: ^9.9.0
-        version: 9.9.0
+        specifier: ^9.9.4
+        version: 9.9.4
       pino-pretty:
         specifier: ^13.1.1
         version: 13.1.1
@@ -97,14 +97,14 @@ importers:
   packages/mikro-orm:
     dependencies:
       '@mikro-orm/better-sqlite':
-        specifier: ^6.5.1
-        version: 6.5.1(@mikro-orm/core@6.5.1)
+        specifier: ^6.5.2
+        version: 6.5.2(@mikro-orm/core@6.5.2)
       '@mikro-orm/core':
-        specifier: ^6.5.1
-        version: 6.5.1
+        specifier: ^6.5.2
+        version: 6.5.2
       '@mikro-orm/reflection':
-        specifier: ^6.5.1
-        version: 6.5.1(@mikro-orm/core@6.5.1)
+        specifier: ^6.5.2
+        version: 6.5.2(@mikro-orm/core@6.5.2)
       '@mikro-orm/sql-highlighter':
         specifier: ^1.0.1
         version: 1.0.1
@@ -121,8 +121,8 @@ importers:
         specifier: 11.8.6
         version: 11.8.6
       user-agents:
-        specifier: ^1.1.649
-        version: 1.1.649
+        specifier: ^1.1.654
+        version: 1.1.654
     devDependencies:
       '@types/user-agents':
         specifier: ^1.0.4
@@ -515,18 +515,18 @@ packages:
   '@manypkg/get-packages@1.1.3':
     resolution: {integrity: sha512-fo+QhuU3qE/2TQMQmbVMqaQ6EWbMhi4ABWP+O4AM1NqPBuy0OrApV5LO6BrrgnhtAHS2NH6RrVk9OL181tTi8A==}
 
-  '@mikro-orm/better-sqlite@6.5.1':
-    resolution: {integrity: sha512-xmeygq9lg4sl6OZwD0Z/E+HHnZ3JN9zXzk/Q7NHJ+CeosNXQ8B06K60COleZ0q3IRFavyAwUWLJVvtJXWZ2cwA==}
+  '@mikro-orm/better-sqlite@6.5.2':
+    resolution: {integrity: sha512-q+WDzZ5aNBWNI5CJP9R24wLwY4JcxzATN9G0ZGVeRk5cPBK4eSSHXAF0/KQFEH0TtgyS4xVGjfEYcyM3xixyZQ==}
     engines: {node: '>= 18.12.0'}
     peerDependencies:
       '@mikro-orm/core': ^6.0.0
 
-  '@mikro-orm/core@6.5.1':
-    resolution: {integrity: sha512-tODBZok5Y7AIFCM3604UsmO8MZU6TKEQFhBOblAPJj/c7JTPaws+zalmriA+K3z1dbDcS/ZKipJJKweUGpS1EA==}
+  '@mikro-orm/core@6.5.2':
+    resolution: {integrity: sha512-iKVbgdj653a1RiBzFy6UlpdraprLowpPjabyWObtYUYvVAvvJbtKwDVeZ8xbpIgdLzX2HHurR1w6wXeC17GVSg==}
     engines: {node: '>= 18.12.0'}
 
-  '@mikro-orm/knex@6.5.1':
-    resolution: {integrity: sha512-R8ee7BqKgum5fMs7aWTW0TdvQyJmj6/pcmx8l2FnQhb7D0hSXP96C8ojSKuXGX2+NUnxsw7qpLu2LKMDwPrjiQ==}
+  '@mikro-orm/knex@6.5.2':
+    resolution: {integrity: sha512-9CmZIZ6hs7P7JPDLaZzA539pzEHRc5GzgEru9XK0MUxqHrHiOImYiXAclVj9k6LLo5NczR4gYchQxK19+HWdoQ==}
     engines: {node: '>= 18.12.0'}
     peerDependencies:
       '@mikro-orm/core': ^6.0.0
@@ -541,8 +541,8 @@ packages:
       mariadb:
         optional: true
 
-  '@mikro-orm/reflection@6.5.1':
-    resolution: {integrity: sha512-RKCWK4OxG0ShReeep3gBrfT13ASLk9Pwna2+WwdivDcE8kw3rfRj9wIsebxE7AhW+TuR5ciE4zE/gwvEA67SPQ==}
+  '@mikro-orm/reflection@6.5.2':
+    resolution: {integrity: sha512-tzKYFs5T2RKQ/zcomJIhAfGy+mScJB/+oSphPx9KrrTooAZtJgcHJddaR1TFW5oiq4je4tQ265+DDsYYOLsj7w==}
     engines: {node: '>= 18.12.0'}
     peerDependencies:
       '@mikro-orm/core': ^6.0.0
@@ -1025,8 +1025,8 @@ packages:
   '@types/node@12.20.55':
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}
 
-  '@types/node@22.18.0':
-    resolution: {integrity: sha512-m5ObIqwsUp6BZzyiy4RdZpzWGub9bqLJMvZDD0QMXhxjqMHMENlj+SqF5QxoUwaQNFe+8kz8XM8ZQhqkQPTgMQ==}
+  '@types/node@22.18.1':
+    resolution: {integrity: sha512-rzSDyhn4cYznVG+PCzGe1lwuMYJrcBS1fc3JqSa2PvtABwWo+dZ1ij5OVok3tqfpEBCBoaR4d7upFJk73HRJDw==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -2479,8 +2479,8 @@ packages:
     resolution: {integrity: sha512-PXwfBhYu0hBCPw8Dn0E+WDYb7af3dSLVWKi3HGv84IdF4TyFoC0ysxFd0Goxw7nSv4T/PzEJQxsYsEiFCKo2BA==}
     engines: {node: '>=8.6'}
 
-  mikro-orm@6.5.1:
-    resolution: {integrity: sha512-TbsJ/3RCNsK5iZopGzoFmqZCtrfLItUf+64YSLEoyaGUMKY51j6ln+bF4YzNbBEuzFMC7KlrF2m0WlsCTSgqGg==}
+  mikro-orm@6.5.2:
+    resolution: {integrity: sha512-D+W2MwdA1XerqxN+33hP86apCdJb5wAPV2r5cSKNXv9RXXv4o9KvCu9BOm/ydVHdCGQXYTO9S/+MqiSIKDQ2Aw==}
     engines: {node: '>= 18.12.0'}
 
   mime-db@1.52.0:
@@ -2940,8 +2940,8 @@ packages:
   pino-std-serializers@7.0.0:
     resolution: {integrity: sha512-e906FRY0+tV27iq4juKzSYPbUj2do2X2JX4EzSca1631EB2QJQUqGbDuERal7LCtOpxl6x3+nvo9NPZcmjkiFA==}
 
-  pino@9.9.0:
-    resolution: {integrity: sha512-zxsRIQG9HzG+jEljmvmZupOMDUQ0Jpj0yAgE28jQvvrdYTlEaiGwelJpdndMl/MBuRr70heIj83QyqJUWaU8mQ==}
+  pino@9.9.4:
+    resolution: {integrity: sha512-d1XorUQ7sSKqVcYdXuEYs2h1LKxejSorMEJ76XoZ0pPDf8VzJMe7GlPXpMBZeQ9gE4ZPIp5uGD+5Nw7scxiigg==}
     hasBin: true
 
   pirates@4.0.7:
@@ -3652,8 +3652,8 @@ packages:
     resolution: {integrity: sha512-1uEe95xksV1O0CYKXo8vQvN1JEbtJp7lb7C5U9HMsIp6IVwntkH/oNUzyVNQSd4S1sYk2FpSSW44FqMc8qee5w==}
     engines: {node: '>=4'}
 
-  user-agents@1.1.649:
-    resolution: {integrity: sha512-MqBIOU+VUbNzvVZRolOMGzM32dLrf4sKPDs6L2W2g9MCs/Nllj1fTQ2iuG46r901Fcpt9o8UkTgHQmA/2BZyLg==}
+  user-agents@1.1.654:
+    resolution: {integrity: sha512-SBpm6k+a4/F30uwMucOlCtSABm5jZbkUJXQYyuL15d0EacFevDfSBAJk27xRVcpavKrzR46VyVpGYcinEPCIBQ==}
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
@@ -3961,7 +3961,7 @@ snapshots:
     dependencies:
       '@changesets/types': 6.1.0
 
-  '@changesets/cli@2.29.6(@types/node@22.18.0)':
+  '@changesets/cli@2.29.6(@types/node@22.18.1)':
     dependencies:
       '@changesets/apply-release-plan': 7.0.12
       '@changesets/assemble-release-plan': 6.0.9
@@ -3977,7 +3977,7 @@ snapshots:
       '@changesets/should-skip-package': 0.1.2
       '@changesets/types': 6.1.0
       '@changesets/write': 0.4.0
-      '@inquirer/external-editor': 1.0.1(@types/node@22.18.0)
+      '@inquirer/external-editor': 1.0.1(@types/node@22.18.1)
       '@manypkg/get-packages': 1.1.3
       ansi-colors: 4.1.3
       ci-info: 3.9.0
@@ -4182,12 +4182,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@inquirer/external-editor@1.0.1(@types/node@22.18.0)':
+  '@inquirer/external-editor@1.0.1(@types/node@22.18.1)':
     dependencies:
       chardet: 2.1.0
       iconv-lite: 0.6.3
     optionalDependencies:
-      '@types/node': 22.18.0
+      '@types/node': 22.18.1
 
   '@isaacs/balanced-match@4.0.1': {}
 
@@ -4322,10 +4322,10 @@ snapshots:
       globby: 11.1.0
       read-yaml-file: 1.1.0
 
-  '@mikro-orm/better-sqlite@6.5.1(@mikro-orm/core@6.5.1)':
+  '@mikro-orm/better-sqlite@6.5.2(@mikro-orm/core@6.5.2)':
     dependencies:
-      '@mikro-orm/core': 6.5.1
-      '@mikro-orm/knex': 6.5.1(@mikro-orm/core@6.5.1)(better-sqlite3@11.10.0)
+      '@mikro-orm/core': 6.5.2
+      '@mikro-orm/knex': 6.5.2(@mikro-orm/core@6.5.2)(better-sqlite3@11.10.0)
       better-sqlite3: 11.10.0
       fs-extra: 11.3.1
       sqlstring-sqlite: 0.1.1
@@ -4340,19 +4340,19 @@ snapshots:
       - supports-color
       - tedious
 
-  '@mikro-orm/core@6.5.1':
+  '@mikro-orm/core@6.5.2':
     dependencies:
       dataloader: 2.2.3
       dotenv: 17.2.1
       esprima: 4.0.1
       fs-extra: 11.3.1
       globby: 11.1.0
-      mikro-orm: 6.5.1
+      mikro-orm: 6.5.2
       reflect-metadata: 0.2.2
 
-  '@mikro-orm/knex@6.5.1(@mikro-orm/core@6.5.1)(better-sqlite3@11.10.0)':
+  '@mikro-orm/knex@6.5.2(@mikro-orm/core@6.5.2)(better-sqlite3@11.10.0)':
     dependencies:
-      '@mikro-orm/core': 6.5.1
+      '@mikro-orm/core': 6.5.2
       fs-extra: 11.3.1
       knex: 3.1.0(better-sqlite3@11.10.0)
       sqlstring: 2.3.3
@@ -4367,9 +4367,9 @@ snapshots:
       - supports-color
       - tedious
 
-  '@mikro-orm/reflection@6.5.1(@mikro-orm/core@6.5.1)':
+  '@mikro-orm/reflection@6.5.2(@mikro-orm/core@6.5.2)':
     dependencies:
-      '@mikro-orm/core': 6.5.1
+      '@mikro-orm/core': 6.5.2
       globby: 11.1.0
       ts-morph: 26.0.0
 
@@ -4823,13 +4823,13 @@ snapshots:
 
   '@types/better-sqlite3@7.6.13':
     dependencies:
-      '@types/node': 22.18.0
+      '@types/node': 22.18.1
 
   '@types/cacheable-request@6.0.3':
     dependencies:
       '@types/http-cache-semantics': 4.0.4
       '@types/keyv': 3.1.4
-      '@types/node': 22.18.0
+      '@types/node': 22.18.1
       '@types/responselike': 1.0.3
 
   '@types/chai@5.2.2':
@@ -4846,7 +4846,7 @@ snapshots:
 
   '@types/keyv@3.1.4':
     dependencies:
-      '@types/node': 22.18.0
+      '@types/node': 22.18.1
 
   '@types/minimatch@3.0.5': {}
 
@@ -4854,7 +4854,7 @@ snapshots:
 
   '@types/node@12.20.55': {}
 
-  '@types/node@22.18.0':
+  '@types/node@22.18.1':
     dependencies:
       undici-types: 6.21.0
 
@@ -4862,13 +4862,13 @@ snapshots:
 
   '@types/responselike@1.0.3':
     dependencies:
-      '@types/node': 22.18.0
+      '@types/node': 22.18.1
 
   '@types/user-agents@1.0.4': {}
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 22.18.0
+      '@types/node': 22.18.1
 
   '@vitest/expect@3.2.4':
     dependencies:
@@ -4878,13 +4878,13 @@ snapshots:
       chai: 5.2.1
       tinyrainbow: 2.0.0
 
-  '@vitest/mocker@3.2.4(vite@7.0.6(@types/node@22.18.0)(tsx@4.20.5)(yaml@2.8.0))':
+  '@vitest/mocker@3.2.4(vite@7.0.6(@types/node@22.18.1)(tsx@4.20.5)(yaml@2.8.0))':
     dependencies:
       '@vitest/spy': 3.2.4
       estree-walker: 3.0.3
       magic-string: 0.30.17
     optionalDependencies:
-      vite: 7.0.6(@types/node@22.18.0)(tsx@4.20.5)(yaml@2.8.0)
+      vite: 7.0.6(@types/node@22.18.1)(tsx@4.20.5)(yaml@2.8.0)
 
   '@vitest/pretty-format@3.2.4':
     dependencies:
@@ -6308,7 +6308,7 @@ snapshots:
       braces: 3.0.3
       picomatch: 2.3.1
 
-  mikro-orm@6.5.1: {}
+  mikro-orm@6.5.2: {}
 
   mime-db@1.52.0: {}
 
@@ -6820,7 +6820,7 @@ snapshots:
 
   pino-std-serializers@7.0.0: {}
 
-  pino@9.9.0:
+  pino@9.9.4:
     dependencies:
       atomic-sleep: 1.0.0
       fast-redact: 3.5.0
@@ -7509,7 +7509,7 @@ snapshots:
 
   upath@2.0.1: {}
 
-  user-agents@1.1.649:
+  user-agents@1.1.654:
     dependencies:
       lodash.clonedeep: 4.5.0
 
@@ -7528,13 +7528,13 @@ snapshots:
 
   validate-npm-package-name@5.0.1: {}
 
-  vite-node@3.2.4(@types/node@22.18.0)(tsx@4.20.5)(yaml@2.8.0):
+  vite-node@3.2.4(@types/node@22.18.1)(tsx@4.20.5)(yaml@2.8.0):
     dependencies:
       cac: 6.7.14
       debug: 4.4.1
       es-module-lexer: 1.7.0
       pathe: 2.0.3
-      vite: 7.0.6(@types/node@22.18.0)(tsx@4.20.5)(yaml@2.8.0)
+      vite: 7.0.6(@types/node@22.18.1)(tsx@4.20.5)(yaml@2.8.0)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -7549,7 +7549,7 @@ snapshots:
       - tsx
       - yaml
 
-  vite@7.0.6(@types/node@22.18.0)(tsx@4.20.5)(yaml@2.8.0):
+  vite@7.0.6(@types/node@22.18.1)(tsx@4.20.5)(yaml@2.8.0):
     dependencies:
       esbuild: 0.25.8
       fdir: 6.4.6(picomatch@4.0.3)
@@ -7558,16 +7558,16 @@ snapshots:
       rollup: 4.46.2
       tinyglobby: 0.2.14
     optionalDependencies:
-      '@types/node': 22.18.0
+      '@types/node': 22.18.1
       fsevents: 2.3.3
       tsx: 4.20.5
       yaml: 2.8.0
 
-  vitest@3.2.4(@types/node@22.18.0)(tsx@4.20.5)(yaml@2.8.0):
+  vitest@3.2.4(@types/node@22.18.1)(tsx@4.20.5)(yaml@2.8.0):
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(vite@7.0.6(@types/node@22.18.0)(tsx@4.20.5)(yaml@2.8.0))
+      '@vitest/mocker': 3.2.4(vite@7.0.6(@types/node@22.18.1)(tsx@4.20.5)(yaml@2.8.0))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4
@@ -7585,11 +7585,11 @@ snapshots:
       tinyglobby: 0.2.14
       tinypool: 1.1.1
       tinyrainbow: 2.0.0
-      vite: 7.0.6(@types/node@22.18.0)(tsx@4.20.5)(yaml@2.8.0)
-      vite-node: 3.2.4(@types/node@22.18.0)(tsx@4.20.5)(yaml@2.8.0)
+      vite: 7.0.6(@types/node@22.18.1)(tsx@4.20.5)(yaml@2.8.0)
+      vite-node: 3.2.4(@types/node@22.18.1)(tsx@4.20.5)(yaml@2.8.0)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 22.18.0
+      '@types/node': 22.18.1
     transitivePeerDependencies:
       - jiti
       - less
