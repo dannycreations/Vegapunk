@@ -1,3 +1,4 @@
+export * from './lib/alive';
 export * from './lib/array';
 export * from './lib/object';
 export * from './lib/random';
