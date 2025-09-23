@@ -44,7 +44,6 @@ export class TaskBase<Options extends Task.Options> extends Piece<Options, 'task
   }
 
   public resetTask(): void {
-    this.#isAwakeLock = false;
     this.#isStartLock = false;
     this.#clear();
   }
