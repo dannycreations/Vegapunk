@@ -20,6 +20,11 @@ const RESTART_WINDOW_MS = 60 * 1000;
 const RESTART_CONFIRM_MS = 5 * 1000;
 
 /**
+ * Message type for signaling a graceful restart.
+ */
+const RESTART_CHILD_APP = 'RESTART_CHILD_APP';
+
+/**
  * Tracks the number of child process restarts within the current time window.
  * This count is reset by {@link restartTimer}.
  */
@@ -81,6 +86,12 @@ export function runApp(appLogic: () => Promise<void>): void {
     process.exit(0);
   });
 
+  process.on('message', (message) => {
+    if (Object.is(message, RESTART_CHILD_APP)) {
+      currentChild?.kill('SIGTERM');
+    }
+  });
+
   /**
    * Forks a new child process and sets up event listeners.
    *
@@ -97,7 +108,7 @@ export function runApp(appLogic: () => Promise<void>): void {
       stdio: 'inherit',
     });
 
-    currentChild.on('exit', (code) => {
+    currentChild.once('exit', (code) => {
       currentChild = null;
       if (!['0', 'SIGINT', 'SIGTERM'].includes(String(code))) {
         console.log(`Restarting child process (attempt ${++restartCount}/${MAX_RESTARTS})...`);
@@ -108,7 +119,7 @@ export function runApp(appLogic: () => Promise<void>): void {
       }
     });
 
-    currentChild.on('error', (error) => {
+    currentChild.once('error', (error) => {
       currentChild = null;
       console.error('Child process failed to start or encountered an error:', error);
       console.log(`Restarting child process (attempt ${++restartCount}/${MAX_RESTARTS})...`);
@@ -142,9 +153,8 @@ export function runApp(appLogic: () => Promise<void>): void {
     }
 
     if (currentChild) {
-      console.log('Terminating existing child process before starting a new one...');
+      currentChild.once('exit', () => forkNewChild());
       currentChild.kill('SIGTERM');
-      currentChild.on('exit', () => forkNewChild());
     } else {
       forkNewChild();
     }
@@ -154,12 +164,12 @@ export function runApp(appLogic: () => Promise<void>): void {
 }
 
 /**
- * Triggers a restart of the application by exiting the current process.
+ * Triggers a restart of the application by signaling the parent process.
  *
  * This function should be called from within the child process's application
- * logic (`appLogic`) to signal that a restart is required. It exits the
- * child process with code 1, which the parent process manager interprets as a
- * request to restart.
+ * logic (`appLogic`) to signal that a restart is required. It sends a specific
+ * message to the parent process, which then handles the graceful termination
+ * and restarting of the child.
  *
  * @example
  * ```typescript
@@ -175,5 +185,10 @@ export function runApp(appLogic: () => Promise<void>): void {
  * @returns {void}
  */
 export function restartApp(): void {
-  process.exit(1);
+  if (process.send) {
+    process.send(RESTART_CHILD_APP);
+    process.exit(0);
+  } else {
+    process.exit(1);
+  }
 }
