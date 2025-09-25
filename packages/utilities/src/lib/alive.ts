@@ -72,7 +72,10 @@ let currentChild: ChildProcess | null = null;
  */
 export function runApp(appLogic: () => Promise<void>): void {
   if (process.argv.length === 3 && process.argv[2] === '--child') {
-    void appLogic().catch(console.error);
+    void appLogic().catch((error) => {
+      console.error(error);
+      process.exit(1);
+    });
     return;
   }
 
@@ -84,12 +87,6 @@ export function runApp(appLogic: () => Promise<void>): void {
   process.on('SIGTERM', () => {
     console.log('Parent process received SIGTERM. Exiting.');
     process.exit(0);
-  });
-
-  process.on('message', (message) => {
-    if (Object.is(message, RESTART_CHILD_APP)) {
-      currentChild?.kill('SIGTERM');
-    }
   });
 
   /**
@@ -104,19 +101,25 @@ export function runApp(appLogic: () => Promise<void>): void {
    */
   const forkNewChild = (): void => {
     currentChild = fork(process.argv[1], ['--child'], {
+      stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
       execPath: process.execPath,
-      stdio: 'inherit',
     });
 
-    currentChild.once('exit', (code) => {
+    currentChild.on('message', (message) => {
+      if (Object.is(message, RESTART_CHILD_APP)) {
+        currentChild?.kill('SIGTERM');
+      }
+    });
+
+    currentChild.once('exit', (code, signal) => {
       currentChild = null;
-      if (!['0', 'SIGINT', 'SIGTERM'].includes(String(code))) {
-        console.log(`Restarting child process (attempt ${++restartCount}/${MAX_RESTARTS})...`);
-        setTimeout(() => startChildProcess(), RESTART_CONFIRM_MS);
-      } else {
+      if (code === 0 && !signal) {
         console.log('Child process exited cleanly or was terminated. Exiting.');
         process.exit(0);
       }
+
+      console.log(`Restarting child process (attempt ${++restartCount}/${MAX_RESTARTS})...`);
+      setTimeout(() => startChildProcess(), RESTART_CONFIRM_MS);
     });
 
     currentChild.once('error', (error) => {
@@ -185,7 +188,7 @@ export function runApp(appLogic: () => Promise<void>): void {
  * @returns {void}
  */
 export function restartApp(): void {
-  if (process.send) {
+  if (typeof process.send === 'function') {
     process.send(RESTART_CHILD_APP);
     process.exit(0);
   } else {
