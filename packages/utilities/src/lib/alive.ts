@@ -1,75 +1,60 @@
 import { ChildProcess, fork } from 'node:child_process';
 import process from 'node:process';
 
-const MAX_RESTARTS = 5;
-const RESTART_WINDOW_MS = 60 * 1000;
-const RESTART_CONFIRM_MS = 5 * 1000;
-
-const RESTART_APP_TYPE = 'RESTART_APP_TYPE';
-const SHUTDOWN_APP_TYPE = 'SHUTDOWN_APP_TYPE';
+const KILL_APP_CODE = 240699;
 
 let restartCount = 0;
 let restartTimer: NodeJS.Timeout | null = null;
 let currentChild: ChildProcess | null = null;
 
-export function runApp(appLogic: () => Promise<void>): void {
-  if (process.argv.length === 3 && process.argv[2] === '--child') {
-    void appLogic().catch((error) => {
-      console.error(error);
-      restartApp();
-    });
+interface RunAppOptions {
+  readonly max?: number;
+  readonly delay?: number;
+}
+
+export function runApp(appLogic: () => Promise<void>, options: RunAppOptions = {}): void {
+  if (process.argv[2] === '--child') {
+    void appLogic();
     return;
   }
 
+  const { max = 3, delay = 5_000 } = options;
+
   process.once('SIGINT', () => {
     console.log('Parent process received SIGINT. Exiting.');
-    shutdownApp();
+    killApp();
   });
 
   process.once('SIGTERM', () => {
     console.log('Parent process received SIGTERM. Exiting.');
-    shutdownApp();
+    killApp();
   });
 
-  process.on('message', (message) => {
-    if (Object.is(message, RESTART_APP_TYPE)) {
-      currentChild?.kill('SIGTERM');
-    }
-  });
-
-  const forkNewChild = (): void => {
+  const forkChild = (): void => {
     currentChild = fork(process.argv[1], ['--child'], {
-      stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
       execPath: process.execPath,
-    });
-
-    currentChild.on('message', (message) => {
-      if (Object.is(message, RESTART_APP_TYPE)) {
-        currentChild?.kill('SIGTERM');
-      }
+      stdio: 'inherit',
     });
 
     currentChild.once('exit', (code) => {
       currentChild = null;
-      if (Object.is(code, SHUTDOWN_APP_TYPE)) {
+
+      if (Object.is(code, KILL_APP_CODE)) {
         console.log('Child process exited cleanly or was terminated. Exiting.');
-        shutdownApp();
-        return;
+        killApp();
       }
 
-      console.log(`Restarting child process (attempt ${++restartCount}/${MAX_RESTARTS})...`);
-      setTimeout(() => startChildProcess(), RESTART_CONFIRM_MS);
-    });
+      if (max > 0 && restartCount >= max) {
+        console.error('Child process restarted too many times. Exiting.');
+        killApp();
+      }
 
-    currentChild.once('error', (error) => {
-      currentChild = null;
-      console.error('Child process failed to start or encountered an error:', error);
-      console.log(`Restarting child process (attempt ${++restartCount}/${MAX_RESTARTS})...`);
-      setTimeout(() => startChildProcess(), RESTART_CONFIRM_MS);
+      console.log(`Restarting child process (attempt ${++restartCount}/${max <= 0 ? '∞' : max})...`);
+      setTimeout(() => startChild(), delay);
     });
   };
 
-  const startChildProcess = (): void => {
+  const startChild = (): void => {
     if (restartTimer) {
       clearTimeout(restartTimer);
     }
@@ -77,38 +62,20 @@ export function runApp(appLogic: () => Promise<void>): void {
     restartTimer = setTimeout(() => {
       restartCount = 0;
       restartTimer = null;
-    }, RESTART_WINDOW_MS);
-
-    if (restartCount >= MAX_RESTARTS) {
-      console.error('Child process restarted too many times. Exiting.');
-      shutdownApp();
-      return;
-    }
+    }, 60_000);
 
     if (currentChild) {
-      currentChild.once('exit', () => forkNewChild());
+      currentChild.removeAllListeners();
+      currentChild.once('exit', () => forkChild());
       currentChild.kill('SIGTERM');
     } else {
-      forkNewChild();
+      forkChild();
     }
   };
 
-  startChildProcess();
+  startChild();
 }
 
-export function restartApp(): void {
-  if (typeof process.send === 'function') {
-    process.send(RESTART_APP_TYPE);
-  } else {
-    process.exit(RESTART_APP_TYPE);
-  }
-}
-
-export function shutdownApp(): void {
-  if (currentChild) {
-    currentChild.once('exit', () => process.exit(SHUTDOWN_APP_TYPE));
-    currentChild.kill('SIGTERM');
-  } else {
-    process.exit(SHUTDOWN_APP_TYPE);
-  }
+export function killApp(): never {
+  process.exit(KILL_APP_CODE);
 }
