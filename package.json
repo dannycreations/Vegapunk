@@ -28,10 +28,10 @@
     "@ianvs/prettier-plugin-sort-imports": "^4.7.0",
     "@sapphire/ts-config": "^5.0.1",
     "@swc/core": "^1.13.20",
-    "@types/node": "22.18.10",
+    "@types/node": "22.18.11",
     "husky": "^9.1.7",
     "lerna": "^9.0.0",
-    "npm-check-updates": "^19.0.0",
+    "npm-check-updates": "^19.1.1",
     "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
     "tsup": "^8.5.0",
@@ -40,5 +40,5 @@
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"
   },
-  "packageManager": "pnpm@10.18.2"
+  "packageManager": "pnpm@10.18.3"
 }
