@@ -35,6 +35,7 @@
   },
   "scripts": {
     "build": "tsup",
+    "check": "tsc --noEmit",
     "test": "vitest",
     "update": "npm-check-updates -u -x chalk,nanoid"
   },

@@ -14,7 +14,9 @@ const mockEventEmitterInstance = {
 };
 
 vi.mock('node:events', () => ({
-  EventEmitter: vi.fn(() => mockEventEmitterInstance),
+  EventEmitter: vi.fn(function EventEmitter() {
+    return mockEventEmitterInstance;
+  }),
 }));
 
 describe('Collector', () => {
