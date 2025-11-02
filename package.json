@@ -27,18 +27,18 @@
     "@changesets/cli": "^2.29.7",
     "@ianvs/prettier-plugin-sort-imports": "^4.7.0",
     "@sapphire/ts-config": "^5.0.1",
-    "@swc/core": "^1.13.21",
-    "@types/node": "22.18.12",
+    "@swc/core": "^1.14.0",
+    "@types/node": "22.18.13",
     "husky": "^9.1.7",
     "lerna": "^9.0.0",
-    "npm-check-updates": "^19.1.1",
+    "npm-check-updates": "^19.1.2",
     "prettier": "^3.6.2",
-    "rimraf": "^6.0.1",
+    "rimraf": "^6.1.0",
     "tsup": "^8.5.0",
     "tsx": "^4.20.6",
-    "turbo": "^2.5.8",
+    "turbo": "^2.6.0",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.4"
+    "vitest": "^4.0.6"
   },
-  "packageManager": "pnpm@10.19.0"
+  "packageManager": "pnpm@10.20.0"
 }
