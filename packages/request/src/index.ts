@@ -51,19 +51,19 @@ export interface DefaultOptions extends Omit<Options, 'prefixUrl' | 'retry' | 't
    * or HTTP status codes (listed in {@link ERROR_STATUS_CODES}).
    * A negative value means retry indefinitely.
    */
-  retry?: number;
+  readonly retry?: number;
 
   /**
    * Timeout settings for the request, managed by {@link requestDefault}.
    * These provide granular control over different phases of the request lifecycle.
    */
-  timeout?: Partial<{
+  readonly timeout?: Partial<{
     /**
      * Milliseconds to wait for the initial server connection to be established
      * before the request is considered timed out. This timeout applies from the start of the request
      * until the first byte of the response headers is received or the request body starts sending.
      */
-    initial: number;
+    readonly initial: number;
 
     /**
      * Milliseconds to wait for data to be transmitted (either sending the request body
@@ -71,13 +71,13 @@ export interface DefaultOptions extends Omit<Options, 'prefixUrl' | 'retry' | 't
      * This timeout resets upon any data activity (e.g., 'uploadProgress', 'downloadProgress').
      * If no data is sent or received within this period, the request is cancelled.
      */
-    transmission: number;
+    readonly transmission: number;
 
     /**
      * Total milliseconds for the entire request lifecycle, from the moment the request is initiated
      * until the response body is fully downloaded. This acts as an overall deadline for the request.
      */
-    total: number;
+    readonly total: number;
   }>;
 }
 
