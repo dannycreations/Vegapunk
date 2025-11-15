@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { Queue } from '../heaps/Queue';
 import { Mutex } from './Mutex';
 
 import type { MockInstance } from 'vitest';
@@ -141,7 +140,7 @@ describe('Mutex', () => {
 
       expect(resolved1).toBe(false);
       expect(mutex['queues'].has(key)).toBe(true);
-      expect(mutex['queues'].get(key)?.size).toBe(1);
+      expect(mutex['queues'].get(key)?.length).toBe(1);
 
       mutex.release(key);
       await vi.runAllTimersAsync();
@@ -263,7 +262,7 @@ describe('Mutex', () => {
       const acquirePromise = mutex.acquire(key);
 
       expect(mutex['queues'].has(key)).toBe(true);
-      expect(mutex['queues'].get(key)).toBeInstanceOf(Queue);
+      expect(mutex['queues'].get(key)).toBeInstanceOf(Array);
 
       mutex.release(key);
       await acquirePromise;
@@ -316,13 +315,13 @@ describe('Mutex', () => {
       });
 
       expect(order).toEqual([]);
-      expect(mutex['queues'].get(key)?.size).toBe(2);
+      expect(mutex['queues'].get(key)?.length).toBe(2);
 
       mutex.release(key);
       await vi.runAllTimersAsync();
       expect(order).toEqual(['P1']);
       expect(mutex['locks'].has(key)).toBe(true);
-      expect(mutex['queues'].get(key)?.size).toBe(1);
+      expect(mutex['queues'].get(key)?.length).toBe(1);
 
       mutex.release(key);
       await vi.runAllTimersAsync();
@@ -340,7 +339,7 @@ describe('Mutex', () => {
       const acquirePromise = mutex.acquire(key);
 
       expect(mutex['queues'].has(key)).toBe(true);
-      expect(mutex['queues'].get(key)?.size).toBe(1);
+      expect(mutex['queues'].get(key)?.length).toBe(1);
 
       mutex.release(key);
       await acquirePromise;
@@ -382,8 +381,8 @@ describe('Mutex', () => {
       const p2 = mutex.acquire(key1);
       const p3 = mutex.acquire(key2);
 
-      expect(mutex['queues'].get(key1)?.size).toBe(2);
-      expect(mutex['queues'].get(key2)?.size).toBe(1);
+      expect(mutex['queues'].get(key1)?.length).toBe(2);
+      expect(mutex['queues'].get(key2)?.length).toBe(1);
 
       mutex.dispose();
 

@@ -1,5 +1,3 @@
-import { Queue } from '../heaps/Queue';
-
 /**
  * Represents an entry for a held lock, which may include a timeout for auto-release.
  */
@@ -43,7 +41,7 @@ export interface MutexItem {
 export class Mutex {
   protected readonly id: symbol = Symbol(Mutex.name);
   protected readonly locks: Map<string | symbol, MutexEntry> = new Map();
-  protected readonly queues: Map<string | symbol, Queue<MutexItem>> = new Map();
+  protected readonly queues: Map<string | symbol, MutexItem[]> = new Map();
 
   /**
    * Synchronously checks if a resource is locked and acquires the lock if it is not.
@@ -77,7 +75,7 @@ export class Mutex {
   public lock(key: string | symbol = this.id, timeout?: number): boolean {
     const isLocked = this.locks.has(key);
     const queue = this.queues.get(key);
-    const hasQueue = queue !== undefined && queue.size > 0;
+    const hasQueue = queue !== undefined && queue.length > 0;
 
     if (isLocked || hasQueue) {
       return true;
@@ -134,7 +132,7 @@ export class Mutex {
     return new Promise<void>((resolve, reject) => {
       const queue = this.queues.get(key);
       const isLocked = this.locks.has(key);
-      const hasQueue = queue !== undefined && queue.size > 0;
+      const hasQueue = queue !== undefined && queue.length > 0;
 
       const attempt = (): void => {
         const lockEntry: MutexEntry = {};
@@ -152,17 +150,18 @@ export class Mutex {
       } else {
         let keyQueue = this.queues.get(key);
         if (keyQueue === undefined) {
-          const comparator = (a: MutexItem, b: MutexItem): number => b.priority - a.priority || a.timestamp - b.timestamp;
-          keyQueue = new Queue<MutexItem>(comparator);
+          keyQueue = [];
           this.queues.set(key, keyQueue);
         }
 
-        keyQueue.enqueue({
+        keyQueue.push({
           attempt,
           reject,
           priority,
           timestamp: Date.now(),
         });
+
+        keyQueue.sort((a, b) => b.priority - a.priority || a.timestamp - b.timestamp);
       }
     });
   }
@@ -204,13 +203,13 @@ export class Mutex {
     this.locks.delete(key);
 
     const queue = this.queues.get(key);
-    if (queue !== undefined && queue.size > 0) {
-      const nextItem = queue.dequeue();
+    if (queue !== undefined && queue.length > 0) {
+      const nextItem = queue.shift();
       if (nextItem) {
         nextItem.attempt();
       }
 
-      if (queue.size === 0) {
+      if (queue.length === 0) {
         this.queues.delete(key);
       }
     }
@@ -244,8 +243,8 @@ export class Mutex {
 
     const reason = new Error('Mutex disposed');
     for (const queue of this.queues.values()) {
-      while (queue.size > 0) {
-        const item = queue.dequeue();
+      while (queue.length > 0) {
+        const item = queue.shift();
         if (item) {
           item.reject(reason);
         }

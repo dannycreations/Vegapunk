@@ -1,7 +1,5 @@
 import { WebSocket as ws } from 'ws';
 
-import { Queue } from '../heaps/Queue';
-
 import type { ValueOf } from '@vegapunk/utilities';
 import type { ClientRequestArgs } from 'node:http';
 import type { ClientOptions, CloseEvent, ErrorEvent } from 'ws';
@@ -62,7 +60,7 @@ export abstract class WebSocket<UserOptions extends object = object> {
   private reconnectAttempts: number = 0;
   private reconnectTimeoutId?: NodeJS.Timeout;
   private isRequestActive: boolean = false;
-  private readonly requestQueue: Queue<RequestPromise> = new Queue();
+  private readonly requestQueue: RequestPromise[] = [];
 
   public constructor(options: WebSocketOptions & UserOptions) {
     this.options = {
@@ -136,7 +134,7 @@ export abstract class WebSocket<UserOptions extends object = object> {
         return;
       }
 
-      this.requestQueue.enqueue({ ...task, resolve, reject, attempts: 0 });
+      this.requestQueue.push({ ...task, resolve, reject, attempts: 0 });
       this.startQueueSystem();
     });
   }
@@ -234,7 +232,7 @@ export abstract class WebSocket<UserOptions extends object = object> {
 
   private startQueueSystem(): void {
     queueMicrotask(() => {
-      if (this.state !== WebSocketState.OPEN || this.isRequestActive || this.requestQueue.size === 0) {
+      if (this.state !== WebSocketState.OPEN || this.isRequestActive || this.requestQueue.length === 0) {
         return;
       } else if (!this.ws || this.ws.readyState !== ws.OPEN) {
         this.options.logger('WebSocket: Socket not open despite Open state, forcing reconnect.');
@@ -242,7 +240,7 @@ export abstract class WebSocket<UserOptions extends object = object> {
         return;
       }
 
-      const currentRequest = this.requestQueue.peek()!;
+      const currentRequest = this.requestQueue[0]!;
       if (this.ws.bufferedAmount > this.options.bufferedThresholdAmount) {
         this.options.logger(
           `WebSocket: Send request (${currentRequest.description}) paused due to high bufferedAmount: ${this.ws.bufferedAmount}, retrying.`,
@@ -284,14 +282,14 @@ export abstract class WebSocket<UserOptions extends object = object> {
       sendPromise
         .then(() => {
           currentRequest.resolve();
-          this.requestQueue.dequeue();
+          this.requestQueue.shift();
           this.isRequestActive = false;
           this.startQueueSystem();
         })
         .catch((error) => {
           if (currentRequest.attempts >= this.options.requestMaxAttempts) {
             currentRequest.reject(error);
-            this.requestQueue.dequeue();
+            this.requestQueue.shift();
             this.isRequestActive = false;
             this.startQueueSystem();
           } else {
@@ -306,13 +304,13 @@ export abstract class WebSocket<UserOptions extends object = object> {
   }
 
   private rejectAllQueued(reason: Error): void {
-    if (this.requestQueue.size === 0) {
+    if (this.requestQueue.length === 0) {
       return;
     }
 
-    this.options.logger(`WebSocket: Rejecting ${this.requestQueue.size} queued. Reason: ${reason.message}`);
-    while (this.requestQueue.size > 0) {
-      const req = this.requestQueue.dequeue()!;
+    this.options.logger(`WebSocket: Rejecting ${this.requestQueue.length} queued. Reason: ${reason.message}`);
+    while (this.requestQueue.length > 0) {
+      const req = this.requestQueue.shift()!;
       if (req.timeoutId) {
         clearTimeout(req.timeoutId);
         req.timeoutId = undefined;
