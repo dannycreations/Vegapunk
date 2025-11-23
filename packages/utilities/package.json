@@ -52,7 +52,7 @@
     "@sapphire/result": "^2.8.0",
     "chalk": "4.1.2",
     "dayjs": "^1.11.19",
-    "es-toolkit": "^1.41.0",
+    "es-toolkit": "^1.42.0",
     "humanize-duration": "^3.33.1",
     "jsonc-parser": "^3.3.1",
     "nanoid": "3.3.11",
