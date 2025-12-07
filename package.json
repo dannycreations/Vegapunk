@@ -32,13 +32,13 @@
     "husky": "^9.1.7",
     "lerna": "^9.0.3",
     "npm-check-updates": "^19.1.2",
-    "prettier": "^3.7.3",
+    "prettier": "^3.7.4",
     "rimraf": "^6.1.2",
     "tsup": "^8.5.1",
-    "tsx": "^4.20.6",
-    "turbo": "^2.6.1",
+    "tsx": "^4.21.0",
+    "turbo": "^2.6.3",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.14"
+    "vitest": "^4.0.15"
   },
   "packageManager": "pnpm@10.24.0"
 }
