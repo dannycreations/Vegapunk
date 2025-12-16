@@ -1,6 +1,6 @@
 {
   "extends": [
-    "@sapphire/ts-config/tsconfig",
+    "@sapphire/ts-config",
     "@sapphire/ts-config/bundler",
     "@sapphire/ts-config/decorators",
     "@sapphire/ts-config/extra-strict",
