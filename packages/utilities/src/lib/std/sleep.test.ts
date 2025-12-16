@@ -16,28 +16,28 @@ test('should retry until callback resolve', async () => {
 });
 
 test('should use a custom delay', async () => {
-  const start = Date.now();
+  const start = performance.now();
   await waitUntil(
     (_, i) => {
       if (i > 1) {
         return true;
       }
 
-      setTimeout(noop, 25);
+      setTimeout(noop, 200);
       return false;
     },
-    { delay: 20 },
+    { delay: 100 },
   );
-  const end = Date.now();
-  expect(end - start).toBeGreaterThan(30);
+  const end = performance.now();
+  expect(end - start).greaterThanOrEqual(100);
 });
 
 test('should waiting until status true', async () => {
   let status = false;
   setTimeout(() => (status = true), 500);
 
-  const start = Date.now();
+  const start = performance.now();
   await waitUntil(() => status);
-  const end = Date.now();
-  expect(end - start).toBeGreaterThan(500);
+  const end = performance.now();
+  expect(end - start).greaterThanOrEqual(500);
 });

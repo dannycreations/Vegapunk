@@ -16,7 +16,7 @@
   "scripts": {
     "build": "tsup",
     "check": "tsc --noEmit",
-    "test": "vitest",
+    "test": "vitest --no-color",
     "update": "npm-check-updates -u"
   },
   "files": [

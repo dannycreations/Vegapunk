@@ -7,8 +7,8 @@
   "scripts": {
     "start:watch": "turbo watch dev",
     "build": "turbo run build && tsx scripts/output.build.ts",
-    "test": "turbo run test",
-    "check": "turbo run check",
+    "test": "turbo run test --no-color",
+    "check": "turbo run check --no-color",
     "format": "prettier --write .",
     "clean": "rimraf -g \"packages/*/*.tsbuildinfo\" \"packages/*/dist\"",
     "clean:node": "rimraf -g \"*-lock*\" \"node_modules\" \"packages/*/node_modules\"",
