@@ -205,7 +205,7 @@ export abstract class WebSocket<UserOptions extends object = object> {
         if (this.isDisposed) {
           this.options.logger('WebSocket: Connection closed post-disposal.');
         } else if (event.code === GRACEFUL_DISCONNECT_CODE || this.options.reconnectMaxAttempts === 0) {
-          this.options.logger('WebSocket: Intentional client disconnect or reconnects disabled, not rescheduling.');
+          return;
         } else {
           this.startReconnectSystem();
         }
@@ -308,7 +308,6 @@ export abstract class WebSocket<UserOptions extends object = object> {
       return;
     }
 
-    this.options.logger(`WebSocket: Rejecting ${this.requestQueue.length} queued. Reason: ${reason.message}`);
     while (this.requestQueue.length > 0) {
       const req = this.requestQueue.shift()!;
       if (req.timeoutId) {
