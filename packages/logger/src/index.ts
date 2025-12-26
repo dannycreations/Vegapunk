@@ -67,8 +67,8 @@ export interface LoggerOptions {
  * // In development, this defaults to 'debug' level with pretty printing.
  * // In production, this defaults to 'info' level with single-line JSON pretty printing.
  * const log = logger();
- * log.info('Application started successfully.');
- * log.debug({ module: 'Auth' }, 'User authentication attempt.');
+ * log.info('Application started successfully');
+ * log.debug({ module: 'Auth' }, 'User authentication attempt');
  *
  * // Initialize logger with custom options.
  * const customLog = logger({
@@ -78,13 +78,13 @@ export interface LoggerOptions {
  *   exception: false,   // Disable automatic logging of uncaught exceptions.
  * });
  *
- * customLog.warn('A warning condition occurred.');
- * customLog.trace('Detailed trace information for debugging.'); // Logged to trace file.
+ * customLog.warn('A warning condition occurred');
+ * customLog.trace('Detailed trace information for debugging'); // Logged to trace file.
  *
  * try {
  *   throw new Error('Simulated error');
  * } catch (e) {
- *   customLog.error(e, 'An error was caught and logged.');
+ *   customLog.error(e, 'An error was caught and logged');
  * }
  * ```
  *

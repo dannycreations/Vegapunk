@@ -52,12 +52,12 @@ export function runApp(appLogic: () => Promise<void>, options: RunAppOptions = {
   const { max = 3, delay = 5_000 } = options;
 
   process.once('SIGINT', () => {
-    console.log('Parent process received SIGINT. Exiting.');
+    console.log('Parent process received SIGINT, exiting');
     killApp();
   });
 
   process.once('SIGTERM', () => {
-    console.log('Parent process received SIGTERM. Exiting.');
+    console.log('Parent process received SIGTERM, exiting');
     killApp();
   });
 
@@ -71,16 +71,16 @@ export function runApp(appLogic: () => Promise<void>, options: RunAppOptions = {
       currentChild = null;
 
       if (Object.is(code, KILL_APP_CODE)) {
-        console.log('Child process exited cleanly or was terminated. Exiting.');
+        console.log('Child process exited cleanly or was terminated, exiting');
         return killApp();
       }
 
       if (max > 0 && restartCount >= max) {
-        console.error('Child process restarted too many times. Exiting.');
+        console.error('Child process restarted too many times, exiting');
         return killApp();
       }
 
-      console.log(`Restarting child process (attempt ${++restartCount}/${max <= 0 ? '∞' : max})...`);
+      console.log(`Restarting child process (attempt ${++restartCount}/${max <= 0 ? '∞' : max})...\n`);
       setTimeout(() => startChild(), delay);
     });
   };
@@ -117,7 +117,7 @@ export function runApp(appLogic: () => Promise<void>, options: RunAppOptions = {
  *
  * async function myAppLogic() {
  *   // ... perform some work
- *   console.log('Work complete, shutting down.');
+ *   console.log('Work complete, shutting down');
  *   killApp();
  * }
  *

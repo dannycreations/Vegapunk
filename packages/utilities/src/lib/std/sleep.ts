@@ -35,7 +35,7 @@ export interface SleepOptions {
  *   .then(value => console.log(`Slept successfully: ${value}`))
  *   .catch(reason => console.log(`Sleep aborted: ${reason.message || reason}`));
  * // To abort the sleep:
- * // setTimeout(() => controller.abort(new Error('Cancelled by timeout')), 1000);
+ * // setTimeout(() => controller.abort(new Error('Cancelled by timeout!')), 1000);
  * ```
  *
  * @template T The type of the value the promise will resolve to.
@@ -108,15 +108,15 @@ export interface WaitUntilOptions {
  *   }
  *   return false; // Continue waiting
  * }, { delay: 200, ref: true });
- * console.log('waitUntil finished.');
+ * console.log('waitUntil finished');
  *
  * // Example with manual release:
  * await waitUntil((release, i) => {
  *  if (i >= 3) {
- *    console.log('Releasing after 3 iterations.');
+ *    console.log('Releasing after 3 iterations');
  *    release();
  *  } else {
- *    console.log(`Iteration ${i}, still waiting...`);
+ *    console.log(`Iteration ${i}, still waiting`);
  *  }
  * }, { delay: 50 });
  * ```
@@ -179,7 +179,7 @@ export async function waitUntil(fn: (release: () => void, i: number) => Awaitabl
  *   console.log(`Starting iteration ${iterationIndex}`);
  *   await sleep(100); // Simulate async work
  *   if (iterationIndex === 1) {
- *     console.log('Deciding to release early during iteration 1.');
+ *     console.log('Deciding to release early during iteration 1');
  *     release(); // This will stop further iterations.
  *     // return true; // also works
  *   }
@@ -216,7 +216,7 @@ export async function waitForIter(val: number, fn: (val: number, release: () => 
  *   console.log(`Processing item: ${item} at index: ${index}`);
  *   await sleep(50); // Simulate async work for each item
  *   if (item === 'beta') {
- *     console.log('Found "beta", releasing early.');
+ *     console.log('Found "beta", releasing early');
  *     release(); // Stop processing further items
  *     // return true; // also works
  *   }

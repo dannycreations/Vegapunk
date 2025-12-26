@@ -12,7 +12,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 
   public constructor(db: BetterSQLite3Database, table: A, trace: boolean = false) {
     // @ts-expect-error
-    Result.assert('id' in table && table.id.primary, `Table "${getTableName(table)}" must have a primary key "id".`);
+    Result.assert('id' in table && table.id.primary, `Table "${getTableName(table)}" must have a primary key "id"`);
 
     this.db = db;
     this.table = table;
@@ -185,7 +185,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
         const { target, set, resolution } = options.conflict;
         const columns = target.map((r) => {
           const column = this.table[r as keyof A];
-          Result.assert(column, `Conflict target column ${String(r)} does not exist in table.`);
+          Result.assert(column, `Conflict target column ${String(r)} does not exist in table`);
           return sql`${column}`;
         });
 
@@ -202,7 +202,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
             set: Object.fromEntries(
               Object.entries(rest).map(([key, value]) => {
                 const column = this.table[key as keyof A];
-                Result.assert(column, `Conflict set column ${key} does not exist in table.`);
+                Result.assert(column, `Conflict set column ${key} does not exist in table`);
                 return [key, sql`COALESCE(${column}, ${sql`${value}`})`];
               }),
             ) as Record<string, SQL>,
@@ -222,7 +222,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
   ): Result<Array<ReturnAlias<A, B, S>>, Error> {
     let querySql: unknown | undefined;
     return Result.from(() => {
-      Result.assert(record?.id != null, 'Missing required "id" for update operation.');
+      Result.assert(record?.id != null, 'Missing required "id" for update operation');
 
       const query = this.db.update(this.table).set(record);
       query.where(this.buildWhereClause({ id: record.id }));
@@ -240,7 +240,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
   ): Result<Array<ReturnAlias<A, B, S>>, Error> {
     let querySql: unknown | undefined;
     return Result.from(() => {
-      Result.assert(record?.id != null, 'Missing required "id" for delete operation.');
+      Result.assert(record?.id != null, 'Missing required "id" for delete operation');
 
       const query = this.db.delete(this.table);
       query.where(this.buildWhereClause({ id: record.id }));

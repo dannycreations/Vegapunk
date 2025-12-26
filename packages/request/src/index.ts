@@ -230,9 +230,9 @@ export async function requestDefault<T = string, E = unknown>(options: string | 
  * ```typescript
  * async function ensureConnected() {
  *   try {
- *     console.log('Checking for internet connection...');
+ *     console.log('Checking for internet connection');
  *     await waitForConnection(5000); // Wait up to 5 seconds for each attempt cycle
- *     console.log('Connection established.');
+ *     console.log('Connection established');
  *   } catch (error) {
  *     // This function is designed to retry indefinitely and not throw.
  *     // An error here would imply an issue with the waitUntil utility itself or an unhandled case.

@@ -96,7 +96,7 @@ export abstract class WebSocket<UserOptions extends object = object> {
     }
 
     this.state = WebSocketState.CONNECTING;
-    this.options.logger(`WebSocket: Connecting to ${this.options.url}.`);
+    this.options.logger(`WebSocket: Connecting to ${this.options.url}`);
 
     try {
       const newWs = new ws(this.options.url, this.options.socketOptions);
@@ -106,14 +106,14 @@ export abstract class WebSocket<UserOptions extends object = object> {
       newWs.on('message', this.handleMessage.bind(this));
       this.ws = newWs;
     } catch (error: unknown) {
-      const connectError = new Error(`WebSocket: Connection attempt to ${this.options.url} failed.`);
+      const connectError = new Error(`WebSocket: Connection attempt to ${this.options.url} failed`);
       Object.assign(connectError, { error });
       Promise.resolve(this.onError(connectError))
         .then(() => {
           this.disconnect(false);
         })
         .catch((error: unknown) => {
-          this.options.logger(error, 'WebSocket: Error during onError connect handler.');
+          this.options.logger(error, 'WebSocket: Error during onError connect handler');
         });
     }
   }
@@ -123,14 +123,14 @@ export abstract class WebSocket<UserOptions extends object = object> {
       return;
     }
 
-    this.options.logger(`WebSocket: Disconnecting (graceful: ${graceful}).`);
+    this.options.logger(`WebSocket: Disconnecting (graceful: ${graceful})`);
     this.ws.emit('close', { code: graceful ? GRACEFUL_DISCONNECT_CODE : 1001 });
   }
 
   public async sendRequest(task: Pick<RequestPromise, 'description' | 'payload' | 'callback'>): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       if (this.isDisposed) {
-        reject(new Error('WebSocket: Cannot queue request, client is disposed.'));
+        reject(new Error('WebSocket: Cannot queue request, client is disposed'));
         return;
       }
 
@@ -144,7 +144,7 @@ export abstract class WebSocket<UserOptions extends object = object> {
       return;
     }
 
-    this.options.logger('WebSocket: Disposing client.');
+    this.options.logger('WebSocket: Disposing client');
     this.isDisposed = true;
     this.disconnect(true);
   }
@@ -157,12 +157,12 @@ export abstract class WebSocket<UserOptions extends object = object> {
     this.state = WebSocketState.OPEN;
     this.reconnectAttempts = 0;
     this.stopReconnectSystem();
-    this.options.logger('WebSocket: Connection established.');
+    this.options.logger('WebSocket: Connection established');
 
     Promise.resolve(this.onOpen())
       .then(() => {
         if (this.state !== WebSocketState.OPEN) {
-          this.options.logger('WebSocket: State changed during onOpen handler execution or client disposed.');
+          this.options.logger('WebSocket: State changed during onOpen handler execution or client disposed');
           this.disconnect(false);
           return;
         }
@@ -171,7 +171,7 @@ export abstract class WebSocket<UserOptions extends object = object> {
         this.startQueueSystem();
       })
       .catch((error: unknown) => {
-        this.options.logger(error, 'WebSocket: Error during onOpen handler.');
+        this.options.logger(error, 'WebSocket: Error during onOpen handler');
         this.disconnect(false);
       });
   }
@@ -185,7 +185,7 @@ export abstract class WebSocket<UserOptions extends object = object> {
     const oldWs = this.ws;
     this.ws = undefined;
 
-    this.options.logger('WebSocket: Terminating existing connection.');
+    this.options.logger('WebSocket: Terminating existing connection');
     oldWs.removeAllListeners();
     oldWs.once('error', Boolean);
     oldWs.terminate();
@@ -193,17 +193,17 @@ export abstract class WebSocket<UserOptions extends object = object> {
     this.stopPingSystem();
     this.stopReconnectSystem();
 
-    const eventError = new Error('WebSocket: Connection closed.');
+    const eventError = new Error('WebSocket: Connection closed');
     Object.assign(eventError, { event });
     this.rejectAllQueued(eventError);
 
     Promise.resolve(this.onClose(eventError))
       .catch((error: unknown) => {
-        this.options.logger(error, 'WebSocket: Error during onClose handler.');
+        this.options.logger(error, 'WebSocket: Error during onClose handler');
       })
       .finally(() => {
         if (this.isDisposed) {
-          this.options.logger('WebSocket: Connection closed post-disposal.');
+          this.options.logger('WebSocket: Connection closed post-disposal');
         } else if (event.code === GRACEFUL_DISCONNECT_CODE || this.options.reconnectMaxAttempts === 0) {
           return;
         } else {
@@ -213,10 +213,10 @@ export abstract class WebSocket<UserOptions extends object = object> {
   }
 
   private handleError(event: ErrorEvent): void {
-    const eventError = new Error('WebSocket: Error event received.');
+    const eventError = new Error('WebSocket: Error event received');
     Object.assign(eventError, { event });
     Promise.resolve(this.onError(eventError)).catch((error: unknown) => {
-      this.options.logger(error, 'WebSocket: Error during onError handler.');
+      this.options.logger(error, 'WebSocket: Error during onError handler');
     });
   }
 
@@ -226,7 +226,7 @@ export abstract class WebSocket<UserOptions extends object = object> {
     }
 
     Promise.resolve(this.onMessage(data)).catch((error: unknown) => {
-      this.options.logger(error, 'WebSocket: Error during onMessage handler.');
+      this.options.logger(error, 'WebSocket: Error during onMessage handler');
     });
   }
 
@@ -235,7 +235,7 @@ export abstract class WebSocket<UserOptions extends object = object> {
       if (this.state !== WebSocketState.OPEN || this.isRequestActive || this.requestQueue.length === 0) {
         return;
       } else if (!this.ws || this.ws.readyState !== ws.OPEN) {
-        this.options.logger('WebSocket: Socket not open despite Open state, forcing reconnect.');
+        this.options.logger('WebSocket: Socket not open despite Open state, forcing reconnect');
         this.disconnect(false);
         return;
       }
@@ -243,7 +243,7 @@ export abstract class WebSocket<UserOptions extends object = object> {
       const currentRequest = this.requestQueue[0]!;
       if (this.ws.bufferedAmount > this.options.bufferedThresholdAmount) {
         this.options.logger(
-          `WebSocket: Send request (${currentRequest.description}) paused due to high bufferedAmount: ${this.ws.bufferedAmount}, retrying.`,
+          `WebSocket: Request '${currentRequest.description}' paused due to high bufferedAmount: ${this.ws.bufferedAmount}, retrying`,
         );
         setTimeout(() => this.startQueueSystem(), 100);
         return;
@@ -254,17 +254,13 @@ export abstract class WebSocket<UserOptions extends object = object> {
 
       const sendPromise = new Promise<void>((resolve, reject) => {
         if (!this.ws || this.ws.readyState !== ws.OPEN) {
-          reject(new Error('WebSocket: Connection closed before send.'));
+          reject(new Error('WebSocket: Connection closed before send'));
           return;
         }
 
         currentRequest.timeoutId = setTimeout(() => {
           currentRequest.timeoutId = undefined;
-          reject(
-            new Error(
-              `WebSocket: Request '${currentRequest.description}' (attempt ${currentRequest.attempts}) timed out after ${this.options.requestTimeoutMs}ms.`,
-            ),
-          );
+          reject(new Error(`WebSocket: Request '${currentRequest.description}' timed out after ${this.options.requestTimeoutMs}ms`));
         }, this.options.requestTimeoutMs);
 
         this.ws.send(currentRequest.payload as Buffer, (error: unknown) => {
@@ -327,7 +323,7 @@ export abstract class WebSocket<UserOptions extends object = object> {
 
     Promise.resolve(this.onPing())
       .catch((error: unknown) => {
-        this.options.logger(error, 'WebSocket: Error during onPing handler.');
+        this.options.logger(error, 'WebSocket: Error during onPing handler');
       })
       .finally(() => {
         if (this.state === WebSocketState.OPEN) {
@@ -352,7 +348,7 @@ export abstract class WebSocket<UserOptions extends object = object> {
       return;
     } else if (this.reconnectAttempts >= this.options.reconnectMaxAttempts) {
       Promise.resolve(this.onMaxReconnects()).catch((error: unknown) => {
-        this.options.logger(error, 'WebSocket: Error during onMaxReconnect handler.');
+        this.options.logger(error, 'WebSocket: Error during onMaxReconnect handler');
       });
       return;
     }
@@ -365,14 +361,14 @@ export abstract class WebSocket<UserOptions extends object = object> {
     const delay = Math.min(this.options.reconnectMaxMs, Math.floor(baseDelay + jitter));
 
     const maxAttempts = this.options.reconnectMaxAttempts === Infinity ? '∞' : this.options.reconnectMaxAttempts;
-    this.options.logger(`WebSocket: Reconnect attempt ${this.reconnectAttempts}/${maxAttempts} in ${delay}ms.`);
+    this.options.logger(`WebSocket: Reconnect attempt ${this.reconnectAttempts}/${maxAttempts} in ${delay}ms`);
 
     this.reconnectTimeoutId = setTimeout(() => {
       this.reconnectTimeoutId = undefined;
       if (this.state === WebSocketState.RECONNECTING) {
         this.connect();
       } else {
-        this.options.logger('WebSocket: Reconnect aborted due to disposal or state change from reconnecting.');
+        this.options.logger('WebSocket: Reconnect aborted due to disposal or state change from reconnecting');
       }
     }, delay);
   }

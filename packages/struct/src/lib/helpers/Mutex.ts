@@ -61,7 +61,7 @@ export class Mutex {
    *     mutex.release(resourceKey); // It's best practice to release manually.
    *   }
    * } else {
-   *   console.log('Resource is currently locked.');
+   *   console.log('Resource is currently locked');
    * }
    * ```
    *
@@ -74,10 +74,13 @@ export class Mutex {
    */
   public lock(key: string | symbol = this.id, timeout?: number): boolean {
     const isLocked = this.locks.has(key);
+    if (isLocked) {
+      return true;
+    }
+
     const queue = this.queues.get(key);
     const hasQueue = queue !== undefined && queue.length > 0;
-
-    if (isLocked || hasQueue) {
+    if (hasQueue) {
       return true;
     }
 
@@ -87,8 +90,8 @@ export class Mutex {
         this.release(key);
       }, timeout);
     }
-    this.locks.set(key, lockEntry);
 
+    this.locks.set(key, lockEntry);
     return false;
   }
 
@@ -103,14 +106,14 @@ export class Mutex {
    * const resourceKey = 'database-connection';
    *
    * async function performTransaction(user: string, priority: number) {
-   *   console.log(`${user} attempting to acquire lock with priority ${priority}...`);
+   *   console.log(`${user} attempting to acquire lock with priority ${priority}`);
    *   await mutex.acquire(resourceKey, priority);
    *   try {
-   *     console.log(`${user} acquired the lock.`);
+   *     console.log(`${user} acquired the lock`);
    *     // Simulate work in the critical section.
    *     await new Promise(resolve => setTimeout(resolve, 500));
    *   } finally {
-   *     console.log(`${user} is releasing the lock.`);
+   *     console.log(`${user} is releasing the lock`);
    *     mutex.release(resourceKey);
    *   }
    * }
@@ -130,8 +133,8 @@ export class Mutex {
    */
   public acquire(key: string | symbol = this.id, priority: number = 0, timeout?: number): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      const queue = this.queues.get(key);
       const isLocked = this.locks.has(key);
+      const queue = this.queues.get(key);
       const hasQueue = queue !== undefined && queue.length > 0;
 
       const attempt = (): void => {
@@ -141,6 +144,7 @@ export class Mutex {
             this.release(key);
           }, timeout);
         }
+
         this.locks.set(key, lockEntry);
         resolve();
       };
@@ -199,6 +203,7 @@ export class Mutex {
 
     if (currentLock.timeoutId) {
       clearTimeout(currentLock.timeoutId);
+      currentLock.timeoutId = undefined;
     }
     this.locks.delete(key);
 
@@ -237,11 +242,12 @@ export class Mutex {
     for (const lock of this.locks.values()) {
       if (lock.timeoutId) {
         clearTimeout(lock.timeoutId);
+        lock.timeoutId = undefined;
       }
     }
     this.locks.clear();
 
-    const reason = new Error('Mutex disposed');
+    const reason = new Error('Mutex disposed!');
     for (const queue of this.queues.values()) {
       while (queue.length > 0) {
         const item = queue.shift();
