@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
-import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import { Adapter, BetterSQLite3Database, Database, drizzle } from './';
 
@@ -155,18 +155,18 @@ afterAll(() => {
 });
 
 describe('Adapter constructor()', () => {
-  test('should instantiate correctly with a valid Drizzle table schema having an "id" column', () => {
+  it('should instantiate correctly with a valid Drizzle table schema having an "id" column', () => {
     expect(() => new Adapter(db, usersTable)).not.toThrow();
   });
 
-  test('should throw an error if the table schema does not have an "id" column', () => {
+  it('should throw an error if the table schema does not have an "id" column', () => {
     const action = () => new Adapter(db, noIdTable);
     expect(action).toThrow(/^Table "no_id_table" must have a primary key "id"\.?$/);
   });
 });
 
 describe('Adapter find()', () => {
-  test('should return all records with all columns if no filter or options are provided', () => {
+  it('should return all records with all columns if no filter or options are provided', () => {
     const result = userAdapter.find();
     expect(result.isOk()).toBe(true);
     const users = result.unwrap();
@@ -177,7 +177,7 @@ describe('Adapter find()', () => {
     });
   });
 
-  test('should return empty array when finding on an empty table', () => {
+  it('should return empty array when finding on an empty table', () => {
     client.exec('DELETE FROM offices;');
     const result = officeAdapter.find();
     expect(result.isOk()).toBe(true);
@@ -185,7 +185,7 @@ describe('Adapter find()', () => {
   });
 
   describe('filter options', () => {
-    test('equality: should find users by name', () => {
+    it('equality: should find users by name', () => {
       const aliceResult = userAdapter.findOne({ email: 'alice@example.com' });
       expect(aliceResult.isOk()).toBe(true);
       const alice = aliceResult.unwrap();
@@ -195,7 +195,7 @@ describe('Adapter find()', () => {
       expect(result.unwrap()).toEqual([expect.objectContaining({ id: alice!.id, name: 'Alice' })]);
     });
 
-    test('equality: should find users by age', () => {
+    it('equality: should find users by age', () => {
       const usersAge30 = sampleUsers.filter((u) => u.age === 30);
       const result = userAdapter.find({ age: 30 });
       expect(result.isOk()).toBe(true);
@@ -204,7 +204,7 @@ describe('Adapter find()', () => {
       foundUsers.forEach((user) => expect(user.age).toBe(30));
     });
 
-    test('equality: should find users with null bio (field IS NULL)', () => {
+    it('equality: should find users with null bio (field IS NULL)', () => {
       const usersNullBio = sampleUsers.filter((u) => u.bio === null);
       const result = userAdapter.find({ bio: null });
       expect(result.isOk()).toBe(true);
@@ -213,7 +213,7 @@ describe('Adapter find()', () => {
       foundUsers.forEach((user) => expect(user.bio).toBeNull());
     });
 
-    test('comparison ($ne): should find users not named Alice (field <> value)', () => {
+    it('comparison ($ne): should find users not named Alice (field <> value)', () => {
       const result = userAdapter.find({ name: { $ne: 'Alice' } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
@@ -221,7 +221,7 @@ describe('Adapter find()', () => {
       expect(users).toHaveLength(sampleUsers.length - 1);
     });
 
-    test('comparison ($ne): should find users with non-null bio (field IS NOT NULL)', () => {
+    it('comparison ($ne): should find users with non-null bio (field IS NOT NULL)', () => {
       const usersNonNullBioCount = sampleUsers.filter((u) => u.bio !== null).length;
       const result = userAdapter.find({ bio: { $ne: null } });
       expect(result.isOk()).toBe(true);
@@ -230,7 +230,7 @@ describe('Adapter find()', () => {
       foundUsers.forEach((user) => expect(user.bio).not.toBeNull());
     });
 
-    test('comparison ($gt): should find users older than 30 (field > value)', () => {
+    it('comparison ($gt): should find users older than 30 (field > value)', () => {
       const usersOlderThan30Count = sampleUsers.filter((u) => u.age !== null && u.age! > 30).length;
       const result = userAdapter.find({ age: { $gt: 30 } });
       expect(result.isOk()).toBe(true);
@@ -239,13 +239,13 @@ describe('Adapter find()', () => {
       foundUsers.forEach((user) => expect(user.age).toBeGreaterThan(30));
     });
 
-    test('comparison ($gt): age: {$gt: null} should yield empty (SQLite: field > NULL is UNKNOWN/FALSE)', () => {
+    it('comparison ($gt): age: {$gt: null} should yield empty (SQLite: field > NULL is UNKNOWN/FALSE)', () => {
       const result = userAdapter.find({ age: { $gt: null } });
       expect(result.isOk()).toBe(true);
       expect(result.unwrap()).toHaveLength(0);
     });
 
-    test('comparison ($gte): should find users age 30 or older (field >= value)', () => {
+    it('comparison ($gte): should find users age 30 or older (field >= value)', () => {
       const usersGte30Count = sampleUsers.filter((u) => u.age !== null && u.age! >= 30).length;
       const result = userAdapter.find({ age: { $gte: 30 } });
       expect(result.isOk()).toBe(true);
@@ -254,7 +254,7 @@ describe('Adapter find()', () => {
       foundUsers.forEach((user) => expect(user.age).toBeGreaterThanOrEqual(30));
     });
 
-    test('comparison ($lt): should find users younger than 30 (field < value)', () => {
+    it('comparison ($lt): should find users younger than 30 (field < value)', () => {
       const usersYoungerThan30Count = sampleUsers.filter((u) => u.age !== null && u.age! < 30).length;
       const result = userAdapter.find({ age: { $lt: 30 } });
       expect(result.isOk()).toBe(true);
@@ -263,7 +263,7 @@ describe('Adapter find()', () => {
       foundUsers.forEach((user) => expect(user.age).toBeLessThan(30));
     });
 
-    test('comparison ($lte): should find users age 30 or younger (field <= value)', () => {
+    it('comparison ($lte): should find users age 30 or younger (field <= value)', () => {
       const usersLte30Count = sampleUsers.filter((u) => u.age !== null && u.age! <= 30).length;
       const result = userAdapter.find({ age: { $lte: 30 } });
       expect(result.isOk()).toBe(true);
@@ -272,7 +272,7 @@ describe('Adapter find()', () => {
       foundUsers.forEach((user) => expect(user.age).toBeLessThanOrEqual(30));
     });
 
-    test('string ($like): should find users with name starting with A (LIKE pattern)', () => {
+    it('string ($like): should find users with name starting with A (LIKE pattern)', () => {
       const result = userAdapter.find({ name: { $like: 'A%' } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
@@ -280,7 +280,7 @@ describe('Adapter find()', () => {
       expect(users).toHaveLength(sampleUsers.filter((u) => u.name.startsWith('A')).length);
     });
 
-    test('string ($nlike): should find users with name not starting with A (NOT LIKE pattern)', () => {
+    it('string ($nlike): should find users with name not starting with A (NOT LIKE pattern)', () => {
       const result = userAdapter.find({ name: { $nlike: 'A%' } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
@@ -288,7 +288,7 @@ describe('Adapter find()', () => {
       expect(users).toHaveLength(sampleUsers.filter((u) => !u.name.startsWith('A')).length);
     });
 
-    test('string ($glob): should find users with name ending with e (GLOB pattern)', () => {
+    it('string ($glob): should find users with name ending with e (GLOB pattern)', () => {
       const result = userAdapter.find({ name: { $glob: '*e' } });
       expect(result.isOk()).toBe(true);
       const names = result.unwrap().map((u) => u.name);
@@ -297,7 +297,7 @@ describe('Adapter find()', () => {
       expect(names).toHaveLength(expectedNames.length);
     });
 
-    test('string ($nglob): should find users with name not ending with e (NOT GLOB pattern)', () => {
+    it('string ($nglob): should find users with name not ending with e (NOT GLOB pattern)', () => {
       const result = userAdapter.find({ name: { $nglob: '*e' } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
@@ -305,7 +305,7 @@ describe('Adapter find()', () => {
       expect(users).toHaveLength(sampleUsers.filter((u) => !u.name.endsWith('e')).length);
     });
 
-    test('array ($in): should find users with specific roles (field IN (values))', () => {
+    it('array ($in): should find users with specific roles (field IN (values))', () => {
       const targetRoles = ['admin', 'manager'];
       const expectedUsersCount = sampleUsers.filter((u) => u.role !== null && targetRoles.includes(u.role!)).length;
       const result = userAdapter.find({ role: { $in: targetRoles } });
@@ -315,13 +315,13 @@ describe('Adapter find()', () => {
       foundUsers.forEach((user) => expect(targetRoles).toContain(user.role));
     });
 
-    test('array ($in): $in with empty array should return no results (SQLite: field IN () is FALSE)', () => {
+    it('array ($in): $in with empty array should return no results (SQLite: field IN () is FALSE)', () => {
       const result = userAdapter.find({ role: { $in: [] } });
       expect(result.isOk()).toBe(true);
       expect(result.unwrap()).toHaveLength(0);
     });
 
-    test('array ($nin): should find users not in specific roles (field NOT IN (values))', () => {
+    it('array ($nin): should find users not in specific roles (field NOT IN (values))', () => {
       const excludedRoles = ['admin', 'manager'];
       const expectedUsersCount = sampleUsers.filter((u) => u.role !== null && !excludedRoles.includes(u.role!)).length;
       const result = userAdapter.find({ role: { $nin: excludedRoles } });
@@ -331,13 +331,13 @@ describe('Adapter find()', () => {
       foundUsers.forEach((user) => expect(excludedRoles).not.toContain(user.role));
     });
 
-    test('array ($nin): $nin with empty array should return all results (SQLite: field NOT IN () is TRUE)', () => {
+    it('array ($nin): $nin with empty array should return all results (SQLite: field NOT IN () is TRUE)', () => {
       const result = userAdapter.find({ role: { $nin: [] } });
       expect(result.isOk()).toBe(true);
       expect(result.unwrap()).toHaveLength(sampleUsers.length);
     });
 
-    test('null check ($null: true): should find users with null age (field IS NULL)', () => {
+    it('null check ($null: true): should find users with null age (field IS NULL)', () => {
       const usersNullAgeCount = sampleUsers.filter((u) => u.age === null).length;
       const result = userAdapter.find({ age: { $null: true } });
       expect(result.isOk()).toBe(true);
@@ -346,7 +346,7 @@ describe('Adapter find()', () => {
       foundUsers.forEach((u) => expect(u.age).toBeNull());
     });
 
-    test('null check ($null: false): should find users with non-null age (field IS NOT NULL)', () => {
+    it('null check ($null: false): should find users with non-null age (field IS NOT NULL)', () => {
       const usersNonNullAgeCount = sampleUsers.filter((u) => u.age !== null).length;
       const result = userAdapter.find({ age: { $null: false } });
       expect(result.isOk()).toBe(true);
@@ -355,7 +355,7 @@ describe('Adapter find()', () => {
       foundUsers.forEach((u) => expect(u.age).not.toBeNull());
     });
 
-    test('logical ($and): find users with role "user" AND age 24', () => {
+    it('logical ($and): find users with role "user" AND age 24', () => {
       const bob = sampleUsers.find((u) => u.email === 'bob@example.com')!;
       const result = userAdapter.find({ $and: [{ role: 'user' }, { age: 24 }] });
       expect(result.isOk()).toBe(true);
@@ -364,33 +364,33 @@ describe('Adapter find()', () => {
       expect(foundUsers[0]).toEqual(expect.objectContaining({ name: bob.name, email: bob.email }));
     });
 
-    test('logical ($and): with empty array should return all users (evaluates to TRUE)', () => {
+    it('logical ($and): with empty array should return all users (evaluates to TRUE)', () => {
       const result = userAdapter.find({ $and: [] });
       expect(result.isOk()).toBe(true);
       expect(result.unwrap()).toHaveLength(sampleUsers.length);
     });
 
-    test('logical ($or): find users with role "admin" OR age < 25', () => {
+    it('logical ($or): find users with role "admin" OR age < 25', () => {
       const expectedUsersCount = sampleUsers.filter((u) => u.role === 'admin' || (u.age !== null && u.age! < 25)).length;
       const result = userAdapter.find({ $or: [{ role: 'admin' }, { age: { $lt: 25 } }] });
       expect(result.isOk()).toBe(true);
       expect(result.unwrap()).toHaveLength(expectedUsersCount);
     });
 
-    test('logical ($or): with empty array should return no users (evaluates to FALSE)', () => {
+    it('logical ($or): with empty array should return no users (evaluates to FALSE)', () => {
       const result = userAdapter.find({ $or: [] });
       expect(result.isOk()).toBe(true);
       expect(result.unwrap()).toHaveLength(0);
     });
 
-    test('logical ($not): find users NOT (role "admin")', () => {
+    it('logical ($not): find users NOT (role "admin")', () => {
       const expectedUsersCount = sampleUsers.filter((u) => u.role !== 'admin').length;
       const result = userAdapter.find({ $not: { role: 'admin' } });
       expect(result.isOk()).toBe(true);
       expect(result.unwrap()).toHaveLength(expectedUsersCount);
     });
 
-    test('logical ($not { $eq: value }): with nullable column, excludes rows where column is NULL', () => {
+    it('logical ($not { $eq: value }): with nullable column, excludes rows where column is NULL', () => {
       const expectedUsers = sampleUsers.filter((u) => u.age !== null && u.age !== 30);
       const result = userAdapter.find({ age: { $not: { $eq: 30 } } });
       expect(result.isOk()).toBe(true);
@@ -402,7 +402,7 @@ describe('Adapter find()', () => {
       });
     });
 
-    test('logical ($not { $eq: null }): is equivalent to { $ne: null } or { $null: false }', () => {
+    it('logical ($not { $eq: null }): is equivalent to { $ne: null } or { $null: false }', () => {
       const expectedUsers = sampleUsers.filter((u) => u.age !== null);
       const result = userAdapter.find({ age: { $not: { $eq: null } } });
       expect(result.isOk()).toBe(true);
@@ -420,7 +420,7 @@ describe('Adapter find()', () => {
       ).toEqual(foundUsers.map((u) => u.id).sort());
     });
 
-    test('logical ($nand): users NOT (role "user" AND age 30)', () => {
+    it('logical ($nand): users NOT (role "user" AND age 30)', () => {
       const expectedUsersCount = sampleUsers.filter((u) => {
         return u.age != null && !(u.role === 'user' && u.age === 30);
       }).length;
@@ -433,13 +433,13 @@ describe('Adapter find()', () => {
       });
     });
 
-    test('logical ($nand): with empty array should return no users (evaluates to NOT(TRUE) -> FALSE)', () => {
+    it('logical ($nand): with empty array should return no users (evaluates to NOT(TRUE) -> FALSE)', () => {
       const result = userAdapter.find({ $nand: [] });
       expect(result.isOk()).toBe(true);
       expect(result.unwrap()).toHaveLength(0);
     });
 
-    test('logical ($nor): users NOT (role "admin" OR age < 25)', () => {
+    it('logical ($nor): users NOT (role "admin" OR age < 25)', () => {
       const expectedUsersCount = sampleUsers.filter((u) => {
         return u.age != null && !(u.role === 'admin' || u.age < 25);
       }).length;
@@ -449,13 +449,13 @@ describe('Adapter find()', () => {
       expect(result.unwrap()).toHaveLength(expectedUsersCount);
     });
 
-    test('logical ($nor): with empty array should return all users (evaluates to NOT(FALSE) -> TRUE)', () => {
+    it('logical ($nor): with empty array should return all users (evaluates to NOT(FALSE) -> TRUE)', () => {
       const result = userAdapter.find({ $nor: [] });
       expect(result.isOk()).toBe(true);
       expect(result.unwrap()).toHaveLength(sampleUsers.length);
     });
 
-    test('filter with unknown column should result in SQL condition "false" by Adapter logic, yielding 0 results', () => {
+    it('filter with unknown column should result in SQL condition "false" by Adapter logic, yielding 0 results', () => {
       const result = userAdapter.find({ unknownColumn: 'test' } as unknown as Partial<User>);
       expect(result.isOk()).toBe(true);
       expect(result.unwrap()).toHaveLength(0);
@@ -463,7 +463,7 @@ describe('Adapter find()', () => {
   });
 
   describe('query options', () => {
-    test('select: should return only specified columns (name, email), plus id implicitly', () => {
+    it('select: should return only specified columns (name, email), plus id implicitly', () => {
       const result = userAdapter.find({}, { select: { name: 1, email: 1 } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
@@ -476,7 +476,7 @@ describe('Adapter find()', () => {
       });
     });
 
-    test('select: should exclude specified columns (bio: 0), id still included', () => {
+    it('select: should exclude specified columns (bio: 0), id still included', () => {
       const result = userAdapter.find({}, { select: { name: 1, email: 1, bio: 0 } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
@@ -487,7 +487,7 @@ describe('Adapter find()', () => {
       });
     });
 
-    test('select: should exclude id if explicitly set to 0', () => {
+    it('select: should exclude id if explicitly set to 0', () => {
       const result = userAdapter.find({}, { select: { id: 0, name: 1 } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
@@ -498,7 +498,7 @@ describe('Adapter find()', () => {
       });
     });
 
-    test('select: empty select object should return default columns (all from primary table)', () => {
+    it('select: empty select object should return default columns (all from primary table)', () => {
       const result = userAdapter.find({}, { select: {} });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
@@ -510,19 +510,19 @@ describe('Adapter find()', () => {
       });
     });
 
-    test('limit: should return only the specified number of records', () => {
+    it('limit: should return only the specified number of records', () => {
       const result = userAdapter.find({}, { limit: 2 });
       expect(result.isOk()).toBe(true);
       expect(result.unwrap()).toHaveLength(2);
     });
 
-    test('limit: limit 0 should return no records', () => {
+    it('limit: limit 0 should return no records', () => {
       const result = userAdapter.find({}, { limit: 0 });
       expect(result.isOk()).toBe(true);
       expect(result.unwrap()).toHaveLength(0);
     });
 
-    test('offset: should skip the specified number of records', () => {
+    it('offset: should skip the specified number of records', () => {
       const allUsersResult = userAdapter.find({}, { order: { id: 'asc' } });
       expect(allUsersResult.isOk()).toBe(true);
       const allUsers = allUsersResult.unwrap();
@@ -537,13 +537,13 @@ describe('Adapter find()', () => {
       }
     });
 
-    test('offset: large offset should return empty array', () => {
+    it('offset: large offset should return empty array', () => {
       const result = userAdapter.find({}, { offset: 1000 });
       expect(result.isOk()).toBe(true);
       expect(result.unwrap()).toHaveLength(0);
     });
 
-    test('limit and offset: should correctly apply both limit and offset', () => {
+    it('limit and offset: should correctly apply both limit and offset', () => {
       const allUsersResult = userAdapter.find({}, { order: { id: 'asc' } });
       expect(allUsersResult.isOk()).toBe(true);
       const allUsers = allUsersResult.unwrap();
@@ -560,7 +560,7 @@ describe('Adapter find()', () => {
       }
     });
 
-    test('order: should sort by name ascending', () => {
+    it('order: should sort by name ascending', () => {
       const result = userAdapter.find({}, { order: { name: 'asc' } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
@@ -569,7 +569,7 @@ describe('Adapter find()', () => {
       }
     });
 
-    test('order: should sort by age descending (SQLite default: NULLS LAST for DESC)', () => {
+    it('order: should sort by age descending (SQLite default: NULLS LAST for DESC)', () => {
       const result = userAdapter.find({}, { order: { age: 'desc' } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
@@ -590,7 +590,7 @@ describe('Adapter find()', () => {
       }
     });
 
-    test('order: should sort by age ascending (SQLite default: NULLS FIRST for ASC)', () => {
+    it('order: should sort by age ascending (SQLite default: NULLS FIRST for ASC)', () => {
       const result = userAdapter.find({}, { order: { age: 'asc' } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
@@ -613,7 +613,7 @@ describe('Adapter find()', () => {
       }
     });
 
-    test('order: multiple columns (role asc, name desc)', () => {
+    it('order: multiple columns (role asc, name desc)', () => {
       const result = userAdapter.find({}, { order: { role: 'asc', name: 'desc' } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
@@ -626,7 +626,9 @@ describe('Adapter find()', () => {
         const roleA = a.role ?? '';
         const roleB = b.role ?? '';
         const roleCompare = roleA.localeCompare(roleB);
-        if (roleCompare !== 0) return roleCompare;
+        if (roleCompare !== 0) {
+          return roleCompare;
+        }
         return b.name.localeCompare(a.name);
       });
       expect(users.map((u) => u.id)).toEqual(sortedManually.map((u) => u.id));
@@ -634,7 +636,7 @@ describe('Adapter find()', () => {
   });
 
   describe('joins', () => {
-    test('inner join: users with their offices (users without office should be excluded)', () => {
+    it('inner join: users with their offices (users without office should be excluded)', () => {
       const result = userAdapter.find(
         {},
         {
@@ -652,7 +654,7 @@ describe('Adapter find()', () => {
       });
     });
 
-    test('left join: all users, with their offices if present (users without office should have null for office fields)', () => {
+    it('left join: all users, with their offices if present (users without office should have null for office fields)', () => {
       const result = userAdapter.find(
         {},
         {
@@ -674,7 +676,7 @@ describe('Adapter find()', () => {
       expect(aliceInResult!.users.officeId).toBe(aliceInResult!.offices!.id);
     });
 
-    test('right join: (emulated by Drizzle) all offices, with their users if present', () => {
+    it('right join: (emulated by Drizzle) all offices, with their users if present', () => {
       const result = userAdapter.find(
         {},
         {
@@ -701,7 +703,7 @@ describe('Adapter find()', () => {
       expect(remoteHubResult!.users).toBeNull();
     });
 
-    test('full join: (emulated by Drizzle) all users and all offices', () => {
+    it('full join: (emulated by Drizzle) all users and all offices', () => {
       const result = userAdapter.find(
         {},
         {
@@ -731,7 +733,7 @@ describe('Adapter find()', () => {
       expect(joinedResult.length).toBeGreaterThanOrEqual(Math.max(usersCount, officesCount));
     });
 
-    test('cross join: users and offices', () => {
+    it('cross join: users and offices', () => {
       const result = userAdapter.find(
         {},
         {
@@ -753,7 +755,7 @@ describe('Adapter find()', () => {
       }
     });
 
-    test('join with select: select user name and office location', () => {
+    it('join with select: select user name and office location', () => {
       const result = userAdapter.find(
         {},
         {
@@ -771,7 +773,7 @@ describe('Adapter find()', () => {
       expect(items.find((item) => item.name === 'David')).toBeDefined();
     });
 
-    test('join with filter on main table: users in role "admin" and their office', () => {
+    it('join with filter on main table: users in role "admin" and their office', () => {
       const alice = sampleUsers.find((u) => u.email === 'alice@example.com')!;
       const result = userAdapter.find(
         { role: 'admin' },
@@ -791,7 +793,7 @@ describe('Adapter find()', () => {
       expect(joinedResult[0].offices.name).toBe('HQ');
     });
 
-    test('join with filter on main table (FK) that implies a filter on joined table', () => {
+    it('join with filter on main table (FK) that implies a filter on joined table', () => {
       const hqOfficeResult = officeAdapter.findOne({ name: 'HQ' });
       expect(hqOfficeResult.isOk()).toBe(true);
       const hqOffice = hqOfficeResult.unwrap();
@@ -814,7 +816,7 @@ describe('Adapter find()', () => {
       });
     });
 
-    test('join with order by joined table column (location asc, NULLS FIRST for SQLite ASC)', () => {
+    it('join with order by joined table column (location asc, NULLS FIRST for SQLite ASC)', () => {
       const result = userAdapter.find(
         {},
         {
@@ -847,7 +849,7 @@ describe('Adapter find()', () => {
   });
 
   describe('Filter Logic - Advanced', () => {
-    test('should handle $eq with case sensitivity for text fields (SQLite default)', () => {
+    it('should handle $eq with case sensitivity for text fields (SQLite default)', () => {
       const resultLower = userAdapter.find({ name: 'alice' });
       expect(resultLower.isOk()).toBe(true);
       expect(resultLower.unwrap().filter((u) => u.name === 'alice')).toHaveLength(0);
@@ -857,14 +859,14 @@ describe('Adapter find()', () => {
       expect(resultUpper.unwrap().filter((u) => u.name === 'Alice').length).toBeGreaterThan(0);
     });
 
-    test('should handle $like with case insensitivity for text fields (SQLite default for ASCII)', () => {
+    it('should handle $like with case insensitivity for text fields (SQLite default for ASCII)', () => {
       const result = userAdapter.find({ name: { $like: 'aliCE%' } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
       expect(users.some((u) => u.name === 'Alice')).toBe(true);
     });
 
-    test('should handle $glob with case sensitivity for text fields (SQLite default)', () => {
+    it('should handle $glob with case sensitivity for text fields (SQLite default)', () => {
       const resultSensitive = userAdapter.find({ name: { $glob: 'A*' } });
       expect(resultSensitive.isOk()).toBe(true);
       expect(resultSensitive.unwrap().some((u) => u.name === 'Alice')).toBe(true);
@@ -874,7 +876,7 @@ describe('Adapter find()', () => {
       expect(resultSensitiveFail.unwrap().some((u) => u.name === 'Alice')).toBe(false);
     });
 
-    test('should correctly filter with $lt: null, $lte: null (SQLite: field < NULL is UNKNOWN/FALSE)', () => {
+    it('should correctly filter with $lt: null, $lte: null (SQLite: field < NULL is UNKNOWN/FALSE)', () => {
       const resultLt = userAdapter.find({ age: { $lt: null } });
       expect(resultLt.isOk()).toBe(true);
       expect(resultLt.unwrap()).toHaveLength(0);
@@ -884,7 +886,7 @@ describe('Adapter find()', () => {
       expect(resultLte.unwrap()).toHaveLength(0);
     });
 
-    test('should handle complex nested logical operators ($and with $or)', () => {
+    it('should handle complex nested logical operators ($and with $or)', () => {
       const expectedUsers = sampleUsers.filter((u) => (u.role === 'admin' || (u.age != null && u.age < 25)) && u.officeId === 1);
 
       const result = userAdapter.find({
@@ -900,7 +902,7 @@ describe('Adapter find()', () => {
   });
 
   describe('Query Options - Advanced', () => {
-    test('select: should allow id: 0 with other fields from joined table', () => {
+    it('select: should allow id: 0 with other fields from joined table', () => {
       const result = userAdapter.find(
         { email: 'alice@example.com' },
         {
@@ -921,33 +923,33 @@ describe('Adapter find()', () => {
 });
 
 describe('Adapter count()', () => {
-  test('should return the total number of users without a filter', () => {
+  it('should return the total number of users without a filter', () => {
     const result = userAdapter.count();
     expect(result.isOk()).toBe(true);
     expect(result.unwrap()).toBe(sampleUsers.length);
   });
 
-  test('should return the count of users matching the filter', () => {
+  it('should return the count of users matching the filter', () => {
     const usersAge30Count = sampleUsers.filter((u) => u.age === 30).length;
     const result = userAdapter.count({ age: 30 });
     expect(result.isOk()).toBe(true);
     expect(result.unwrap()).toBe(usersAge30Count);
   });
 
-  test('should return 0 if no users match the filter', () => {
+  it('should return 0 if no users match the filter', () => {
     const result = userAdapter.count({ name: 'NonExistentName' });
     expect(result.isOk()).toBe(true);
     expect(result.unwrap()).toBe(0);
   });
 
-  test('should return 0 for count on an empty table', () => {
+  it('should return 0 for count on an empty table', () => {
     client.exec('DELETE FROM users;');
     const result = userAdapter.count();
     expect(result.isOk()).toBe(true);
     expect(result.unwrap()).toBe(0);
   });
 
-  test('should return count with a complex filter', () => {
+  it('should return count with a complex filter', () => {
     const expectedCount = sampleUsers.filter((u) => u.role === 'user' && u.age != null && u.age < 30).length;
     const result = userAdapter.count({ $and: [{ role: 'user' }, { age: { $lt: 30 } }] });
     expect(result.isOk()).toBe(true);
@@ -956,7 +958,7 @@ describe('Adapter count()', () => {
 });
 
 describe('Adapter findOne()', () => {
-  test('should find a single user by filter', () => {
+  it('should find a single user by filter', () => {
     const aliceSample = sampleUsers.find((u) => u.email === 'alice@example.com')!;
     const result = userAdapter.findOne({ email: 'alice@example.com' });
     expect(result.isOk()).toBe(true);
@@ -965,20 +967,20 @@ describe('Adapter findOne()', () => {
     expect(foundUser).toEqual(expect.objectContaining({ name: aliceSample.name, email: aliceSample.email }));
   });
 
-  test('should return null if no user matches the filter', () => {
+  it('should return null if no user matches the filter', () => {
     const result = userAdapter.findOne({ email: 'nonexistent@example.com' });
     expect(result.isOk()).toBe(true);
     expect(result.unwrap()).toBeNull();
   });
 
-  test('should return null when finding one on an empty table', () => {
+  it('should return null when finding one on an empty table', () => {
     client.exec('DELETE FROM users;');
     const result = userAdapter.findOne({ name: 'Alice' });
     expect(result.isOk()).toBe(true);
     expect(result.unwrap()).toBeNull();
   });
 
-  test('should use options like select', () => {
+  it('should use options like select', () => {
     const aliceSample = sampleUsers.find((u) => u.email === 'alice@example.com')!;
     const result = userAdapter.findOne({ email: 'alice@example.com' }, { select: { name: 1 } });
     expect(result.isOk()).toBe(true);
@@ -988,7 +990,7 @@ describe('Adapter findOne()', () => {
     expect(Object.keys(user!).sort()).toEqual(['id', 'name'].sort());
   });
 
-  test('should respect order option if multiple records match filter (picks first based on order)', () => {
+  it('should respect order option if multiple records match filter (picks first based on order)', () => {
     const usersAge30Result = userAdapter.find({ age: 30 }, { order: { id: 'asc' } });
     expect(usersAge30Result.isOk()).toBe(true);
     const usersAge30 = usersAge30Result.unwrap();
@@ -1010,7 +1012,7 @@ describe('Adapter findOne()', () => {
     expect(userDesc!.id).toBe(maxIdAge30);
   });
 
-  test('should work with joins', () => {
+  it('should work with joins', () => {
     const aliceSample = sampleUsers.find((u) => u.email === 'alice@example.com')!;
     const result = userAdapter.findOne(
       { email: aliceSample.email },
@@ -1027,7 +1029,7 @@ describe('Adapter findOne()', () => {
 });
 
 describe('Adapter insert()', () => {
-  test('should insert a single record and return it (with all fields by default)', () => {
+  it('should insert a single record and return it (with all fields by default)', () => {
     const newUser: Omit<InsertUser, 'id'> = { name: 'Zane', email: 'zane@example.com', age: 22 };
     const result = userAdapter.insert(newUser);
     expect(result.isOk()).toBe(true);
@@ -1049,7 +1051,7 @@ describe('Adapter insert()', () => {
     expect(countResult.unwrap()).toBe(1);
   });
 
-  test('should apply default values for omitted fields', () => {
+  it('should apply default values for omitted fields', () => {
     const newPost: Omit<InsertPost, 'id' | 'views'> = { title: 'Post with default views', userId: 1 };
     const result = postAdapter.insert(newPost);
     expect(result.isOk()).toBe(true);
@@ -1063,7 +1065,7 @@ describe('Adapter insert()', () => {
     expect(insertedUser[0].role).toBe('user');
   });
 
-  test('should insert multiple records and return them', () => {
+  it('should insert multiple records and return them', () => {
     const newUsers: Array<Omit<InsertUser, 'id'>> = [
       { name: 'Yara', email: 'yara@example.com', age: 29 },
       { name: 'Xavi', email: 'xavi@example.com', age: 33 },
@@ -1084,7 +1086,7 @@ describe('Adapter insert()', () => {
     expect(xaviCount.unwrap()).toBe(1);
   });
 
-  test('should return selected fields if select option is provided', () => {
+  it('should return selected fields if select option is provided', () => {
     const newUser: Omit<InsertUser, 'id'> = { name: 'Wendy', email: 'wendy@example.com', age: 40 };
     const result = userAdapter.insert(newUser, { select: { name: 1, email: 1 } });
     expect(result.isOk()).toBe(true);
@@ -1092,20 +1094,20 @@ describe('Adapter insert()', () => {
     expect(insertedUsers[0]).toEqual({ id: expect.any(Number), name: 'Wendy', email: 'wendy@example.com' });
   });
 
-  test('inserting empty array should return empty array and not throw', () => {
+  it('inserting empty array should return empty array and not throw', () => {
     const result = userAdapter.insert([]);
     expect(result.isOk()).toBe(true);
     expect(result.unwrap()).toEqual([]);
   });
 
-  test('should return Err if NOT NULL constraint is violated', () => {
+  it('should return Err if NOT NULL constraint is violated', () => {
     const newUser = { email: 'nonnull@example.com' } as Omit<InsertUser, 'id' | 'name'>;
     const result = userAdapter.insert(newUser as Omit<InsertUser, 'id'>);
     expect(result.isErr()).toBe(true);
     expect(result.unwrapErr().message).toMatch(/NOT NULL constraint failed: users.name/i);
   });
 
-  test('should return Err if UNIQUE constraint is violated (without conflict handling)', () => {
+  it('should return Err if UNIQUE constraint is violated (without conflict handling)', () => {
     const existingUserEmail = sampleUsers[0].email!;
     const newUser: Omit<InsertUser, 'id'> = { name: 'Conflict User', email: existingUserEmail };
     const result = userAdapter.insert(newUser);
@@ -1113,7 +1115,7 @@ describe('Adapter insert()', () => {
     expect(result.unwrapErr().message).toMatch(/UNIQUE constraint failed: users.email/i);
   });
 
-  test('should return Err if FOREIGN KEY constraint is violated', () => {
+  it('should return Err if FOREIGN KEY constraint is violated', () => {
     const newUser: Omit<InsertUser, 'id'> = { name: 'FK User', email: 'fk@example.com', officeId: 9999 };
     const result = userAdapter.insert(newUser);
     expect(result.isErr()).toBe(true);
@@ -1132,7 +1134,7 @@ describe('Adapter insert()', () => {
       }
     });
 
-    test('onConflictDoNothing (ignore): should not insert or update if email conflicts, returns empty for conflicted row', () => {
+    it('onConflictDoNothing (ignore): should not insert or update if email conflicts, returns empty for conflicted row', () => {
       const originalAliceResult = userAdapter.findOne({ email: 'alice@example.com' });
       expect(originalAliceResult.isOk()).toBe(true);
       const originalAlice = originalAliceResult.unwrap();
@@ -1154,7 +1156,7 @@ describe('Adapter insert()', () => {
       expect(found!.age).toBe(originalAlice!.age);
     });
 
-    test('onConflictDoUpdate (update with explicit set): should update specified fields if email conflicts', () => {
+    it('onConflictDoUpdate (update with explicit set): should update specified fields if email conflicts', () => {
       const aliceEmail = 'alice@example.com';
       const conflictingUser: Omit<InsertUser, 'id'> = { name: 'New Alice Name Attempt', email: aliceEmail, age: 100, role: 'attemptedRole' };
 
@@ -1188,7 +1190,7 @@ describe('Adapter insert()', () => {
       expect(found!.age).toBe(32);
     });
 
-    test('onConflictDoUpdate (update with explicit set using SQL): should update using SQL expression', () => {
+    it('onConflictDoUpdate (update with explicit set using SQL): should update using SQL expression', () => {
       const initialPair: InsertUniquePair = { valA: 'A1', valB: 'B1', valC: 'Initial C' };
       const insertInitial = uniquePairAdapter.insert(initialPair);
       expect(insertInitial.isOk()).toBe(true);
@@ -1212,7 +1214,7 @@ describe('Adapter insert()', () => {
       expect(foundPair.unwrap()?.valC).toBe('Initial C updated by SQL');
     });
 
-    test('onConflictDoUpdate (update with implicit set from new values - using excluded): should update with new record values if email conflicts', () => {
+    it('onConflictDoUpdate (update with implicit set from new values - using excluded): should update with new record values if email conflicts', () => {
       const aliceEmail = 'alice@example.com';
       const conflictingUser: Omit<InsertUser, 'id'> = { name: 'Implicit Update Alice', email: aliceEmail, age: 33, role: 'superadmin' };
 
@@ -1247,7 +1249,7 @@ describe('Adapter insert()', () => {
       expect(found!.role).toBe('superadmin');
     });
 
-    test('onConflictDoUpdate (merge behavior): should update existing NULL fields with new values, keep existing non-NULL fields', () => {
+    it('onConflictDoUpdate (merge behavior): should update existing NULL fields with new values, keep existing non-NULL fields', () => {
       const aliceOriginalResult = userAdapter.findOne({ email: 'alice@example.com' });
       expect(aliceOriginalResult.isOk()).toBe(true);
       const aliceOriginal = aliceOriginalResult.unwrap()!;
@@ -1297,7 +1299,7 @@ describe('Adapter insert()', () => {
       expect(found.age).toBe(aliceAfterBioNull.age);
     });
 
-    test('onConflict with composite unique key target', () => {
+    it('onConflict with composite unique key target', () => {
       const initialRecord: InsertUniquePair = { valA: 'testA', valB: 'testB', valC: 'initialC' };
       const insertResult = uniquePairAdapter.insert(initialRecord);
       expect(insertResult.isOk()).toBe(true);
@@ -1322,7 +1324,7 @@ describe('Adapter insert()', () => {
   });
 
   describe('Conflict Resolution - Advanced', () => {
-    test('onConflictDoUpdate (implicit from new values) should update all non-PK, non-conflict-target fields provided in new data', () => {
+    it('onConflictDoUpdate (implicit from new values) should update all non-PK, non-conflict-target fields provided in new data', () => {
       const bobEmail = 'bob@example.com';
       const originalBob = userAdapter.findOne({ email: bobEmail }).unwrap()!;
 
@@ -1363,7 +1365,7 @@ describe('Adapter insert()', () => {
       expect(foundBob).toEqual(updatedBob);
     });
 
-    test('onConflictDoNothing with multiple conflicting records in a batch insert, some non-conflicting', () => {
+    it('onConflictDoNothing with multiple conflicting records in a batch insert, some non-conflicting', () => {
       const newRecords: Array<Omit<InsertUser, 'id'>> = [
         { name: 'Alice New Data', email: 'alice@example.com', age: 100 },
         { name: 'Bob New Data', email: 'bob@example.com', age: 101 },
@@ -1383,7 +1385,7 @@ describe('Adapter insert()', () => {
       expect(bob.age).not.toBe(101);
     });
 
-    test('onConflictDoUpdate with multiple records in batch: some conflict (update), some new (insert)', () => {
+    it('onConflictDoUpdate with multiple records in batch: some conflict (update), some new (insert)', () => {
       const newRecords: Array<Omit<InsertUser, 'id'>> = [
         { name: 'Alice Updated Batch', email: 'alice@example.com', age: 100 },
         { name: 'Bob Updated Batch', email: 'bob@example.com', age: 101 },
@@ -1420,7 +1422,7 @@ describe('Adapter insert()', () => {
 });
 
 describe('Adapter update()', () => {
-  test('should update an existing user and return the updated record', () => {
+  it('should update an existing user and return the updated record', () => {
     const aliceResult = userAdapter.findOne({ email: 'alice@example.com' });
     expect(aliceResult.isOk()).toBe(true);
     const alice = aliceResult.unwrap();
@@ -1443,7 +1445,7 @@ describe('Adapter update()', () => {
     expect(found!.name).toBe('Alice Smith');
   });
 
-  test('should allow updating a field to null', () => {
+  it('should allow updating a field to null', () => {
     const bobResult = userAdapter.findOne({ email: 'bob@example.com' });
     expect(bobResult.isOk()).toBe(true);
     const bob = bobResult.unwrap();
@@ -1460,7 +1462,7 @@ describe('Adapter update()', () => {
     expect(foundResult.unwrap()!.bio).toBeNull();
   });
 
-  test('should return selected fields if select option is provided', () => {
+  it('should return selected fields if select option is provided', () => {
     const bobResult = userAdapter.findOne({ email: 'bob@example.com' });
     expect(bobResult.isOk()).toBe(true);
     const bob = bobResult.unwrap();
@@ -1474,21 +1476,21 @@ describe('Adapter update()', () => {
     expect(updatedUsers[0]).toEqual({ id: bob!.id, role: 'lead_user' });
   });
 
-  test('should return Err if record.id is null/undefined', () => {
+  it('should return Err if record.id is null/undefined', () => {
     const invalidUser = { name: 'No ID User', email: 'noid@example.com' } as unknown as User;
     const result = userAdapter.update(invalidUser);
     expect(result.isErr()).toBe(true);
     expect(result.unwrapErr().message).toMatch(/Missing required "id" for update operation/i);
   });
 
-  test('should return an empty array if id does not exist (updates 0 rows)', () => {
+  it('should return an empty array if id does not exist (updates 0 rows)', () => {
     const nonExistentUser: User = { id: 9999, name: 'Ghost', email: 'ghost@example.com', age: null, role: null, officeId: null, bio: null };
     const result = userAdapter.update(nonExistentUser);
     expect(result.isOk()).toBe(true);
     expect(result.unwrap()).toEqual([]);
   });
 
-  test('should return Err if update violates UNIQUE constraint', () => {
+  it('should return Err if update violates UNIQUE constraint', () => {
     const alice = userAdapter.findOne({ email: 'alice@example.com' }).unwrap()!;
     const bob = userAdapter.findOne({ email: 'bob@example.com' }).unwrap()!;
 
@@ -1498,7 +1500,7 @@ describe('Adapter update()', () => {
     expect(result.unwrapErr().message).toMatch(/UNIQUE constraint failed: users.email/i);
   });
 
-  test('should return Err if update violates FOREIGN KEY constraint', () => {
+  it('should return Err if update violates FOREIGN KEY constraint', () => {
     const charlie = userAdapter.findOne({ email: 'charlie@example.com' }).unwrap()!;
     const updatedCharlie: User = { ...charlie, officeId: 9999 };
     const result = userAdapter.update(updatedCharlie);
@@ -1506,7 +1508,7 @@ describe('Adapter update()', () => {
     expect(result.unwrapErr().message).toMatch(/FOREIGN KEY constraint failed/i);
   });
 
-  test('attempting to change PK `id` via update payload should be ignored', () => {
+  it('attempting to change PK `id` via update payload should be ignored', () => {
     const charlie = userAdapter.findOne({ email: 'charlie@example.com' }).unwrap()!;
     const updateDataWithChangedIdField: User = {
       ...charlie,
@@ -1521,7 +1523,7 @@ describe('Adapter update()', () => {
 });
 
 describe('Adapter delete()', () => {
-  test('should delete an existing user and return the deleted record', () => {
+  it('should delete an existing user and return the deleted record', () => {
     const charlieResult = userAdapter.findOne({ email: 'charlie@example.com' });
     expect(charlieResult.isOk()).toBe(true);
     const charlie = charlieResult.unwrap();
@@ -1543,7 +1545,7 @@ describe('Adapter delete()', () => {
     expect(countResult.unwrap()).toBe(sampleUsers.length - 1);
   });
 
-  test('should return selected fields if select option is provided', () => {
+  it('should return selected fields if select option is provided', () => {
     const davidResult = userAdapter.findOne({ email: 'david@example.com' });
     expect(davidResult.isOk()).toBe(true);
     const david = davidResult.unwrap();
@@ -1557,14 +1559,14 @@ describe('Adapter delete()', () => {
     expect(Object.keys(deletedUsers[0]).sort()).toEqual(['id', 'name'].sort());
   });
 
-  test('should return Err if record.id is null/undefined', () => {
+  it('should return Err if record.id is null/undefined', () => {
     const invalidUser = { name: 'No ID User To Delete' } as unknown as User;
     const result = userAdapter.delete(invalidUser);
     expect(result.isErr()).toBe(true);
     expect(result.unwrapErr().message).toMatch(/Missing required "id" for delete operation/i);
   });
 
-  test('should return an empty array if id does not exist (deletes 0 rows)', () => {
+  it('should return an empty array if id does not exist (deletes 0 rows)', () => {
     const nonExistentUser: User = { id: 8888, name: 'Phantom', email: 'phantom@example.com', age: null, role: null, officeId: null, bio: null };
     const result = userAdapter.delete(nonExistentUser);
     expect(result.isOk()).toBe(true);
@@ -1573,7 +1575,7 @@ describe('Adapter delete()', () => {
 });
 
 describe('Adapter findOneAndUpdate()', () => {
-  test('should find and update a user if filter matches', () => {
+  it('should find and update a user if filter matches', () => {
     const eveOriginalResult = userAdapter.findOne({ email: 'eve@example.com' });
     expect(eveOriginalResult.isOk()).toBe(true);
     const eveOriginal = eveOriginalResult.unwrap();
@@ -1599,7 +1601,7 @@ describe('Adapter findOneAndUpdate()', () => {
     expect(found!.role).toBe(updatePayload.role);
   });
 
-  test('should insert a new user if filter does not match and upsert is true', () => {
+  it('should insert a new user if filter does not match and upsert is true', () => {
     const newUserEmail = 'newupsert@example.com';
 
     const filterForUpsert: Partial<User> = { email: newUserEmail };
@@ -1626,7 +1628,7 @@ describe('Adapter findOneAndUpdate()', () => {
     expect(found!.name).toBe(upsertPayload.name);
   });
 
-  test('should insert a new user using filter data combined with update data (update data overwrites filter for same keys)', () => {
+  it('should insert a new user using filter data combined with update data (update data overwrites filter for same keys)', () => {
     const newUserEmail = 'newupsertfilter@example.com';
     const filterData: Partial<User> = { email: newUserEmail, role: 'default_role_from_filter', name: 'Name From Filter (will be overwritten)' };
     const updateData: Partial<Omit<InsertUser, 'id'>> = { name: 'New Upserted Filter', age: 26 };
@@ -1643,13 +1645,13 @@ describe('Adapter findOneAndUpdate()', () => {
     expect(upsertedUser!.role).toBe(filterData.role);
   });
 
-  test('should return null if filter does not match and upsert is false (or not specified)', () => {
+  it('should return null if filter does not match and upsert is false (or not specified)', () => {
     const result = userAdapter.findOneAndUpdate({ email: 'nosuchuser@example.com' }, { name: 'No Update' });
     expect(result.isOk()).toBe(true);
     expect(result.unwrap()).toBeNull();
   });
 
-  test('should apply select option on returned record (update)', () => {
+  it('should apply select option on returned record (update)', () => {
     const malloryOriginalResult = userAdapter.findOne({ email: 'mallory@example.com' });
     expect(malloryOriginalResult.isOk()).toBe(true);
     const malloryOriginal = malloryOriginalResult.unwrap();
@@ -1664,7 +1666,7 @@ describe('Adapter findOneAndUpdate()', () => {
     expect(selectedUser).toEqual({ id: malloryOriginal!.id, bio: updatePayload.bio });
   });
 
-  test('should apply select option on returned record (insert with upsert:true)', () => {
+  it('should apply select option on returned record (insert with upsert:true)', () => {
     const newUserEmail = 'selectupsert@example.com';
     const filterForUpsert: Partial<User> = { email: newUserEmail };
     const result = userAdapter.findOneAndUpdate(filterForUpsert, { name: 'Select Upsert', age: 22 }, { upsert: true, select: { name: 1, email: 1 } });
@@ -1674,7 +1676,7 @@ describe('Adapter findOneAndUpdate()', () => {
     expect(unwrappedResult).toEqual(expect.objectContaining({ id: expect.any(Number), name: 'Select Upsert', email: newUserEmail }));
   });
 
-  test('should return the found record if filter matches but data for update is empty and record is unchanged', () => {
+  it('should return the found record if filter matches but data for update is empty and record is unchanged', () => {
     const aliceResult = userAdapter.findOne({ email: 'alice@example.com' });
     expect(aliceResult.isOk()).toBe(true);
     const alice = aliceResult.unwrap();
@@ -1694,7 +1696,7 @@ describe('Adapter findOneAndUpdate()', () => {
     expect(aliceAfter).toEqual({ ...alice! });
   });
 
-  test('should upsert correctly on an empty table with upsert: true', () => {
+  it('should upsert correctly on an empty table with upsert: true', () => {
     client.exec('DELETE FROM users;');
     const newUserEmail = 'emptyupsert@example.com';
     const filterForUpsert: Partial<User> = { email: newUserEmail };
@@ -1708,7 +1710,7 @@ describe('Adapter findOneAndUpdate()', () => {
     expect(userAdapter.count().unwrap()).toBe(1);
   });
 
-  test('should fail upsert if combined data for insert violates NOT NULL constraint', () => {
+  it('should fail upsert if combined data for insert violates NOT NULL constraint', () => {
     const newUserEmail = 'failupsert@example.com';
 
     const filterForUpsert: Partial<User> = { email: newUserEmail };
@@ -1718,7 +1720,7 @@ describe('Adapter findOneAndUpdate()', () => {
     expect(result.unwrapErr().message).toMatch(/NOT NULL constraint failed: users.name/i);
   });
 
-  test('should update only the first matching record if filter matches multiple (respecting implicit/explicit order)', () => {
+  it('should update only the first matching record if filter matches multiple (respecting implicit/explicit order)', () => {
     const usersAge30 = sampleUsers.filter((u) => u.age === 30);
     expect(usersAge30.length).toBeGreaterThan(1);
 
@@ -1740,7 +1742,7 @@ describe('Adapter findOneAndUpdate()', () => {
   });
 
   describe('Upsert Behavior with Conflicts - Additional', () => {
-    test('upsert: true, new record (from filter + data) insert conflicts with an existing different record unique constraint', () => {
+    it('upsert: true, new record (from filter + data) insert conflicts with an existing different record unique constraint', () => {
       const bobEmail = sampleUsers.find((u) => u.name === 'Bob')!.email!;
       const newNonExistentEmail = 'nonexistentupsertconflict@example.com';
 
@@ -1759,7 +1761,7 @@ describe('Adapter findOneAndUpdate()', () => {
       expect(bobUser!.name).toBe('Bob');
     });
 
-    test('upsert: true, filter matches, but update causes unique constraint violation with another record', () => {
+    it('upsert: true, filter matches, but update causes unique constraint violation with another record', () => {
       const aliceEmail = sampleUsers.find((u) => u.name === 'Alice')!.email!;
       const bobEmail = sampleUsers.find((u) => u.name === 'Bob')!.email!;
 
@@ -1773,7 +1775,7 @@ describe('Adapter findOneAndUpdate()', () => {
       expect(aliceUser!.email).toBe(aliceEmail);
     });
 
-    test('upsert: true with a complex (non-Partial) filter that does not match, should insert based on `data` payload', () => {
+    it('upsert: true with a complex (non-Partial) filter that does not match, should insert based on `data` payload', () => {
       const complexFilter = { age: { $gt: 200 } };
       const payloadForInsert: Partial<Omit<InsertUser, 'id'>> = {
         name: 'Upserted By Complex Miss',
@@ -1795,7 +1797,7 @@ describe('Adapter findOneAndUpdate()', () => {
       expect(dbUser!.age).toBe(payloadForInsert.age);
     });
 
-    test('upsert: true, filter includes null value, no match, should insert with null value from filter merged with payload', () => {
+    it('upsert: true, filter includes null value, no match, should insert with null value from filter merged with payload', () => {
       const filterWithNull: Partial<User> = { email: 'upsertnullbio@example.com', bio: null };
       const payload = { name: 'Upsert Null Bio User', age: 33 };
 
@@ -1816,7 +1818,7 @@ describe('Adapter findOneAndUpdate()', () => {
 });
 
 describe('Adapter findOneAndDelete()', () => {
-  test('should find and delete a user if filter matches, returning the deleted record', () => {
+  it('should find and delete a user if filter matches, returning the deleted record', () => {
     const trentResult = userAdapter.findOne({ email: 'trent@example.com' });
     expect(trentResult.isOk()).toBe(true);
     const trent = trentResult.unwrap();
@@ -1840,20 +1842,20 @@ describe('Adapter findOneAndDelete()', () => {
     expect(currentCountResult.unwrap()).toBe(initialCount - 1);
   });
 
-  test('should return null if no user matches filter', () => {
+  it('should return null if no user matches filter', () => {
     const result = userAdapter.findOneAndDelete({ email: 'ghost@example.com' });
     expect(result.isOk()).toBe(true);
     expect(result.unwrap()).toBeNull();
   });
 
-  test('should return null when trying to delete on an empty table', () => {
+  it('should return null when trying to delete on an empty table', () => {
     client.exec('DELETE FROM users;');
     const result = userAdapter.findOneAndDelete({ name: 'AnyName' });
     expect(result.isOk()).toBe(true);
     expect(result.unwrap()).toBeNull();
   });
 
-  test('should apply select option on returned (deleted) record', () => {
+  it('should apply select option on returned (deleted) record', () => {
     const ursulaResult = userAdapter.findOne({ email: 'ursula@example.com' });
     expect(ursulaResult.isOk()).toBe(true);
     const ursula = ursulaResult.unwrap();
@@ -1866,7 +1868,7 @@ describe('Adapter findOneAndDelete()', () => {
     expect(deletedUser).toEqual({ id: ursula!.id, name: 'Ursula User', email: 'ursula@example.com' });
   });
 
-  test('should delete only the first matching record if filter matches multiple (respecting order)', () => {
+  it('should delete only the first matching record if filter matches multiple (respecting order)', () => {
     const usersAge30 = sampleUsers.filter((u) => u.age === 30);
     expect(usersAge30.length).toBeGreaterThan(1);
 
@@ -1887,7 +1889,7 @@ describe('Adapter findOneAndDelete()', () => {
 });
 
 describe('Foreign Key Cascades (SQLite ON DELETE CASCADE Behavior Verification)', () => {
-  test('deleting a user should cascade delete their posts', () => {
+  it('deleting a user should cascade delete their posts', () => {
     const aliceResult = userAdapter.findOne({ email: 'alice@example.com' });
     expect(aliceResult.isOk()).toBe(true);
     const alice = aliceResult.unwrap();
@@ -1907,7 +1909,7 @@ describe('Foreign Key Cascades (SQLite ON DELETE CASCADE Behavior Verification)'
     expect(alicePostsAfter).toHaveLength(0);
   });
 
-  test('deleting an office should cascade delete users in that office, and their posts indirectly', () => {
+  it('deleting an office should cascade delete users in that office, and their posts indirectly', () => {
     const hqOfficeResult = officeAdapter.findOne({ name: 'HQ' });
     expect(hqOfficeResult.isOk()).toBe(true);
     const hqOffice = hqOfficeResult.unwrap();

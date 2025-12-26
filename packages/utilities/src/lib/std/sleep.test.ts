@@ -1,21 +1,21 @@
-import { expect, test } from 'vitest';
+import { expect, it } from 'vitest';
 
 import { noop } from './common';
 import { waitUntil } from './sleep';
 
-test('should immediate without retries', async () => {
+it('should immediate without retries', async () => {
   let callCount = 0;
   await waitUntil(() => (callCount++, true));
   expect(callCount).toEqual(1);
 });
 
-test('should retry until callback resolve', async () => {
+it('should retry until callback resolve', async () => {
   let callCount = 0;
   await waitUntil((resolve, i) => (i > 4 ? resolve() : (callCount++, false)));
   expect(callCount).toEqual(5);
 });
 
-test('should use a custom delay', async () => {
+it('should use a custom delay', async () => {
   const start = performance.now();
   await waitUntil(
     (_, i) => {
@@ -32,7 +32,7 @@ test('should use a custom delay', async () => {
   expect(end - start).greaterThanOrEqual(100);
 });
 
-test('should waiting until status true', async () => {
+it('should waiting until status true', async () => {
   let status = false;
   setTimeout(() => (status = true), 500);
 

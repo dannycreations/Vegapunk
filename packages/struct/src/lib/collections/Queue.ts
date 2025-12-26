@@ -1,5 +1,5 @@
 import { swap } from '@vegapunk/utilities';
-import { isObjectLike, merge } from '@vegapunk/utilities/common';
+import { isObjectLike } from '@vegapunk/utilities/common';
 
 import type { Comparator } from '@vegapunk/utilities';
 
@@ -199,7 +199,7 @@ export class Queue<T> {
 
     let item = this.heap[index]!;
     if (isObjectLike(item) && isObjectLike(value)) {
-      merge(item, value);
+      Object.assign(item, value);
     } else {
       this.heap[index] = value;
       item = value!;

@@ -1,4 +1,4 @@
-import { expect, test, vi } from 'vitest';
+import { expect, it, vi } from 'vitest';
 
 import { Vegapunk } from '../Vegapunk';
 import { Task } from './Task';
@@ -24,19 +24,22 @@ const expectedOutput = [
   '18 6.3 update 6 test',
 ];
 
-test('Task sequence test', async () => {
-  let i = 0;
-  const capturedLogs: string[] = [];
-  const consoleSpy = vi.spyOn(console, 'log').mockImplementation((...args) => {
-    capturedLogs.push(args.join(' '));
-  });
+let i = 0;
+const capturedLogs: string[] = [];
+vi.spyOn(console, 'log').mockImplementation((...args) => {
+  capturedLogs.push(args.join(' '));
+});
 
+it('should output correct order', async () => {
   const client = new Vegapunk();
   await client.start();
 
   const OBSERVER_TASK = await Task.createTask({
     async update() {
-      if (i < expectedOutput.length) return;
+      if (i < expectedOutput.length) {
+        return;
+      }
+
       expect(capturedLogs).toEqual(expectedOutput);
       await OBSERVER_TASK.unload();
     },
@@ -118,6 +121,4 @@ test('Task sequence test', async () => {
     options: { delay: 1700, enabled: false },
   });
   sevenTask.startTask(true);
-
-  consoleSpy.mockRestore();
 });

@@ -28,9 +28,9 @@ export interface MutexItem {
   readonly priority: number;
 
   /**
-   * The timestamp of when the request was made, used as a tie-breaker for priority.
+   * The sequence number used as a tie-breaker for priority to ensure FIFO.
    */
-  readonly timestamp: number;
+  readonly sequence: number;
 }
 
 /**
@@ -42,6 +42,9 @@ export class Mutex {
   protected readonly id: symbol = Symbol(Mutex.name);
   protected readonly locks: Map<string | symbol, MutexEntry> = new Map();
   protected readonly queues: Map<string | symbol, MutexItem[]> = new Map();
+
+  protected counter: number = 0;
+  protected disposed: boolean = false;
 
   /**
    * Synchronously checks if a resource is locked and acquires the lock if it is not.
@@ -73,6 +76,10 @@ export class Mutex {
    *   `false` if the lock was successfully acquired.
    */
   public lock(key: string | symbol = this.id, timeout?: number): boolean {
+    if (this.disposed) {
+      return true;
+    }
+
     const isLocked = this.locks.has(key);
     if (isLocked) {
       return true;
@@ -133,6 +140,10 @@ export class Mutex {
    */
   public acquire(key: string | symbol = this.id, priority: number = 0, timeout?: number): Promise<void> {
     return new Promise<void>((resolve, reject) => {
+      if (this.disposed) {
+        return reject(new Error('Mutex disposed!'));
+      }
+
       const isLocked = this.locks.has(key);
       const queue = this.queues.get(key);
       const hasQueue = queue !== undefined && queue.length > 0;
@@ -162,10 +173,10 @@ export class Mutex {
           attempt,
           reject,
           priority,
-          timestamp: Date.now(),
+          sequence: this.counter++,
         });
 
-        keyQueue.sort((a, b) => b.priority - a.priority || a.timestamp - b.timestamp);
+        keyQueue.sort((a, b) => b.priority - a.priority || a.sequence - b.sequence);
       }
     });
   }
@@ -196,6 +207,10 @@ export class Mutex {
    * @returns {void}
    */
   public release(key: string | symbol = this.id): void {
+    if (this.disposed) {
+      return;
+    }
+
     const currentLock = this.locks.get(key);
     if (currentLock === undefined) {
       return;
@@ -239,6 +254,11 @@ export class Mutex {
    * @returns {void}
    */
   public dispose(): void {
+    if (this.disposed) {
+      return;
+    }
+    this.disposed = true;
+
     for (const lock of this.locks.values()) {
       if (lock.timeoutId) {
         clearTimeout(lock.timeoutId);
