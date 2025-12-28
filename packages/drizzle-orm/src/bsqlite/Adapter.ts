@@ -38,10 +38,10 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
     }).mapErr((error) => Object.assign(error as Error, querySql));
   }
 
-  public find<B extends Array<Table>, S extends SelectClause<A, B, S>>(
+  public find<const J extends JoinClause<A, Array<Table>> = [], S extends SelectClause<A, ExtractTables<J>, S> = {}>(
     filter: QueryFilter<A> = {},
-    options: QueryOptions<A, B, S> = {},
-  ): Result<Array<ReturnAlias<A, B, S>>, Error> {
+    options: QueryOptions<A, ExtractTables<J>, S, J> = {},
+  ): Result<Array<ReturnAlias<A, ExtractTables<J>, S, J>>, Error> {
     let querySql: unknown | undefined;
     return Result.from(() => {
       const select = this.buildSelectClause(options.select, options.joins);
@@ -94,14 +94,14 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
       if (this.trace) {
         querySql = this.dialect.sqlToQuery(query.getSQL());
       }
-      return query.all() as unknown as Array<ReturnAlias<A, B, S>>;
+      return query.all() as unknown as Array<ReturnAlias<A, ExtractTables<J>, S, J>>;
     }).mapErr((error) => Object.assign(error as Error, querySql));
   }
 
-  public findOne<B extends Array<Table>, S extends SelectClause<A, B, S>>(
+  public findOne<const J extends JoinClause<A, Array<Table>> = [], S extends SelectClause<A, ExtractTables<J>, S> = {}>(
     filter: QueryFilter<A> = {},
-    options: Omit<QueryOptions<A, B, S>, 'limit'> = {},
-  ): Result<ReturnAlias<A, B, S> | null, Error> {
+    options: Omit<QueryOptions<A, ExtractTables<J>, S, J>, 'limit'> = {},
+  ): Result<ReturnAlias<A, ExtractTables<J>, S, J> | null, Error> {
     const record = this.find(filter, { ...options, limit: 1 });
     return record.map((r) => r[0] ?? null);
   }
@@ -109,21 +109,21 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
   public findOneAndUpdate<B extends Array<Table>, S extends SelectClause<A, B, S>>(
     filter: Partial<InferSelect<A>>,
     data: Partial<Omit<Insert, 'id'>>,
-    options: Omit<QueryOptions<A, B, S>, 'limit' | 'joins'> & {
+    options: Omit<QueryOptions<A, B, S, unknown>, 'limit' | 'joins'> & {
       upsert: true;
     },
   ): Result<ReturnAlias<A, B, S> | null, Error>;
   public findOneAndUpdate<B extends Array<Table>, S extends SelectClause<A, B, S>>(
     filter: QueryFilter<A>,
     data: Partial<Omit<Insert, 'id'>>,
-    options?: Omit<QueryOptions<A, B, S>, 'limit' | 'joins'> & {
+    options?: Omit<QueryOptions<A, B, S, unknown>, 'limit' | 'joins'> & {
       upsert?: boolean;
     },
   ): Result<ReturnAlias<A, B, S> | null, Error>;
   public findOneAndUpdate<B extends Array<Table>, S extends SelectClause<A, B, S>>(
     filter: Partial<InferSelect<A>> | QueryFilter<A>,
     data: Partial<Omit<Insert, 'id'>>,
-    options: Omit<QueryOptions<A, B, S>, 'limit' | 'joins'> & {
+    options: Omit<QueryOptions<A, B, S, unknown>, 'limit' | 'joins'> & {
       upsert?: boolean;
     } = {},
   ): Result<ReturnAlias<A, B, S> | null, Error> {
@@ -142,7 +142,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 
   public findOneAndDelete<B extends Array<Table>, S extends SelectClause<A, B, S>>(
     filter: QueryFilter<A> = {},
-    options: Omit<QueryOptions<A, B, S>, 'limit' | 'joins'> = {},
+    options: Omit<QueryOptions<A, B, S, unknown>, 'limit' | 'joins'> = {},
   ): Result<ReturnAlias<A, B, S> | null, Error> {
     const record = this.findOne(filter, { ...options, select: undefined });
     return record.mapInto((r) => {
@@ -157,7 +157,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 
   public insert<B extends Array<Table>, S extends SelectClause<A, B, S>>(
     record: Omit<Insert, 'id'> | Array<Omit<Insert, 'id'>>,
-    options: Pick<QueryOptions<A, B, S>, 'select'> & {
+    options: Pick<QueryOptions<A, B, S, unknown>, 'select'> & {
       conflict?:
         | {
             resolution: 'ignore';
@@ -218,7 +218,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 
   public update<B extends Array<Table>, S extends SelectClause<A, B, S>>(
     record: Select,
-    options: Pick<QueryOptions<A, B, S>, 'select'> = {},
+    options: Pick<QueryOptions<A, B, S, unknown>, 'select'> = {},
   ): Result<Array<ReturnAlias<A, B, S>>, Error> {
     let querySql: unknown | undefined;
     return Result.from(() => {
@@ -236,7 +236,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 
   public delete<B extends Array<Table>, S extends SelectClause<A, B, S>>(
     record: Select,
-    options: Pick<QueryOptions<A, B, S>, 'select'> = {},
+    options: Pick<QueryOptions<A, B, S, unknown>, 'select'> = {},
   ): Result<Array<ReturnAlias<A, B, S>>, Error> {
     let querySql: unknown | undefined;
     return Result.from(() => {
@@ -507,12 +507,12 @@ type QueryBaseFilter<A extends Table> = {
 
 type QueryFilter<A extends Table> = QueryBaseFilter<A> & LogicalOperator<A>;
 
-interface QueryOptions<A extends Table, B extends Array<Table>, S> {
+interface QueryOptions<A extends Table, B extends Array<Table>, S, J = JoinClause<A, B>> {
   readonly select?: S;
   readonly limit?: number;
   readonly offset?: number;
   readonly order?: OrderClause<A, B>;
-  readonly joins?: JoinClause<A, B>;
+  readonly joins?: J;
 }
 
 type SelectClause<A extends Table, B extends Array<Table>, S> = Partial<Record<keyof SelectMerge<A, B>, 0 | 1>> &
@@ -550,17 +550,39 @@ type JoinClause<A extends Table, B extends Array<Table>> = {
   };
 };
 
-type ReturnAlias<A extends Table, B extends Array<Table>, S> =
+type ExtractTables<J> = J extends readonly [infer Head, ...infer Tail]
+  ? Head extends { table: infer T }
+    ? T extends Table
+      ? [T, ...ExtractTables<Tail>]
+      : ExtractTables<Tail>
+    : ExtractTables<Tail>
+  : J extends Array<{ table: infer T }>
+    ? (T extends Table ? T : never)[]
+    : [];
+
+type IsLeftOrFull<J, T extends Table> =
+  J extends Array<infer Join> ? (Extract<Join, { table: T; type: 'left' | 'full' }> extends never ? false : true) : false;
+
+type IsRightOrFull<J> = J extends Array<infer Join> ? (Extract<Join, { type: 'right' | 'full' }> extends never ? false : true) : false;
+
+type ReturnAlias<A extends Table, B extends Array<Table>, S, J extends readonly unknown[] = unknown[]> =
   S extends Record<keyof S, number>
-    ? Omit<SelectMerge<A, B>, Exclude<keyof SelectMerge<A, B>, { [K in keyof S]: S[K] extends 1 ? K : never }[keyof S]>>
+    ? keyof S extends never
+      ? B extends [infer _A, ...infer _B]
+        ? { [K in A['_']['name']]: IsRightOrFull<J> extends true ? InferSelect<A> | null : InferSelect<A> } & ReturnTuple<B, J>
+        : InferSelect<A>
+      : Omit<
+          SelectMerge<A, B>,
+          Exclude<keyof SelectMerge<A, B>, { [K in keyof S]: S[K] extends 1 ? K : never }[keyof S] | (S extends { id: 0 } ? never : 'id')>
+        >
     : B extends [infer _A, ...infer _B]
-      ? { [K in A['_']['name']]: InferSelect<A> } & ReturnTuple<B>
+      ? { [K in A['_']['name']]: IsRightOrFull<J> extends true ? InferSelect<A> | null : InferSelect<A> } & ReturnTuple<B, J>
       : InferSelect<A>;
 
-type ReturnTuple<T extends Array<unknown>> = T extends [infer Head, ...infer Tail]
+type ReturnTuple<T extends Array<unknown>, J> = T extends [infer Head, ...infer Tail]
   ? Head extends Table
-    ? { [K in Head['_']['name']]: InferSelect<Head> } & ReturnTuple<Tail>
-    : ReturnTuple<Tail>
+    ? { [K in Head['_']['name']]: IsLeftOrFull<J, Head> extends true ? InferSelect<Head> | null : InferSelect<Head> } & ReturnTuple<Tail, J>
+    : ReturnTuple<Tail, J>
   : unknown;
 
 type InferSelect<T extends Table> = InferSelectModel<T>;

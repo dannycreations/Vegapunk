@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, expectTypeOf, it } from 'vitest';
 
 import { Adapter, BetterSQLite3Database, Database, drizzle } from './';
 
@@ -170,6 +170,7 @@ describe('Adapter find()', () => {
     const result = userAdapter.find();
     expect(result.isOk()).toBe(true);
     const users = result.unwrap();
+    expectTypeOf(users).toEqualTypeOf<User[]>();
     expect(users).toHaveLength(sampleUsers.length);
     const sampleUserKeys = Object.keys(usersTable);
     users.forEach((user) => {
@@ -181,7 +182,9 @@ describe('Adapter find()', () => {
     client.exec('DELETE FROM offices;');
     const result = officeAdapter.find();
     expect(result.isOk()).toBe(true);
-    expect(result.unwrap()).toEqual([]);
+    const offices = result.unwrap();
+    expectTypeOf(offices).toEqualTypeOf<Office[]>();
+    expect(offices).toEqual([]);
   });
 
   describe('filter options', () => {
@@ -192,7 +195,9 @@ describe('Adapter find()', () => {
       expect(alice).not.toBeNull();
       const result = userAdapter.find({ name: 'Alice' });
       expect(result.isOk()).toBe(true);
-      expect(result.unwrap()).toEqual([expect.objectContaining({ id: alice!.id, name: 'Alice' })]);
+      const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
+      expect(users).toEqual([expect.objectContaining({ id: alice!.id, name: 'Alice' })]);
     });
 
     it('equality: should find users by age', () => {
@@ -200,6 +205,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({ age: 30 });
       expect(result.isOk()).toBe(true);
       const foundUsers = result.unwrap();
+      expectTypeOf(foundUsers).toEqualTypeOf<User[]>();
       expect(foundUsers).toHaveLength(usersAge30.length);
       foundUsers.forEach((user) => expect(user.age).toBe(30));
     });
@@ -209,6 +215,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({ bio: null });
       expect(result.isOk()).toBe(true);
       const foundUsers = result.unwrap();
+      expectTypeOf(foundUsers).toEqualTypeOf<User[]>();
       expect(foundUsers).toHaveLength(usersNullBio.length);
       foundUsers.forEach((user) => expect(user.bio).toBeNull());
     });
@@ -217,6 +224,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({ name: { $ne: 'Alice' } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
       expect(users.every((u) => u.name !== 'Alice')).toBe(true);
       expect(users).toHaveLength(sampleUsers.length - 1);
     });
@@ -226,6 +234,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({ bio: { $ne: null } });
       expect(result.isOk()).toBe(true);
       const foundUsers = result.unwrap();
+      expectTypeOf(foundUsers).toEqualTypeOf<User[]>();
       expect(foundUsers).toHaveLength(usersNonNullBioCount);
       foundUsers.forEach((user) => expect(user.bio).not.toBeNull());
     });
@@ -235,6 +244,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({ age: { $gt: 30 } });
       expect(result.isOk()).toBe(true);
       const foundUsers = result.unwrap();
+      expectTypeOf(foundUsers).toEqualTypeOf<User[]>();
       expect(foundUsers).toHaveLength(usersOlderThan30Count);
       foundUsers.forEach((user) => expect(user.age).toBeGreaterThan(30));
     });
@@ -242,7 +252,9 @@ describe('Adapter find()', () => {
     it('comparison ($gt): age: {$gt: null} should yield empty (SQLite: field > NULL is UNKNOWN/FALSE)', () => {
       const result = userAdapter.find({ age: { $gt: null } });
       expect(result.isOk()).toBe(true);
-      expect(result.unwrap()).toHaveLength(0);
+      const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
+      expect(users).toHaveLength(0);
     });
 
     it('comparison ($gte): should find users age 30 or older (field >= value)', () => {
@@ -250,6 +262,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({ age: { $gte: 30 } });
       expect(result.isOk()).toBe(true);
       const foundUsers = result.unwrap();
+      expectTypeOf(foundUsers).toEqualTypeOf<User[]>();
       expect(foundUsers).toHaveLength(usersGte30Count);
       foundUsers.forEach((user) => expect(user.age).toBeGreaterThanOrEqual(30));
     });
@@ -259,6 +272,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({ age: { $lt: 30 } });
       expect(result.isOk()).toBe(true);
       const foundUsers = result.unwrap();
+      expectTypeOf(foundUsers).toEqualTypeOf<User[]>();
       expect(foundUsers).toHaveLength(usersYoungerThan30Count);
       foundUsers.forEach((user) => expect(user.age).toBeLessThan(30));
     });
@@ -268,6 +282,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({ age: { $lte: 30 } });
       expect(result.isOk()).toBe(true);
       const foundUsers = result.unwrap();
+      expectTypeOf(foundUsers).toEqualTypeOf<User[]>();
       expect(foundUsers).toHaveLength(usersLte30Count);
       foundUsers.forEach((user) => expect(user.age).toBeLessThanOrEqual(30));
     });
@@ -276,6 +291,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({ name: { $like: 'A%' } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
       expect(users.every((u) => u.name.startsWith('A'))).toBe(true);
       expect(users).toHaveLength(sampleUsers.filter((u) => u.name.startsWith('A')).length);
     });
@@ -284,6 +300,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({ name: { $nlike: 'A%' } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
       expect(users.every((u) => !u.name.startsWith('A'))).toBe(true);
       expect(users).toHaveLength(sampleUsers.filter((u) => !u.name.startsWith('A')).length);
     });
@@ -291,7 +308,9 @@ describe('Adapter find()', () => {
     it('string ($glob): should find users with name ending with e (GLOB pattern)', () => {
       const result = userAdapter.find({ name: { $glob: '*e' } });
       expect(result.isOk()).toBe(true);
-      const names = result.unwrap().map((u) => u.name);
+      const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
+      const names = users.map((u) => u.name);
       const expectedNames = sampleUsers.filter((u) => u.name.endsWith('e')).map((u) => u.name);
       expect(names.sort()).toEqual(expect.arrayContaining(expectedNames.sort()));
       expect(names).toHaveLength(expectedNames.length);
@@ -301,6 +320,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({ name: { $nglob: '*e' } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
       expect(users.every((u) => !u.name.endsWith('e'))).toBe(true);
       expect(users).toHaveLength(sampleUsers.filter((u) => !u.name.endsWith('e')).length);
     });
@@ -311,6 +331,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({ role: { $in: targetRoles } });
       expect(result.isOk()).toBe(true);
       const foundUsers = result.unwrap();
+      expectTypeOf(foundUsers).toEqualTypeOf<User[]>();
       expect(foundUsers).toHaveLength(expectedUsersCount);
       foundUsers.forEach((user) => expect(targetRoles).toContain(user.role));
     });
@@ -318,7 +339,9 @@ describe('Adapter find()', () => {
     it('array ($in): $in with empty array should return no results (SQLite: field IN () is FALSE)', () => {
       const result = userAdapter.find({ role: { $in: [] } });
       expect(result.isOk()).toBe(true);
-      expect(result.unwrap()).toHaveLength(0);
+      const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
+      expect(users).toHaveLength(0);
     });
 
     it('array ($nin): should find users not in specific roles (field NOT IN (values))', () => {
@@ -327,6 +350,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({ role: { $nin: excludedRoles } });
       expect(result.isOk()).toBe(true);
       const foundUsers = result.unwrap();
+      expectTypeOf(foundUsers).toEqualTypeOf<User[]>();
       expect(foundUsers).toHaveLength(expectedUsersCount);
       foundUsers.forEach((user) => expect(excludedRoles).not.toContain(user.role));
     });
@@ -334,7 +358,9 @@ describe('Adapter find()', () => {
     it('array ($nin): $nin with empty array should return all results (SQLite: field NOT IN () is TRUE)', () => {
       const result = userAdapter.find({ role: { $nin: [] } });
       expect(result.isOk()).toBe(true);
-      expect(result.unwrap()).toHaveLength(sampleUsers.length);
+      const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
+      expect(users).toHaveLength(sampleUsers.length);
     });
 
     it('null check ($null: true): should find users with null age (field IS NULL)', () => {
@@ -342,6 +368,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({ age: { $null: true } });
       expect(result.isOk()).toBe(true);
       const foundUsers = result.unwrap();
+      expectTypeOf(foundUsers).toEqualTypeOf<User[]>();
       expect(foundUsers).toHaveLength(usersNullAgeCount);
       foundUsers.forEach((u) => expect(u.age).toBeNull());
     });
@@ -351,6 +378,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({ age: { $null: false } });
       expect(result.isOk()).toBe(true);
       const foundUsers = result.unwrap();
+      expectTypeOf(foundUsers).toEqualTypeOf<User[]>();
       expect(foundUsers).toHaveLength(usersNonNullAgeCount);
       foundUsers.forEach((u) => expect(u.age).not.toBeNull());
     });
@@ -360,6 +388,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({ $and: [{ role: 'user' }, { age: 24 }] });
       expect(result.isOk()).toBe(true);
       const foundUsers = result.unwrap();
+      expectTypeOf(foundUsers).toEqualTypeOf<User[]>();
       expect(foundUsers).toHaveLength(1);
       expect(foundUsers[0]).toEqual(expect.objectContaining({ name: bob.name, email: bob.email }));
     });
@@ -367,27 +396,35 @@ describe('Adapter find()', () => {
     it('logical ($and): with empty array should return all users (evaluates to TRUE)', () => {
       const result = userAdapter.find({ $and: [] });
       expect(result.isOk()).toBe(true);
-      expect(result.unwrap()).toHaveLength(sampleUsers.length);
+      const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
+      expect(users).toHaveLength(sampleUsers.length);
     });
 
     it('logical ($or): find users with role "admin" OR age < 25', () => {
       const expectedUsersCount = sampleUsers.filter((u) => u.role === 'admin' || (u.age !== null && u.age! < 25)).length;
       const result = userAdapter.find({ $or: [{ role: 'admin' }, { age: { $lt: 25 } }] });
       expect(result.isOk()).toBe(true);
-      expect(result.unwrap()).toHaveLength(expectedUsersCount);
+      const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
+      expect(users).toHaveLength(expectedUsersCount);
     });
 
     it('logical ($or): with empty array should return no users (evaluates to FALSE)', () => {
       const result = userAdapter.find({ $or: [] });
       expect(result.isOk()).toBe(true);
-      expect(result.unwrap()).toHaveLength(0);
+      const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
+      expect(users).toHaveLength(0);
     });
 
     it('logical ($not): find users NOT (role "admin")', () => {
       const expectedUsersCount = sampleUsers.filter((u) => u.role !== 'admin').length;
       const result = userAdapter.find({ $not: { role: 'admin' } });
       expect(result.isOk()).toBe(true);
-      expect(result.unwrap()).toHaveLength(expectedUsersCount);
+      const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
+      expect(users).toHaveLength(expectedUsersCount);
     });
 
     it('logical ($not { $eq: value }): with nullable column, excludes rows where column is NULL', () => {
@@ -395,6 +432,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({ age: { $not: { $eq: 30 } } });
       expect(result.isOk()).toBe(true);
       const foundUsers = result.unwrap();
+      expectTypeOf(foundUsers).toEqualTypeOf<User[]>();
       expect(foundUsers).toHaveLength(expectedUsers.length);
       foundUsers.forEach((u) => {
         expect(u.age).not.toBeNull();
@@ -407,6 +445,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({ age: { $not: { $eq: null } } });
       expect(result.isOk()).toBe(true);
       const foundUsers = result.unwrap();
+      expectTypeOf(foundUsers).toEqualTypeOf<User[]>();
       expect(foundUsers).toHaveLength(expectedUsers.length);
       foundUsers.forEach((u) => expect(u.age).not.toBeNull());
 
@@ -427,6 +466,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({ $nand: [{ role: 'user' }, { age: 30 }] });
       expect(result.isOk()).toBe(true);
       const foundUsers = result.unwrap();
+      expectTypeOf(foundUsers).toEqualTypeOf<User[]>();
       expect(foundUsers).toHaveLength(expectedUsersCount);
       foundUsers.forEach((u) => {
         expect(u.role === 'user' && u.age === 30).toBe(false);
@@ -436,7 +476,9 @@ describe('Adapter find()', () => {
     it('logical ($nand): with empty array should return no users (evaluates to NOT(TRUE) -> FALSE)', () => {
       const result = userAdapter.find({ $nand: [] });
       expect(result.isOk()).toBe(true);
-      expect(result.unwrap()).toHaveLength(0);
+      const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
+      expect(users).toHaveLength(0);
     });
 
     it('logical ($nor): users NOT (role "admin" OR age < 25)', () => {
@@ -446,19 +488,25 @@ describe('Adapter find()', () => {
 
       const result = userAdapter.find({ $nor: [{ role: 'admin' }, { age: { $lt: 25 } }] });
       expect(result.isOk()).toBe(true);
-      expect(result.unwrap()).toHaveLength(expectedUsersCount);
+      const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
+      expect(users).toHaveLength(expectedUsersCount);
     });
 
     it('logical ($nor): with empty array should return all users (evaluates to NOT(FALSE) -> TRUE)', () => {
       const result = userAdapter.find({ $nor: [] });
       expect(result.isOk()).toBe(true);
-      expect(result.unwrap()).toHaveLength(sampleUsers.length);
+      const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
+      expect(users).toHaveLength(sampleUsers.length);
     });
 
     it('filter with unknown column should result in SQL condition "false" by Adapter logic, yielding 0 results', () => {
       const result = userAdapter.find({ unknownColumn: 'test' } as unknown as Partial<User>);
       expect(result.isOk()).toBe(true);
-      expect(result.unwrap()).toHaveLength(0);
+      const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
+      expect(users).toHaveLength(0);
     });
   });
 
@@ -467,6 +515,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({}, { select: { name: 1, email: 1 } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<Array<{ id: number; name: string; email: string | null }>>();
       expect(users.length).toBeGreaterThan(0);
       users.forEach((user) => {
         expect(Object.keys(user).sort()).toEqual(['id', 'name', 'email'].sort());
@@ -480,6 +529,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({}, { select: { name: 1, email: 1, bio: 0 } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<Array<{ id: number; name: string; email: string | null }>>();
       expect(users.length).toBeGreaterThan(0);
       users.forEach((user) => {
         expect(Object.keys(user).sort()).toEqual(['id', 'name', 'email'].sort());
@@ -491,6 +541,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({}, { select: { id: 0, name: 1 } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<Array<{ name: string }>>();
       expect(users.length).toBeGreaterThan(0);
       users.forEach((user) => {
         expect(Object.keys(user).sort()).toEqual(['name'].sort());
@@ -502,6 +553,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({}, { select: {} });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
       expect(users.length).toBeGreaterThan(0);
       const sampleUserKeys = Object.keys(usersTable);
       users.forEach((user) => {
@@ -513,13 +565,17 @@ describe('Adapter find()', () => {
     it('limit: should return only the specified number of records', () => {
       const result = userAdapter.find({}, { limit: 2 });
       expect(result.isOk()).toBe(true);
-      expect(result.unwrap()).toHaveLength(2);
+      const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
+      expect(users).toHaveLength(2);
     });
 
     it('limit: limit 0 should return no records', () => {
       const result = userAdapter.find({}, { limit: 0 });
       expect(result.isOk()).toBe(true);
-      expect(result.unwrap()).toHaveLength(0);
+      const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
+      expect(users).toHaveLength(0);
     });
 
     it('offset: should skip the specified number of records', () => {
@@ -531,6 +587,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({}, { offset, order: { id: 'asc' } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
       expect(users).toHaveLength(sampleUsers.length - offset);
       if (allUsers.length > offset && users.length > 0) {
         expect(users[0].id).toBe(allUsers[offset].id);
@@ -540,7 +597,9 @@ describe('Adapter find()', () => {
     it('offset: large offset should return empty array', () => {
       const result = userAdapter.find({}, { offset: 1000 });
       expect(result.isOk()).toBe(true);
-      expect(result.unwrap()).toHaveLength(0);
+      const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
+      expect(users).toHaveLength(0);
     });
 
     it('limit and offset: should correctly apply both limit and offset', () => {
@@ -553,6 +612,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({}, { limit, offset, order: { id: 'asc' } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
       expect(users).toHaveLength(limit);
       if (allUsers.length >= offset + limit && users.length > 0) {
         expect(users[0].id).toBe(allUsers[offset].id);
@@ -564,6 +624,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({}, { order: { name: 'asc' } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
       for (let i = 0; i < users.length - 1; i++) {
         expect(users[i].name.localeCompare(users[i + 1].name)).toBeLessThanOrEqual(0);
       }
@@ -573,6 +634,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({}, { order: { age: 'desc' } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
       let nullsStarted = false;
       for (let i = 0; i < users.length; i++) {
         const currentAge = users[i].age;
@@ -594,6 +656,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({}, { order: { age: 'asc' } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
       let nonNullsStarted = false;
       for (let i = 0; i < users.length; i++) {
         const currentAge = users[i].age;
@@ -617,6 +680,7 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({}, { order: { role: 'asc', name: 'desc' } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
 
       const allUsersFromDBResult = userAdapter.find();
       expect(allUsersFromDBResult.isOk()).toBe(true);
@@ -645,6 +709,7 @@ describe('Adapter find()', () => {
       );
       expect(result.isOk()).toBe(true);
       const joinedResult = result.unwrap();
+      expectTypeOf(joinedResult).toEqualTypeOf<Array<{ users: User; offices: Office }>>;
       const usersWithOfficeInSample = sampleUsers.filter((u) => u.officeId !== null);
       expect(joinedResult).toHaveLength(usersWithOfficeInSample.length);
       joinedResult.forEach((item) => {
@@ -663,6 +728,7 @@ describe('Adapter find()', () => {
       );
       expect(result.isOk()).toBe(true);
       const joinedResult = result.unwrap();
+      expectTypeOf(joinedResult).toEqualTypeOf<Array<{ users: User; offices: Office | null }>>;
       expect(joinedResult).toHaveLength(sampleUsers.length);
 
       const davidInResult = joinedResult.find((r) => r.users.email === 'david@example.com');
@@ -686,6 +752,7 @@ describe('Adapter find()', () => {
       expect(result.isOk()).toBe(true);
 
       const joinedResult = result.unwrap();
+      expectTypeOf(joinedResult).toEqualTypeOf<Array<{ users: User | null; offices: Office }>>;
       const officeIdsInResult = new Set(
         joinedResult.map((item) => item.offices?.id).filter((id?: number | null): id is number => id !== undefined && id !== null),
       );
@@ -713,6 +780,7 @@ describe('Adapter find()', () => {
       expect(result.isOk()).toBe(true);
 
       const joinedResult = result.unwrap();
+      expectTypeOf(joinedResult).toEqualTypeOf<Array<{ users: User | null; offices: Office | null }>>;
       const davidInResult = joinedResult.find((r) => r.users?.email === 'david@example.com');
       expect(davidInResult).toBeDefined();
       expect(davidInResult?.users).toBeDefined();
@@ -744,6 +812,7 @@ describe('Adapter find()', () => {
       expect(result.isOk()).toBe(true);
 
       const joinedResult = result.unwrap();
+      expectTypeOf(joinedResult).toEqualTypeOf<Array<{ users: User; offices: Office }>>;
       const expectedCrossJoinLength = sampleUsers.length * sampleOffices.length;
       expect(joinedResult.length).toBe(Math.min(expectedCrossJoinLength, 50));
 
@@ -765,6 +834,7 @@ describe('Adapter find()', () => {
       );
       expect(result.isOk()).toBe(true);
       const items = result.unwrap();
+      expectTypeOf(items).toEqualTypeOf<Array<{ id: number; name: string; location: string | null }>>();
       expect(items.length).toBeGreaterThan(0);
       items.forEach((item) => {
         expect(Object.keys(item).sort()).toEqual(['id', 'location', 'name'].sort());
@@ -783,6 +853,7 @@ describe('Adapter find()', () => {
       );
       expect(result.isOk()).toBe(true);
       const joinedResult = result.unwrap();
+      expectTypeOf(joinedResult).toEqualTypeOf<Array<{ users: User; offices: Office }>>;
       expect(joinedResult).toHaveLength(1);
       const aliceFromDbResult = userAdapter.findOne({ email: alice.email });
       expect(aliceFromDbResult.isOk()).toBe(true);
@@ -809,6 +880,7 @@ describe('Adapter find()', () => {
       );
       expect(result.isOk()).toBe(true);
       const joinedResult = result.unwrap();
+      expectTypeOf(joinedResult).toEqualTypeOf<Array<{ users: User; offices: Office }>>;
       expect(joinedResult).toHaveLength(usersInHQCount);
       joinedResult.forEach((item) => {
         expect(item.offices.name).toBe('HQ');
@@ -827,6 +899,7 @@ describe('Adapter find()', () => {
       );
       expect(result.isOk()).toBe(true);
       const items = result.unwrap();
+      expectTypeOf(items).toEqualTypeOf<Array<{ id: number; name: string; location: string | null }>>();
 
       let nonNullsStarted = false;
       for (let i = 0; i < items.length; i++) {
@@ -852,10 +925,12 @@ describe('Adapter find()', () => {
     it('should handle $eq with case sensitivity for text fields (SQLite default)', () => {
       const resultLower = userAdapter.find({ name: 'alice' });
       expect(resultLower.isOk()).toBe(true);
+      expectTypeOf(resultLower.unwrap()).toEqualTypeOf<User[]>();
       expect(resultLower.unwrap().filter((u) => u.name === 'alice')).toHaveLength(0);
 
       const resultUpper = userAdapter.find({ name: 'Alice' });
       expect(resultUpper.isOk()).toBe(true);
+      expectTypeOf(resultUpper.unwrap()).toEqualTypeOf<User[]>();
       expect(resultUpper.unwrap().filter((u) => u.name === 'Alice').length).toBeGreaterThan(0);
     });
 
@@ -863,26 +938,31 @@ describe('Adapter find()', () => {
       const result = userAdapter.find({ name: { $like: 'aliCE%' } });
       expect(result.isOk()).toBe(true);
       const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
       expect(users.some((u) => u.name === 'Alice')).toBe(true);
     });
 
     it('should handle $glob with case sensitivity for text fields (SQLite default)', () => {
       const resultSensitive = userAdapter.find({ name: { $glob: 'A*' } });
       expect(resultSensitive.isOk()).toBe(true);
+      expectTypeOf(resultSensitive.unwrap()).toEqualTypeOf<User[]>();
       expect(resultSensitive.unwrap().some((u) => u.name === 'Alice')).toBe(true);
 
       const resultSensitiveFail = userAdapter.find({ name: { $glob: 'a*' } });
       expect(resultSensitiveFail.isOk()).toBe(true);
+      expectTypeOf(resultSensitiveFail.unwrap()).toEqualTypeOf<User[]>();
       expect(resultSensitiveFail.unwrap().some((u) => u.name === 'Alice')).toBe(false);
     });
 
     it('should correctly filter with $lt: null, $lte: null (SQLite: field < NULL is UNKNOWN/FALSE)', () => {
       const resultLt = userAdapter.find({ age: { $lt: null } });
       expect(resultLt.isOk()).toBe(true);
+      expectTypeOf(resultLt.unwrap()).toEqualTypeOf<User[]>();
       expect(resultLt.unwrap()).toHaveLength(0);
 
       const resultLte = userAdapter.find({ age: { $lte: null } });
       expect(resultLte.isOk()).toBe(true);
+      expectTypeOf(resultLte.unwrap()).toEqualTypeOf<User[]>();
       expect(resultLte.unwrap()).toHaveLength(0);
     });
 
@@ -894,6 +974,7 @@ describe('Adapter find()', () => {
       });
       expect(result.isOk()).toBe(true);
       const foundUsers = result.unwrap();
+      expectTypeOf(foundUsers).toEqualTypeOf<User[]>();
       expect(foundUsers).toHaveLength(expectedUsers.length);
       if (expectedUsers.length > 0) {
         expect(foundUsers.map((u) => u.email).sort()).toEqual(expectedUsers.map((u) => u.email).sort());
@@ -915,6 +996,7 @@ describe('Adapter find()', () => {
       );
       expect(result.isOk()).toBe(true);
       const items = result.unwrap();
+      expectTypeOf(items).toEqualTypeOf<Array<{ name: string; location: string | null }>>();
       expect(items).toHaveLength(3);
       expect(items[0]).toEqual({ name: 'Alice', location: 'New York' });
       expect(Object.keys(items[0]).sort()).toEqual(['location', 'name'].sort());
@@ -926,6 +1008,7 @@ describe('Adapter count()', () => {
   it('should return the total number of users without a filter', () => {
     const result = userAdapter.count();
     expect(result.isOk()).toBe(true);
+    expectTypeOf(result.unwrap()).toEqualTypeOf<number>();
     expect(result.unwrap()).toBe(sampleUsers.length);
   });
 
@@ -933,12 +1016,14 @@ describe('Adapter count()', () => {
     const usersAge30Count = sampleUsers.filter((u) => u.age === 30).length;
     const result = userAdapter.count({ age: 30 });
     expect(result.isOk()).toBe(true);
+    expectTypeOf(result.unwrap()).toEqualTypeOf<number>();
     expect(result.unwrap()).toBe(usersAge30Count);
   });
 
   it('should return 0 if no users match the filter', () => {
     const result = userAdapter.count({ name: 'NonExistentName' });
     expect(result.isOk()).toBe(true);
+    expectTypeOf(result.unwrap()).toEqualTypeOf<number>();
     expect(result.unwrap()).toBe(0);
   });
 
@@ -946,6 +1031,7 @@ describe('Adapter count()', () => {
     client.exec('DELETE FROM users;');
     const result = userAdapter.count();
     expect(result.isOk()).toBe(true);
+    expectTypeOf(result.unwrap()).toEqualTypeOf<number>();
     expect(result.unwrap()).toBe(0);
   });
 
@@ -953,6 +1039,7 @@ describe('Adapter count()', () => {
     const expectedCount = sampleUsers.filter((u) => u.role === 'user' && u.age != null && u.age < 30).length;
     const result = userAdapter.count({ $and: [{ role: 'user' }, { age: { $lt: 30 } }] });
     expect(result.isOk()).toBe(true);
+    expectTypeOf(result.unwrap()).toEqualTypeOf<number>();
     expect(result.unwrap()).toBe(expectedCount);
   });
 });
@@ -963,6 +1050,7 @@ describe('Adapter findOne()', () => {
     const result = userAdapter.findOne({ email: 'alice@example.com' });
     expect(result.isOk()).toBe(true);
     const foundUser = result.unwrap();
+    expectTypeOf(foundUser).toEqualTypeOf<User | null>();
     expect(foundUser).not.toBeNull();
     expect(foundUser).toEqual(expect.objectContaining({ name: aliceSample.name, email: aliceSample.email }));
   });
@@ -970,6 +1058,7 @@ describe('Adapter findOne()', () => {
   it('should return null if no user matches the filter', () => {
     const result = userAdapter.findOne({ email: 'nonexistent@example.com' });
     expect(result.isOk()).toBe(true);
+    expectTypeOf(result.unwrap()).toEqualTypeOf<User | null>();
     expect(result.unwrap()).toBeNull();
   });
 
@@ -977,6 +1066,7 @@ describe('Adapter findOne()', () => {
     client.exec('DELETE FROM users;');
     const result = userAdapter.findOne({ name: 'Alice' });
     expect(result.isOk()).toBe(true);
+    expectTypeOf(result.unwrap()).toEqualTypeOf<User | null>();
     expect(result.unwrap()).toBeNull();
   });
 
@@ -985,6 +1075,7 @@ describe('Adapter findOne()', () => {
     const result = userAdapter.findOne({ email: 'alice@example.com' }, { select: { name: 1 } });
     expect(result.isOk()).toBe(true);
     const user = result.unwrap();
+    expectTypeOf(user).toEqualTypeOf<{ id: number; name: string } | null>();
     expect(user).not.toBeNull();
     expect(user).toEqual({ id: expect.any(Number), name: aliceSample.name });
     expect(Object.keys(user!).sort()).toEqual(['id', 'name'].sort());
@@ -1002,12 +1093,14 @@ describe('Adapter findOne()', () => {
     const resultOrderByIdAsc = userAdapter.findOne({ age: 30 }, { order: { id: 'asc' } });
     expect(resultOrderByIdAsc.isOk()).toBe(true);
     const userAsc = resultOrderByIdAsc.unwrap();
+    expectTypeOf(userAsc).toEqualTypeOf<User | null>();
     expect(userAsc).not.toBeNull();
     expect(userAsc!.id).toBe(minIdAge30);
 
     const resultOrderByIdDesc = userAdapter.findOne({ age: 30 }, { order: { id: 'desc' } });
     expect(resultOrderByIdDesc.isOk()).toBe(true);
     const userDesc = resultOrderByIdDesc.unwrap();
+    expectTypeOf(userDesc).toEqualTypeOf<User | null>();
     expect(userDesc).not.toBeNull();
     expect(userDesc!.id).toBe(maxIdAge30);
   });
@@ -1022,6 +1115,7 @@ describe('Adapter findOne()', () => {
     );
     expect(result.isOk()).toBe(true);
     const joinedResult = result.unwrap();
+    expectTypeOf(joinedResult).toEqualTypeOf<{ users: User; offices: Office } | null>;
     expect(joinedResult).not.toBeNull();
     expect(joinedResult!.users.email).toBe(aliceSample.email);
     expect(joinedResult!.offices.name).toBe(sampleOffices.find((o) => o.name === 'HQ')!.name);
@@ -1034,6 +1128,7 @@ describe('Adapter insert()', () => {
     const result = userAdapter.insert(newUser);
     expect(result.isOk()).toBe(true);
     const insertedUsers = result.unwrap();
+    expectTypeOf(insertedUsers).toEqualTypeOf<User[]>();
     expect(insertedUsers).toHaveLength(1);
     const insertedUser = insertedUsers[0];
     expect(insertedUser).toEqual(
@@ -1056,12 +1151,14 @@ describe('Adapter insert()', () => {
     const result = postAdapter.insert(newPost);
     expect(result.isOk()).toBe(true);
     const insertedPosts = result.unwrap();
+    expectTypeOf(insertedPosts).toEqualTypeOf<Post[]>();
     expect(insertedPosts[0].views).toBe(0);
 
     const newUser: Omit<InsertUser, 'id' | 'role'> = { name: 'Default Role User', email: 'default@example.com' };
     const userResult = userAdapter.insert(newUser);
     expect(userResult.isOk()).toBe(true);
     const insertedUser = userResult.unwrap();
+    expectTypeOf(insertedUser).toEqualTypeOf<User[]>();
     expect(insertedUser[0].role).toBe('user');
   });
 
@@ -1073,6 +1170,7 @@ describe('Adapter insert()', () => {
     const result = userAdapter.insert(newUsers);
     expect(result.isOk()).toBe(true);
     const insertedUsers = result.unwrap();
+    expectTypeOf(insertedUsers).toEqualTypeOf<User[]>();
     expect(insertedUsers).toHaveLength(2);
     expect(insertedUsers.find((u) => u.name === 'Yara')).toBeDefined();
     expect(insertedUsers.find((u) => u.name === 'Xavi')).toBeDefined();
@@ -1091,13 +1189,16 @@ describe('Adapter insert()', () => {
     const result = userAdapter.insert(newUser, { select: { name: 1, email: 1 } });
     expect(result.isOk()).toBe(true);
     const insertedUsers = result.unwrap();
+    expectTypeOf(insertedUsers).toEqualTypeOf<Array<{ id: number; name: string; email: string | null }>>();
     expect(insertedUsers[0]).toEqual({ id: expect.any(Number), name: 'Wendy', email: 'wendy@example.com' });
   });
 
   it('inserting empty array should return empty array and not throw', () => {
     const result = userAdapter.insert([]);
     expect(result.isOk()).toBe(true);
-    expect(result.unwrap()).toEqual([]);
+    const users = result.unwrap();
+    expectTypeOf(users).toEqualTypeOf<User[]>();
+    expect(users).toEqual([]);
   });
 
   it('should return Err if NOT NULL constraint is violated', () => {
@@ -1146,9 +1247,12 @@ describe('Adapter insert()', () => {
         conflict: { target: ['email'], resolution: 'ignore' },
       });
       expect(result.isOk()).toBe(true);
-      expect(result.unwrap()).toEqual([]);
+      const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
+      expect(users).toEqual([]);
 
       const foundResult = userAdapter.findOne({ email: 'alice@example.com' });
+      expectTypeOf(foundResult.unwrap()).toEqualTypeOf<User | null>();
       expect(foundResult.isOk()).toBe(true);
       const found = foundResult.unwrap();
       expect(found).not.toBeNull();
@@ -1170,11 +1274,13 @@ describe('Adapter insert()', () => {
       expect(result.isOk()).toBe(true);
       const updated = result.unwrap();
       expect(updated).toHaveLength(1);
+      expectTypeOf(updated).toEqualTypeOf<User[]>();
       expect(updated[0].name).toBe('Updated Alice by Conflict');
       expect(updated[0].age).toBe(32);
       expect(updated[0].email).toBe(aliceEmail);
 
       const originalAliceResult = userAdapter.findOne({ email: aliceEmail });
+      expectTypeOf(originalAliceResult.unwrap()).toEqualTypeOf<User | null>();
       expect(originalAliceResult.isOk()).toBe(true);
       const originalAlice = originalAliceResult.unwrap();
       expect(originalAlice).not.toBeNull();
@@ -1206,10 +1312,12 @@ describe('Adapter insert()', () => {
       });
       expect(conflictResult.isOk()).toBe(true);
       const updatedPair = conflictResult.unwrap();
+      expectTypeOf(updatedPair).toEqualTypeOf<UniquePair[]>();
       expect(updatedPair).toHaveLength(1);
       expect(updatedPair[0].valC).toBe('Initial C updated by SQL');
 
       const foundPair = uniquePairAdapter.findOne({ id: insertedInitial.id });
+      expectTypeOf(foundPair.unwrap()).toEqualTypeOf<UniquePair | null>();
       expect(foundPair.isOk()).toBe(true);
       expect(foundPair.unwrap()?.valC).toBe('Initial C updated by SQL');
     });
@@ -1233,6 +1341,7 @@ describe('Adapter insert()', () => {
 
       expect(result.isOk()).toBe(true);
       const updated = result.unwrap();
+      expectTypeOf(updated).toEqualTypeOf<User[]>();
       expect(updated).toHaveLength(1);
       expect(updated[0].name).toBe('Implicit Update Alice');
       expect(updated[0].age).toBe(33);
@@ -1240,6 +1349,7 @@ describe('Adapter insert()', () => {
       expect(updated[0].email).toBe(aliceEmail);
 
       const foundResult = userAdapter.findOne({ email: aliceEmail });
+      expectTypeOf(foundResult.unwrap()).toEqualTypeOf<User | null>();
       expect(foundResult.isOk()).toBe(true);
       const found = foundResult.unwrap();
       expect(found).not.toBeNull();
@@ -1282,6 +1392,7 @@ describe('Adapter insert()', () => {
       });
       expect(result.isOk()).toBe(true);
       const updated = result.unwrap();
+      expectTypeOf(updated).toEqualTypeOf<User[]>();
       expect(updated).toHaveLength(1);
 
       expect(updated[0].name).toBe(aliceAfterBioNull.name);
@@ -1314,10 +1425,12 @@ describe('Adapter insert()', () => {
       });
       expect(conflictResult.isOk()).toBe(true);
       const updatedRecords = conflictResult.unwrap();
+      expectTypeOf(updatedRecords).toEqualTypeOf<UniquePair[]>();
       expect(updatedRecords).toHaveLength(1);
       expect(updatedRecords[0].valC).toBe('explicitlyUpdatedC');
 
       const found = uniquePairAdapter.findOne({ valA: 'testA', valB: 'testB' });
+      expectTypeOf(found.unwrap()).toEqualTypeOf<UniquePair | null>();
       expect(found.isOk()).toBe(true);
       expect(found.unwrap()?.valC).toBe('explicitlyUpdatedC');
     });
@@ -1353,6 +1466,7 @@ describe('Adapter insert()', () => {
 
       expect(result.isOk()).toBe(true);
       const updatedBob = result.unwrap()[0];
+      expectTypeOf(updatedBob).toEqualTypeOf<User>();
 
       expect(updatedBob.name).toBe(conflictingUser.name);
       expect(updatedBob.age).toBe(conflictingUser.age);
@@ -1377,6 +1491,7 @@ describe('Adapter insert()', () => {
       expect(result.isOk()).toBe(true);
       const inserted = result.unwrap();
       expect(inserted).toHaveLength(1);
+      expectTypeOf(inserted).toEqualTypeOf<User[]>();
       expect(inserted[0].email).toBe('uniquebatchignore@example.com');
 
       const alice = userAdapter.findOne({ email: 'alice@example.com' }).unwrap()!;
@@ -1406,6 +1521,7 @@ describe('Adapter insert()', () => {
       expect(result.isOk()).toBe(true);
       const processed = result.unwrap();
       expect(processed).toHaveLength(3);
+      expectTypeOf(processed).toEqualTypeOf<User[]>();
 
       const alice = processed.find((u) => u.email === 'alice@example.com')!;
       const bob = processed.find((u) => u.email === 'bob@example.com')!;
@@ -1433,12 +1549,14 @@ describe('Adapter update()', () => {
     const result = userAdapter.update(updatedData);
     expect(result.isOk()).toBe(true);
     const updatedUsers = result.unwrap();
+    expectTypeOf(updatedUsers).toEqualTypeOf<User[]>();
     expect(updatedUsers).toHaveLength(1);
     expect(updatedUsers[0].name).toBe('Alice Smith');
     expect(updatedUsers[0].age).toBe(31);
     expect(updatedUsers[0].id).toBe(alice!.id);
 
     const foundResult = userAdapter.findOne({ id: alice!.id });
+    expectTypeOf(foundResult.unwrap()).toEqualTypeOf<User | null>();
     expect(foundResult.isOk()).toBe(true);
     const found = foundResult.unwrap();
     expect(found).not.toBeNull();
@@ -1455,10 +1573,13 @@ describe('Adapter update()', () => {
     const updatedData: User = { ...bob!, bio: null };
     const result = userAdapter.update(updatedData);
     expect(result.isOk()).toBe(true);
-    expect(result.unwrap()[0].bio).toBeNull();
+    const users = result.unwrap();
+    expectTypeOf(users).toEqualTypeOf<User[]>();
+    expect(users[0].bio).toBeNull();
 
     const foundResult = userAdapter.findOne({ id: bob!.id });
     expect(foundResult.isOk()).toBe(true);
+    expectTypeOf(foundResult.unwrap()).toEqualTypeOf<User | null>();
     expect(foundResult.unwrap()!.bio).toBeNull();
   });
 
@@ -1473,6 +1594,7 @@ describe('Adapter update()', () => {
     const result = userAdapter.update(updatedData, { select: { id: 1, role: 1 } });
     expect(result.isOk()).toBe(true);
     const updatedUsers = result.unwrap();
+    expectTypeOf(updatedUsers).toEqualTypeOf<Array<{ id: number; role: string | null }>>();
     expect(updatedUsers[0]).toEqual({ id: bob!.id, role: 'lead_user' });
   });
 
@@ -1487,7 +1609,9 @@ describe('Adapter update()', () => {
     const nonExistentUser: User = { id: 9999, name: 'Ghost', email: 'ghost@example.com', age: null, role: null, officeId: null, bio: null };
     const result = userAdapter.update(nonExistentUser);
     expect(result.isOk()).toBe(true);
-    expect(result.unwrap()).toEqual([]);
+    const users = result.unwrap();
+    expectTypeOf(users).toEqualTypeOf<User[]>();
+    expect(users).toEqual([]);
   });
 
   it('should return Err if update violates UNIQUE constraint', () => {
@@ -1518,6 +1642,7 @@ describe('Adapter update()', () => {
 
     const updateResult = userAdapter.update(updateDataWithChangedIdField);
     const updatedUsers = updateResult.unwrap();
+    expectTypeOf(updatedUsers).toEqualTypeOf<User[]>();
     expect(updatedUsers.length).toBe(0);
   });
 });
@@ -1532,12 +1657,14 @@ describe('Adapter delete()', () => {
     const result = userAdapter.delete(charlie!);
     expect(result.isOk()).toBe(true);
     const deletedUsers = result.unwrap();
+    expectTypeOf(deletedUsers).toEqualTypeOf<User[]>();
     expect(deletedUsers).toHaveLength(1);
     expect(deletedUsers[0].id).toBe(charlie!.id);
     expect(deletedUsers[0].name).toBe(charlie!.name);
 
     const foundResult = userAdapter.findOne({ id: charlie!.id });
     expect(foundResult.isOk()).toBe(true);
+    expectTypeOf(foundResult.unwrap()).toEqualTypeOf<User | null>();
     expect(foundResult.unwrap()).toBeNull();
 
     const countResult = userAdapter.count();
@@ -1554,8 +1681,9 @@ describe('Adapter delete()', () => {
     const result = userAdapter.delete(david!, { select: { name: 1 } });
     expect(result.isOk()).toBe(true);
     const deletedUsers = result.unwrap();
+    expectTypeOf(deletedUsers).toEqualTypeOf<Array<{ id: number; name: string }>>();
 
-    expect(deletedUsers[0]).toEqual(expect.objectContaining({ id: david!.id, name: 'David' }));
+    expect(deletedUsers[0]).toEqual({ id: david!.id, name: 'David' });
     expect(Object.keys(deletedUsers[0]).sort()).toEqual(['id', 'name'].sort());
   });
 
@@ -1570,7 +1698,9 @@ describe('Adapter delete()', () => {
     const nonExistentUser: User = { id: 8888, name: 'Phantom', email: 'phantom@example.com', age: null, role: null, officeId: null, bio: null };
     const result = userAdapter.delete(nonExistentUser);
     expect(result.isOk()).toBe(true);
-    expect(result.unwrap()).toEqual([]);
+    const users = result.unwrap();
+    expectTypeOf(users).toEqualTypeOf<User[]>();
+    expect(users).toEqual([]);
   });
 });
 
@@ -1587,6 +1717,7 @@ describe('Adapter findOneAndUpdate()', () => {
 
     expect(result.isOk()).toBe(true);
     const updatedUser = result.unwrap();
+    expectTypeOf(updatedUser).toEqualTypeOf<User | null>();
     expect(updatedUser).toBeDefined();
     expect(updatedUser).not.toBeNull();
     expect(updatedUser!.id).toBe(eveOriginal!.id);
@@ -1611,6 +1742,7 @@ describe('Adapter findOneAndUpdate()', () => {
 
     expect(result.isOk()).toBe(true);
     const upsertedUser = result.unwrap();
+    expectTypeOf(upsertedUser).toEqualTypeOf<User | null>();
     expect(upsertedUser).toBeDefined();
     expect(upsertedUser).not.toBeNull();
 
@@ -1637,6 +1769,7 @@ describe('Adapter findOneAndUpdate()', () => {
 
     expect(result.isOk()).toBe(true);
     const upsertedUser = result.unwrap();
+    expectTypeOf(upsertedUser).toEqualTypeOf<User | null>();
     expect(upsertedUser).toBeDefined();
     expect(upsertedUser).not.toBeNull();
     expect(upsertedUser!.email).toBe(newUserEmail);
@@ -1662,6 +1795,7 @@ describe('Adapter findOneAndUpdate()', () => {
     const result = userAdapter.findOneAndUpdate({ email: 'mallory@example.com' }, updatePayload, { select: { id: 1, bio: 1 } });
     expect(result.isOk()).toBe(true);
     const selectedUser = result.unwrap();
+    expectTypeOf(selectedUser).toEqualTypeOf<{ id: number; bio: string | null } | null>();
     expect(selectedUser).not.toBeNull();
     expect(selectedUser).toEqual({ id: malloryOriginal!.id, bio: updatePayload.bio });
   });
@@ -1672,6 +1806,7 @@ describe('Adapter findOneAndUpdate()', () => {
     const result = userAdapter.findOneAndUpdate(filterForUpsert, { name: 'Select Upsert', age: 22 }, { upsert: true, select: { name: 1, email: 1 } });
     expect(result.isOk()).toBe(true);
     const unwrappedResult = result.unwrap();
+    expectTypeOf(unwrappedResult).toEqualTypeOf<{ id: number; name: string; email: string | null } | null>();
     expect(unwrappedResult).not.toBeNull();
     expect(unwrappedResult).toEqual(expect.objectContaining({ id: expect.any(Number), name: 'Select Upsert', email: newUserEmail }));
   });
@@ -1686,6 +1821,7 @@ describe('Adapter findOneAndUpdate()', () => {
     expect(result.isOk()).toBe(true);
 
     const returnedUser = result.unwrap();
+    expectTypeOf(returnedUser).toEqualTypeOf<User | null>();
     expect(returnedUser).not.toBeNull();
     expect(returnedUser!.id).toBe(alice!.id);
     expect(returnedUser!.name).toBe(alice!.name);
@@ -1704,6 +1840,7 @@ describe('Adapter findOneAndUpdate()', () => {
     const result = userAdapter.findOneAndUpdate(filterForUpsert, payload, { upsert: true });
     expect(result.isOk()).toBe(true);
     const user = result.unwrap();
+    expectTypeOf(user).toEqualTypeOf<User | null>();
     expect(user).not.toBeNull();
     expect(user!.email).toBe(newUserEmail);
     expect(user!.name).toBe(payload.name);
@@ -1730,6 +1867,7 @@ describe('Adapter findOneAndUpdate()', () => {
     const result = userAdapter.findOneAndUpdate({ age: 30 }, { bio: 'Updated by findOneAndUpdate for age 30' }, { order: { id: 'asc' } });
     expect(result.isOk()).toBe(true);
     const updatedUser = result.unwrap();
+    expectTypeOf(updatedUser).toEqualTypeOf<User | null>();
     expect(updatedUser).not.toBeNull();
     expect(updatedUser!.id).toBe(firstUserId);
     expect(updatedUser!.bio).toBe('Updated by findOneAndUpdate for age 30');
@@ -1786,6 +1924,7 @@ describe('Adapter findOneAndUpdate()', () => {
       const result = userAdapter.findOneAndUpdate(complexFilter, payloadForInsert, { upsert: true });
       expect(result.isOk()).toBe(true);
       const user = result.unwrap();
+      expectTypeOf(user).toEqualTypeOf<User | null>();
 
       expect(user).not.toBeNull();
       expect(user!.name).toBe(payloadForInsert.name);
@@ -1804,6 +1943,7 @@ describe('Adapter findOneAndUpdate()', () => {
       const result = userAdapter.findOneAndUpdate(filterWithNull, payload, { upsert: true });
       expect(result.isOk()).toBe(true);
       const user = result.unwrap();
+      expectTypeOf(user).toEqualTypeOf<User | null>();
 
       expect(user).not.toBeNull();
       expect(user!.email).toBe(filterWithNull.email);
@@ -1831,6 +1971,7 @@ describe('Adapter findOneAndDelete()', () => {
     const result = userAdapter.findOneAndDelete({ email: 'trent@example.com' });
     expect(result.isOk()).toBe(true);
     const deletedUser = result.unwrap();
+    expectTypeOf(deletedUser).toEqualTypeOf<User | null>();
     expect(deletedUser).toBeDefined();
     expect(deletedUser).not.toBeNull();
     expect(deletedUser!.id).toBe(trent!.id);
@@ -1845,6 +1986,7 @@ describe('Adapter findOneAndDelete()', () => {
   it('should return null if no user matches filter', () => {
     const result = userAdapter.findOneAndDelete({ email: 'ghost@example.com' });
     expect(result.isOk()).toBe(true);
+    expectTypeOf(result.unwrap()).toEqualTypeOf<User | null>();
     expect(result.unwrap()).toBeNull();
   });
 
@@ -1852,6 +1994,7 @@ describe('Adapter findOneAndDelete()', () => {
     client.exec('DELETE FROM users;');
     const result = userAdapter.findOneAndDelete({ name: 'AnyName' });
     expect(result.isOk()).toBe(true);
+    expectTypeOf(result.unwrap()).toEqualTypeOf<User | null>();
     expect(result.unwrap()).toBeNull();
   });
 
@@ -1864,6 +2007,7 @@ describe('Adapter findOneAndDelete()', () => {
     const result = userAdapter.findOneAndDelete({ email: 'ursula@example.com' }, { select: { id: 1, name: 1, email: 1 } });
     expect(result.isOk()).toBe(true);
     const deletedUser = result.unwrap();
+    expectTypeOf(deletedUser).toEqualTypeOf<{ id: number; name: string; email: string | null } | null>();
     expect(deletedUser).not.toBeNull();
     expect(deletedUser).toEqual({ id: ursula!.id, name: 'Ursula User', email: 'ursula@example.com' });
   });
@@ -1879,6 +2023,7 @@ describe('Adapter findOneAndDelete()', () => {
     const result = userAdapter.findOneAndDelete({ age: 30 }, { order: { id: 'asc' } });
     expect(result.isOk()).toBe(true);
     const deletedUser = result.unwrap();
+    expectTypeOf(deletedUser).toEqualTypeOf<User | null>();
     expect(deletedUser).not.toBeNull();
     expect(deletedUser!.id).toBe(firstUserId);
     expect(deletedUser!.name).toBe(firstUserName);
@@ -1898,14 +2043,17 @@ describe('Foreign Key Cascades (SQLite ON DELETE CASCADE Behavior Verification)'
     const alicePostsBeforeResult = postAdapter.find({ userId: alice!.id });
     expect(alicePostsBeforeResult.isOk()).toBe(true);
     const alicePostsBefore = alicePostsBeforeResult.unwrap();
+    expectTypeOf(alicePostsBefore).toEqualTypeOf<Post[]>();
     expect(alicePostsBefore.length).toBeGreaterThan(0);
 
     const deleteResult = userAdapter.delete(alice!);
     expect(deleteResult.isOk()).toBe(true);
+    expectTypeOf(deleteResult.unwrap()).toEqualTypeOf<User[]>();
 
     const alicePostsAfterResult = postAdapter.find({ userId: alice!.id });
     expect(alicePostsAfterResult.isOk()).toBe(true);
     const alicePostsAfter = alicePostsAfterResult.unwrap();
+    expectTypeOf(alicePostsAfter).toEqualTypeOf<Post[]>();
     expect(alicePostsAfter).toHaveLength(0);
   });
 
@@ -1918,25 +2066,30 @@ describe('Foreign Key Cascades (SQLite ON DELETE CASCADE Behavior Verification)'
     const usersInHQBeforeResult = userAdapter.find({ officeId: hqOffice!.id });
     expect(usersInHQBeforeResult.isOk()).toBe(true);
     const usersInHQBefore = usersInHQBeforeResult.unwrap();
+    expectTypeOf(usersInHQBefore).toEqualTypeOf<User[]>();
     expect(usersInHQBefore.length).toBeGreaterThan(0);
 
     const userIdsInHQ = usersInHQBefore.map((u) => u.id);
     const postsOfUsersInHQBeforeResult = postAdapter.find({ userId: { $in: userIdsInHQ } });
     expect(postsOfUsersInHQBeforeResult.isOk()).toBe(true);
     const postsOfUsersInHQBefore = postsOfUsersInHQBeforeResult.unwrap();
+    expectTypeOf(postsOfUsersInHQBefore).toEqualTypeOf<Post[]>();
     expect(postsOfUsersInHQBefore.length).toBeGreaterThan(0);
 
     const deleteResult = officeAdapter.delete(hqOffice!);
     expect(deleteResult.isOk()).toBe(true);
+    expectTypeOf(deleteResult.unwrap()).toEqualTypeOf<Office[]>();
 
     const usersInHQAfterResult = userAdapter.find({ officeId: hqOffice!.id });
     expect(usersInHQAfterResult.isOk()).toBe(true);
     const usersInHQAfter = usersInHQAfterResult.unwrap();
+    expectTypeOf(usersInHQAfter).toEqualTypeOf<User[]>();
     expect(usersInHQAfter).toHaveLength(0);
 
     const postsOfUsersInHQAfterResult = postAdapter.find({ userId: { $in: userIdsInHQ } });
     expect(postsOfUsersInHQAfterResult.isOk()).toBe(true);
     const postsOfUsersInHQAfter = postsOfUsersInHQAfterResult.unwrap();
+    expectTypeOf(postsOfUsersInHQAfter).toEqualTypeOf<Post[]>();
     expect(postsOfUsersInHQAfter).toHaveLength(0);
   });
 });
