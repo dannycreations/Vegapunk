@@ -3,32 +3,51 @@ import { count, getTableName, sql } from 'drizzle-orm';
 
 import type { InferInsertModel, InferSelectModel, SQL, Table } from 'drizzle-orm';
 import type { BetterSQLite3Database, BetterSQLiteSession } from 'drizzle-orm/better-sqlite3';
-import type { SQLiteSyncDialect } from 'drizzle-orm/sqlite-core';
+import type {
+  ComparisonOperator,
+  ExtractTables,
+  InferColumn,
+  InferSelect,
+  JoinClause,
+  LogicalOperator,
+  PatchedDialect,
+  QueryFilter,
+  QueryOptions,
+  ReturnAlias,
+  SelectClause,
+} from './types';
 
 export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert extends InferInsertModel<A>> {
+  private static patchDialect(dialect: PatchedDialect): void {
+    if (!dialect.__patched) {
+      // drizzle-orm/sqlite-core/dialect.js
+      const buildLimit = dialect.buildLimit.bind(dialect);
+      dialect.buildLimit = function (limit: number) {
+        return limit === -1 ? sql` LIMIT ${limit}` : buildLimit(limit);
+      };
+      dialect.__patched = true;
+    }
+  }
+
   protected readonly table: A;
   protected readonly trace: boolean;
   protected readonly db: BetterSQLite3Database;
+  protected readonly dialect: PatchedDialect;
+  protected readonly session: BetterSQLiteSession<never, never>;
 
   public constructor(db: BetterSQLite3Database, table: A, trace: boolean = false) {
-    // @ts-expect-error
+    // @ts-expect-error avoid casting type
     Result.assert('id' in table && table.id.primary, `Table "${getTableName(table)}" must have a primary key "id"`);
 
     this.db = db;
     this.table = table;
     this.trace = trace;
+    // @ts-expect-error avoid casting type
+    this.dialect = this.db.dialect;
+    // @ts-expect-error avoid casting type
+    this.session = this.db.session;
 
-    // @ts-expect-error drizzle-orm/sqlite-core/dialect.js
-    if (!this.dialect.__patched) {
-      // @ts-expect-error
-      const buildLimit = this.dialect.buildLimit.bind(this.dialect);
-      // @ts-expect-error
-      this.dialect.buildLimit = function (limit: number) {
-        return limit === -1 ? sql` LIMIT ${limit}` : buildLimit(limit);
-      };
-      // @ts-expect-error
-      this.dialect.__patched = true;
-    }
+    Adapter.patchDialect(this.dialect);
   }
 
   public count(filter: QueryFilter<A> = {}): Result<number, Error> {
@@ -122,7 +141,7 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
     filter: QueryFilter<A>,
     data: Partial<Omit<Insert, 'id'>>,
     options?: Omit<QueryOptions<A, B, S, unknown>, 'limit' | 'joins'> & {
-      upsert?: boolean;
+      upsert?: false;
     },
   ): Result<ReturnAlias<A, B, S> | null, Error>;
   public findOneAndUpdate<B extends Array<Table>, S extends SelectClause<A, B, S>>(
@@ -135,6 +154,15 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
     const record = this.findOne(filter, { ...options, select: undefined });
     return record.mapInto((r) => {
       if (options.upsert && r === null) {
+        const isComplex =
+          Object.keys(filter).some((key) => key.startsWith('$')) ||
+          Object.values(filter).some(
+            (val) => val !== null && typeof val === 'object' && !Array.isArray(val) && Object.keys(val).some((k) => k.startsWith('$')),
+          );
+        if (isComplex) {
+          return Result.err(new Error('Cannot use comparison operators in filter when upserting'));
+        }
+
         const inserted = this.insert({ ...filter, ...data } as Insert, options);
         return inserted.map((s) => s[0] as ReturnAlias<A, B, S>);
       } else if (r !== null) {
@@ -469,127 +497,4 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
   protected hasKeys(obj?: object): obj is object {
     return !!obj && Object.keys(obj).length > 0;
   }
-
-  protected get dialect(): SQLiteSyncDialect {
-    // @ts-expect-error
-    return this.db.dialect;
-  }
-
-  protected get session(): BetterSQLiteSession<never, never> {
-    // @ts-expect-error
-    return this.db.session;
-  }
 }
-
-interface ComparisonOperator<T> {
-  readonly $eq?: T;
-  readonly $ne?: T;
-  readonly $gt?: T;
-  readonly $gte?: T;
-  readonly $lt?: T;
-  readonly $lte?: T;
-  readonly $like?: T;
-  readonly $nlike?: T;
-  readonly $glob?: T;
-  readonly $nglob?: T;
-  readonly $in?: Array<T>;
-  readonly $nin?: Array<T>;
-  readonly $null?: boolean;
-  readonly $not?: ComparisonOperator<T>;
-}
-
-interface LogicalOperator<T extends Table> {
-  readonly $and?: Array<QueryBaseFilter<T> & LogicalOperator<T>>;
-  readonly $nand?: Array<QueryBaseFilter<T> & LogicalOperator<T>>;
-  readonly $or?: Array<QueryBaseFilter<T> & LogicalOperator<T>>;
-  readonly $nor?: Array<QueryBaseFilter<T> & LogicalOperator<T>>;
-  readonly $not?: QueryBaseFilter<T> & LogicalOperator<T>;
-}
-
-type QueryBaseFilter<A extends Table> = {
-  [K in keyof InferSelect<A>]?: InferSelect<A>[K] | ComparisonOperator<InferSelect<A>[K]>;
-};
-
-type QueryFilter<A extends Table> = QueryBaseFilter<A> & LogicalOperator<A>;
-
-interface QueryOptions<A extends Table, B extends Array<Table>, S, J = JoinClause<A, B>> {
-  readonly select?: S;
-  readonly limit?: number;
-  readonly offset?: number;
-  readonly order?: OrderClause<A, B>;
-  readonly joins?: J;
-}
-
-type SelectClause<A extends Table, B extends Array<Table>, S> = Partial<Record<keyof SelectMerge<A, B>, 0 | 1>> &
-  Readonly<Record<Exclude<keyof S, keyof SelectMerge<A, B>>, never>>;
-
-type SelectMerge<A extends Table, B extends Array<Table>> = InferSelect<A> & SelectTuple<B>;
-
-type SelectTuple<B extends Array<Table>> = B extends [infer Head, ...infer Tail]
-  ? Head extends Table
-    ? Tail extends Array<Table>
-      ? InferSelect<Head> & SelectTuple<Tail>
-      : InferSelect<Head>
-    : never
-  : unknown;
-
-type OrderClause<A extends Table, B extends Array<Table>> = OrderType<A> & OrderTuple<B>;
-
-type OrderTuple<B extends Array<Table>> = B extends [infer Head, ...infer Tail]
-  ? Head extends Table
-    ? Tail extends Array<Table>
-      ? OrderType<Head> & OrderTuple<Tail>
-      : OrderType<Head>
-    : never
-  : unknown;
-
-type OrderType<T extends Table> = {
-  [K in keyof InferColumn<T> as K extends string ? K : never]?: 'asc' | 'desc';
-};
-
-type JoinClause<A extends Table, B extends Array<Table>> = {
-  [K in keyof B]: {
-    readonly table: B[K];
-    readonly on: { [L in keyof InferSelect<A>]?: keyof InferSelect<B[K]> };
-    readonly type?: 'left' | 'right' | 'cross' | 'full' | 'inner';
-  };
-};
-
-type ExtractTables<J> = J extends readonly [infer Head, ...infer Tail]
-  ? Head extends { table: infer T }
-    ? T extends Table
-      ? [T, ...ExtractTables<Tail>]
-      : ExtractTables<Tail>
-    : ExtractTables<Tail>
-  : J extends Array<{ table: infer T }>
-    ? (T extends Table ? T : never)[]
-    : [];
-
-type IsLeftOrFull<J, T extends Table> =
-  J extends Array<infer Join> ? (Extract<Join, { table: T; type: 'left' | 'full' }> extends never ? false : true) : false;
-
-type IsRightOrFull<J> = J extends Array<infer Join> ? (Extract<Join, { type: 'right' | 'full' }> extends never ? false : true) : false;
-
-type ReturnAlias<A extends Table, B extends Array<Table>, S, J extends readonly unknown[] = unknown[]> =
-  S extends Record<keyof S, number>
-    ? keyof S extends never
-      ? B extends [infer _A, ...infer _B]
-        ? { [K in A['_']['name']]: IsRightOrFull<J> extends true ? InferSelect<A> | null : InferSelect<A> } & ReturnTuple<B, J>
-        : InferSelect<A>
-      : Omit<
-          SelectMerge<A, B>,
-          Exclude<keyof SelectMerge<A, B>, { [K in keyof S]: S[K] extends 1 ? K : never }[keyof S] | (S extends { id: 0 } ? never : 'id')>
-        >
-    : B extends [infer _A, ...infer _B]
-      ? { [K in A['_']['name']]: IsRightOrFull<J> extends true ? InferSelect<A> | null : InferSelect<A> } & ReturnTuple<B, J>
-      : InferSelect<A>;
-
-type ReturnTuple<T extends Array<unknown>, J> = T extends [infer Head, ...infer Tail]
-  ? Head extends Table
-    ? { [K in Head['_']['name']]: IsLeftOrFull<J, Head> extends true ? InferSelect<Head> | null : InferSelect<Head> } & ReturnTuple<Tail, J>
-    : ReturnTuple<Tail, J>
-  : unknown;
-
-type InferSelect<T extends Table> = InferSelectModel<T>;
-
-type InferColumn<T extends Table> = T['_']['columns'];

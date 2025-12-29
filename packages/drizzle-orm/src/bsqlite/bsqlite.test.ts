@@ -1913,29 +1913,6 @@ describe('Adapter findOneAndUpdate()', () => {
       expect(aliceUser!.email).toBe(aliceEmail);
     });
 
-    it('upsert: true with a complex (non-Partial) filter that does not match, should insert based on `data` payload', () => {
-      const complexFilter = { age: { $gt: 200 } };
-      const payloadForInsert: Partial<Omit<InsertUser, 'id'>> = {
-        name: 'Upserted By Complex Miss',
-        email: 'complexmiss@example.com',
-        age: 42,
-      };
-
-      const result = userAdapter.findOneAndUpdate(complexFilter, payloadForInsert, { upsert: true });
-      expect(result.isOk()).toBe(true);
-      const user = result.unwrap();
-      expectTypeOf(user).toEqualTypeOf<User | null>();
-
-      expect(user).not.toBeNull();
-      expect(user!.name).toBe(payloadForInsert.name);
-      expect(user!.email).toBe(payloadForInsert.email);
-      expect(user!.age).toBe(payloadForInsert.age);
-
-      const dbUser = userAdapter.findOne({ email: payloadForInsert.email }).unwrap();
-      expect(dbUser).toEqual(expect.objectContaining(user!));
-      expect(dbUser!.age).toBe(payloadForInsert.age);
-    });
-
     it('upsert: true, filter includes null value, no match, should insert with null value from filter merged with payload', () => {
       const filterWithNull: Partial<User> = { email: 'upsertnullbio@example.com', bio: null };
       const payload = { name: 'Upsert Null Bio User', age: 33 };
@@ -1953,6 +1930,20 @@ describe('Adapter findOneAndUpdate()', () => {
 
       const dbUser = userAdapter.findOne({ email: filterWithNull.email }).unwrap();
       expect(dbUser!.bio).toBeNull();
+    });
+
+    it('upsert: true should return error when using complex filter operators', () => {
+      const complexFilter = { age: { $gt: 200 } };
+      const payload: Partial<Omit<InsertUser, 'id'>> = {
+        name: 'Should Fail',
+        email: 'fail@example.com',
+        age: 201,
+      };
+
+      // @ts-expect-error - Expected compile error, but we also want runtime error
+      const result = userAdapter.findOneAndUpdate(complexFilter, payload, { upsert: true });
+      expect(result.isErr()).toBe(true);
+      expect(result.unwrapErr().message).toMatch(/Cannot use comparison operators/i);
     });
   });
 });
