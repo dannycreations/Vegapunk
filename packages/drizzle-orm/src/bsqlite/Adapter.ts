@@ -19,11 +19,16 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
     this.trace = trace;
 
     // @ts-expect-error drizzle-orm/sqlite-core/dialect.js
-    const buildLimit = this.dialect.buildLimit;
-    // @ts-expect-error drizzle-orm/sqlite-core/dialect.js
-    this.dialect.buildLimit = function (limit: number) {
-      return limit === -1 ? sql` LIMIT ${limit}` : buildLimit(limit);
-    };
+    if (!this.dialect.__patched) {
+      // @ts-expect-error
+      const buildLimit = this.dialect.buildLimit.bind(this.dialect);
+      // @ts-expect-error
+      this.dialect.buildLimit = function (limit: number) {
+        return limit === -1 ? sql` LIMIT ${limit}` : buildLimit(limit);
+      };
+      // @ts-expect-error
+      this.dialect.__patched = true;
+    }
   }
 
   public count(filter: QueryFilter<A> = {}): Result<number, Error> {
