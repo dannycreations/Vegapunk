@@ -15,7 +15,7 @@
     "prepare": "husky",
     "bump": "lerna version patch --no-git-tag-version --yes",
     "update": "turbo run update && npm-check-updates -u -x @types/node",
-    "prepack": "pnpm run clean && pnpm run build && pnpm run test",
+    "prepack": "pnpm run build && pnpm run test",
     "release": "pnpm run prepack && changeset publish --no-git-tag"
   },
   "repository": {
