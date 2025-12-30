@@ -71,18 +71,16 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
   }
 
   protected readonly table: A;
-  protected readonly trace: boolean;
   protected readonly db: BetterSQLite3Database;
   protected readonly dialect: PatchedDialect;
   protected readonly session: BetterSQLiteSession<never, never>;
 
-  public constructor(db: BetterSQLite3Database, table: A, trace: boolean = false) {
+  public constructor(db: BetterSQLite3Database, table: A) {
     const tableWithId = table as A & { id: { primary: boolean } };
     Result.assert('id' in tableWithId && tableWithId.id.primary, `Table "${getTableName(table)}" must have a primary key "id"`);
 
     this.db = db;
     this.table = table;
-    this.trace = trace;
     // @ts-expect-error access internal drizzle
     this.dialect = this.db.dialect;
     // @ts-expect-error access internal drizzle
@@ -479,10 +477,6 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
   }
 
   protected withTrace<T>(fn: (trace: { value?: () => SQL }) => T): Result<T, Error> {
-    if (!this.trace) {
-      return Result.from(() => fn({}));
-    }
-
     const trace: { value?: () => SQL } = {};
     return Result.from(() => fn(trace)).mapErr((error) => {
       if (trace.value) {

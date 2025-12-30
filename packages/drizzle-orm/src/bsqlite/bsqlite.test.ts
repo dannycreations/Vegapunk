@@ -135,10 +135,10 @@ beforeEach(() => {
     );
   `);
 
-  officeAdapter = new Adapter(db, officesTable, true);
-  userAdapter = new Adapter(db, usersTable, true);
-  postAdapter = new Adapter(db, postsTable, true);
-  uniquePairAdapter = new Adapter(db, uniquePairTable, true);
+  officeAdapter = new Adapter(db, officesTable);
+  userAdapter = new Adapter(db, usersTable);
+  postAdapter = new Adapter(db, postsTable);
+  uniquePairAdapter = new Adapter(db, uniquePairTable);
 
   const officeInsertResult = officeAdapter.insert(sampleOffices);
   if (officeInsertResult.isErr()) throw officeInsertResult.unwrapErr();
