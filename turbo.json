@@ -13,11 +13,10 @@
       "cache": false
     },
     "check": {
-      "dependsOn": ["^check"],
       "cache": false
     },
     "test": {
-      "dependsOn": ["^check", "^test"],
+      "dependsOn": ["check"],
       "cache": false
     },
     "update": {

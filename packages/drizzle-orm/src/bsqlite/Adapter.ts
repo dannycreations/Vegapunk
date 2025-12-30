@@ -1,15 +1,34 @@
 import { Result } from '@vegapunk/utilities/result';
-import { count, getTableName, sql } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  getTableName,
+  gt,
+  gte,
+  inArray,
+  isNotNull,
+  isNull,
+  like,
+  lt,
+  lte,
+  ne,
+  not,
+  notInArray,
+  notLike,
+  or,
+  sql,
+} from 'drizzle-orm';
 
 import type { InferInsertModel, InferSelectModel, SQL, Table } from 'drizzle-orm';
 import type { BetterSQLite3Database, BetterSQLiteSession } from 'drizzle-orm/better-sqlite3';
 import type {
-  ComparisonOperator,
   ExtractTables,
   InferColumn,
   InferSelect,
   JoinClause,
-  LogicalOperator,
   PatchedDialect,
   QueryFilter,
   QueryOptions,
@@ -17,16 +36,38 @@ import type {
   SelectClause,
 } from './types';
 
+const JOIN_MAP = {
+  left: 'leftJoin',
+  right: 'rightJoin',
+  full: 'fullJoin',
+  inner: 'innerJoin',
+} as const;
+
+const OPERATOR_MAP: Record<string, (col: SQL, val: SQL) => SQL> = {
+  $eq: eq,
+  $ne: ne,
+  $gt: gt,
+  $gte: gte,
+  $lt: lt,
+  $lte: lte,
+  $like: like,
+  $nlike: notLike,
+  $glob: (col, val) => sql`${col} GLOB ${val}`,
+  $nglob: (col, val) => sql`${col} NOT GLOB ${val}`,
+  $in: (col, val) => (Array.isArray(val) && val.length > 0 ? inArray(col, val) : sql`0`),
+  $nin: (col, val) => (Array.isArray(val) && val.length > 0 ? notInArray(col, val) : sql`1`),
+  $null: (col, val) => (val ? isNull(col) : isNotNull(col)),
+};
+
 export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert extends InferInsertModel<A>> {
   private static patchDialect(dialect: PatchedDialect): void {
-    if (!dialect.__patched) {
-      // drizzle-orm/sqlite-core/dialect.js
-      const buildLimit = dialect.buildLimit.bind(dialect);
-      dialect.buildLimit = function (limit: number) {
-        return limit === -1 ? sql` LIMIT ${limit}` : buildLimit(limit);
-      };
-      dialect.__patched = true;
-    }
+    if (dialect.__patched) return;
+    dialect.__patched = true;
+
+    // Drizzle doesn't interpret below 0 as "no limit".
+    // https://github.com/drizzle-team/drizzle-orm/blob/main/drizzle-orm/src/sqlite-core/dialect.ts#L269
+    const buildLimit = dialect.buildLimit.bind(dialect);
+    dialect.buildLimit = (limit: number) => (limit >= 0 ? buildLimit(limit) : sql` LIMIT -1`);
   }
 
   protected readonly table: A;
@@ -36,73 +77,56 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
   protected readonly session: BetterSQLiteSession<never, never>;
 
   public constructor(db: BetterSQLite3Database, table: A, trace: boolean = false) {
-    // @ts-expect-error avoid casting type
-    Result.assert('id' in table && table.id.primary, `Table "${getTableName(table)}" must have a primary key "id"`);
+    const tableWithId = table as A & { id: { primary: boolean } };
+    Result.assert('id' in tableWithId && tableWithId.id.primary, `Table "${getTableName(table)}" must have a primary key "id"`);
 
     this.db = db;
     this.table = table;
     this.trace = trace;
-    // @ts-expect-error avoid casting type
+    // @ts-expect-error access internal drizzle
     this.dialect = this.db.dialect;
-    // @ts-expect-error avoid casting type
+    // @ts-expect-error access internal drizzle
     this.session = this.db.session;
 
     Adapter.patchDialect(this.dialect);
   }
 
   public count(filter: QueryFilter<A> = {}): Result<number, Error> {
-    let querySql: unknown | undefined;
-    return Result.from(() => {
+    return this.withTrace((trace) => {
       const query = this.db.select({ count: count() }).from(this.table);
       query.where(this.buildWhereClause(filter));
-      if (this.trace) {
-        querySql = this.dialect.sqlToQuery(query.getSQL());
-      }
+
+      trace.value = () => query.getSQL();
       return query.get()?.count ?? 0;
-    }).mapErr((error) => Object.assign(error as Error, querySql));
+    });
   }
 
   public find<const J extends JoinClause<A, Array<Table>> = [], S extends SelectClause<A, ExtractTables<J>, S> = {}>(
     filter: QueryFilter<A> = {},
     options: QueryOptions<A, ExtractTables<J>, S, J> = {},
   ): Result<Array<ReturnAlias<A, ExtractTables<J>, S, J>>, Error> {
-    let querySql: unknown | undefined;
-    return Result.from(() => {
-      const select = this.buildSelectClause(options.select, options.joins);
+    return this.withTrace((trace) => {
+      const columnCache = this.buildColumnCache(options.joins);
+      const select = this.buildSelectClause(columnCache, options.select);
       const query = this.db.select(select).from(this.table);
       if (this.hasKeys(options.joins)) {
         for (const join of options.joins) {
-          if (!this.hasKeys(join)) {
-            continue;
-          }
+          if (!this.hasKeys(join)) continue;
 
           const isCrossJoin = join.type === 'cross';
           Result.assert(isCrossJoin || (join.on && this.hasKeys(join.on)), `Join conditions (on) must be specified for join type "${join.type}"`);
 
-          let joinMethod: 'leftJoin' | 'rightJoin' | 'fullJoin' | 'innerJoin';
-          switch (join.type) {
-            case 'left':
-              joinMethod = 'leftJoin';
-              break;
-            case 'right':
-              joinMethod = 'rightJoin';
-              break;
-            case 'full':
-              joinMethod = 'fullJoin';
-              break;
-            default:
-              joinMethod = 'innerJoin';
-          }
-
           if (isCrossJoin) {
             query.crossJoin(join.table);
           } else {
-            const conds = Object.entries(join.on).map(([leftKey, rightKey]) => {
+            const conds = Object.entries(join.on as Record<string, string>).map(([leftKey, rightKey]) => {
               const leftCol = this.table[leftKey as keyof A];
               const rightCol = (join.table as unknown as Record<string, unknown>)[rightKey!];
               Result.assert(leftCol && rightCol, `Invalid join keys: ${leftKey}, ${rightKey}`);
-              return sql`${leftCol} = ${rightCol}`;
+              return sql`${leftCol} = ${rightCol as SQL}`;
             });
+
+            const joinMethod = JOIN_MAP[join.type as keyof typeof JOIN_MAP] ?? 'innerJoin';
             query[joinMethod](join.table, sql`(${sql.join(conds, sql.raw(' AND '))})`);
           }
         }
@@ -110,16 +134,20 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
 
       query.where(this.buildWhereClause(filter));
       if (this.hasKeys(options.order)) {
-        query.orderBy(this.buildOrderClause(options.order, options.joins));
+        query.orderBy(this.buildOrderClause(columnCache, options.order));
       }
 
-      query.limit(typeof options.limit === 'number' && options.limit >= 0 ? options.limit : -1);
-      query.offset(typeof options.offset === 'number' && options.offset >= 0 ? options.offset : 0);
-      if (this.trace) {
-        querySql = this.dialect.sqlToQuery(query.getSQL());
+      if (typeof options.limit === 'number') {
+        query.limit(options.limit);
       }
+
+      if (typeof options.offset === 'number') {
+        query.offset(options.offset);
+      }
+
+      trace.value = () => query.getSQL();
       return query.all() as unknown as Array<ReturnAlias<A, ExtractTables<J>, S, J>>;
-    }).mapErr((error) => Object.assign(error as Error, querySql));
+    });
   }
 
   public findOne<const J extends JoinClause<A, Array<Table>> = [], S extends SelectClause<A, ExtractTables<J>, S> = {}>(
@@ -151,41 +179,44 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
       upsert?: boolean;
     } = {},
   ): Result<ReturnAlias<A, B, S> | null, Error> {
-    const record = this.findOne(filter, { ...options, select: undefined });
-    return record.mapInto((r) => {
-      if (options.upsert && r === null) {
-        const isComplex =
-          Object.keys(filter).some((key) => key.startsWith('$')) ||
-          Object.values(filter).some(
-            (val) => val !== null && typeof val === 'object' && !Array.isArray(val) && Object.keys(val).some((k) => k.startsWith('$')),
-          );
-        if (isComplex) {
-          return Result.err(new Error('Cannot use comparison operators in filter when upserting'));
-        }
+    return this.db.transaction(
+      () => {
+        const record = this.findOne(filter, { ...options, select: undefined });
+        return record.mapInto((r) => {
+          if (options.upsert && r === null) {
+            const isComplex =
+              Object.keys(filter).some((k) => k.startsWith('$')) ||
+              Object.values(filter).some((v) => v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).some((k) => k.startsWith('$')));
+            if (isComplex) return Result.err(new Error('Cannot use complex filter when upserting'));
 
-        const inserted = this.insert({ ...filter, ...data } as Insert, options);
-        return inserted.map((s) => s[0] as ReturnAlias<A, B, S>);
-      } else if (r !== null) {
-        const updated = this.update({ ...r, ...data } as unknown as Select, options);
-        return updated.map((s) => s[0] as ReturnAlias<A, B, S>);
-      }
-      return Result.ok(r);
-    });
+            return this.insert({ ...filter, ...data } as Insert, options).map((s) => s[0] as ReturnAlias<A, B, S>);
+          }
+
+          if (r !== null) {
+            return this.update({ ...r, ...data } as unknown as Select, options).map((s) => s[0] as ReturnAlias<A, B, S>);
+          }
+
+          return Result.ok(r);
+        });
+      },
+      { behavior: 'immediate' },
+    );
   }
 
   public findOneAndDelete<B extends Array<Table>, S extends SelectClause<A, B, S>>(
     filter: QueryFilter<A> = {},
     options: Omit<QueryOptions<A, B, S, unknown>, 'limit' | 'joins'> = {},
   ): Result<ReturnAlias<A, B, S> | null, Error> {
-    const record = this.findOne(filter, { ...options, select: undefined });
-    return record.mapInto((r) => {
-      if (r === null) {
-        return Result.ok(r);
-      }
-
-      const deleted = this.delete(r as unknown as Select, options);
-      return deleted.map((s) => s[0] as ReturnAlias<A, B, S>);
-    });
+    return this.db.transaction(
+      () => {
+        const record = this.findOne(filter, { ...options, select: undefined });
+        return record.mapInto((r) => {
+          if (r === null) return Result.ok(r);
+          return this.delete(r as unknown as Select, options).map((s) => s[0] as ReturnAlias<A, B, S>);
+        });
+      },
+      { behavior: 'immediate' },
+    );
   }
 
   public insert<B extends Array<Table>, S extends SelectClause<A, B, S>>(
@@ -204,85 +235,88 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
           };
     } = {},
   ): Result<Array<ReturnAlias<A, B, S>>, Error> {
-    let querySql: unknown | undefined;
-    return Result.from(() => {
-      const records = (Array.isArray(record) ? record : [record]).filter(this.hasKeys);
-      if (records.length === 0) {
+    return this.withTrace((trace) => {
+      const input = Array.isArray(record) ? record : [record];
+      const values: Insert[] = [];
+
+      for (let i = 0; i < input.length; i++) {
+        const rec = input[i];
+        if (!this.hasKeys(rec)) continue;
+
+        const { id, ...newRec } = rec as Record<string, unknown>;
+        values.push(newRec as Insert);
+      }
+
+      if (values.length === 0) {
         return [];
       }
 
-      const values = records.map(({ id, ...rest }: Record<string, unknown>) => rest);
-      const query = this.db.insert(this.table).values(values as Array<Insert>);
-      query.returning(this.buildSelectClause(options.select));
-      if (this.hasKeys(options.conflict)) {
-        const { target, set, resolution } = options.conflict;
-        const columns = target.map((r) => {
-          const column = this.table[r as keyof A];
-          Result.assert(column, `Conflict target column ${String(r)} does not exist in table`);
-          return sql`${column}`;
+      const query = this.db.insert(this.table).values(values);
+      query.returning(this.buildSelectClause(this.buildColumnCache(), options.select));
+
+      const conflictOpt = options.conflict;
+      if (this.hasKeys(conflictOpt)) {
+        const target = conflictOpt.target.map((r) => {
+          const col = this.table[r as keyof A];
+          Result.assert(col, `Conflict target column "${String(r)}" not found in table "${getTableName(this.table)}"`);
+          return col as unknown as SQL;
         });
 
-        const conflict = sql.join(columns, sql.raw(', '));
-        const { id, ...rest } = this.hasKeys(set) ? set : values[0];
+        const rec = (this.hasKeys(conflictOpt.set) ? conflictOpt.set : values[0]) as Record<string, unknown>;
 
-        if (resolution === 'ignore') {
-          query.onConflictDoNothing({ target: conflict });
-        } else if (resolution === 'update') {
-          query.onConflictDoUpdate({ target: conflict, set: rest as Insert });
+        if (conflictOpt.resolution === 'ignore') {
+          query.onConflictDoNothing({ target });
+        } else if (conflictOpt.resolution === 'update') {
+          const { id, ...newRec } = rec as Record<string, unknown>;
+          query.onConflictDoUpdate({ target, set: newRec as Insert });
         } else {
-          query.onConflictDoUpdate({
-            target: conflict,
-            set: Object.fromEntries(
-              Object.entries(rest).map(([key, value]) => {
-                const column = this.table[key as keyof A];
-                Result.assert(column, `Conflict set column ${key} does not exist in table`);
-                return [key, sql`COALESCE(${column}, ${sql`${value}`})`];
-              }),
-            ) as Record<string, SQL>,
-          });
+          const mergeSet: Record<string, unknown> = {};
+          for (const key in rec) {
+            if (key === 'id') continue;
+            const val = rec[key];
+            const col = this.table[key as keyof A];
+            Result.assert(col, `Conflict set column "${key}" not found in table "${getTableName(this.table)}"`);
+            mergeSet[key] = sql`COALESCE(${col}, ${sql`${val}`})`;
+          }
+          query.onConflictDoUpdate({ target, set: mergeSet as Insert });
         }
       }
-      if (this.trace) {
-        querySql = this.dialect.sqlToQuery(query.getSQL());
-      }
+
+      trace.value = () => query.getSQL();
       return query.all() as unknown as Array<ReturnAlias<A, B, S>>;
-    }).mapErr((error) => Object.assign(error as Error, querySql));
+    });
   }
 
   public update<B extends Array<Table>, S extends SelectClause<A, B, S>>(
     record: Select,
     options: Pick<QueryOptions<A, B, S, unknown>, 'select'> = {},
   ): Result<Array<ReturnAlias<A, B, S>>, Error> {
-    let querySql: unknown | undefined;
-    return Result.from(() => {
+    return this.withTrace((trace) => {
       Result.assert(record?.id != null, 'Missing required "id" for update operation');
 
       const query = this.db.update(this.table).set(record);
       query.where(this.buildWhereClause({ id: record.id }));
-      query.returning(this.buildSelectClause(options.select));
-      if (this.trace) {
-        querySql = this.dialect.sqlToQuery(query.getSQL());
-      }
+      query.returning(this.buildSelectClause(this.buildColumnCache(), options.select));
+
+      trace.value = () => query.getSQL();
       return query.all() as unknown as Array<ReturnAlias<A, B, S>>;
-    }).mapErr((error) => Object.assign(error as Error, querySql));
+    });
   }
 
   public delete<B extends Array<Table>, S extends SelectClause<A, B, S>>(
     record: Select,
     options: Pick<QueryOptions<A, B, S, unknown>, 'select'> = {},
   ): Result<Array<ReturnAlias<A, B, S>>, Error> {
-    let querySql: unknown | undefined;
-    return Result.from(() => {
+    return this.withTrace((trace) => {
       Result.assert(record?.id != null, 'Missing required "id" for delete operation');
 
       const query = this.db.delete(this.table);
       query.where(this.buildWhereClause({ id: record.id }));
-      query.returning(this.buildSelectClause(options.select));
-      if (this.trace) {
-        querySql = this.dialect.sqlToQuery(query.getSQL());
-      }
+      query.returning(this.buildSelectClause(this.buildColumnCache(), options.select));
+
+      trace.value = () => query.getSQL();
       return query.all() as unknown as Array<ReturnAlias<A, B, S>>;
-    }).mapErr((error) => Object.assign(error as Error, querySql));
+    });
   }
 
   protected buildWhereClause(filter?: QueryFilter<A>): SQL {
@@ -290,211 +324,172 @@ export class Adapter<A extends Table, Select extends InferSelectModel<A>, Insert
       return undefined as unknown as SQL;
     }
 
-    const conds = this.processWhereLogical(filter);
-    if (conds.length === 0) {
-      return undefined as unknown as SQL;
-    }
-    return sql`(${sql.join(conds, sql.raw(' AND '))})`;
+    const conds = this.buildWhereLogical(filter);
+    return conds.length === 0 ? (undefined as unknown as SQL) : and(...conds)!;
   }
 
-  protected processWhereLogical(filter: QueryFilter<A>): Array<SQL> {
-    return Object.entries(filter).flatMap(([key, value]) => {
-      switch (key as keyof LogicalOperator<A>) {
-        default:
-          return this.processWhereComparison(key, value);
-        case '$and':
-          if (!Array.isArray(value)) {
-            return sql`0`;
-          }
-          if (value.length === 0) {
-            return sql`1`;
-          }
-          return sql`(${sql.join(value.flatMap(this.processWhereLogical.bind(this)), sql.raw(' AND '))})`;
-        case '$nand':
-          if (!Array.isArray(value)) {
-            return sql`0`;
-          }
-          if (value.length === 0) {
-            return sql`0`;
-          }
-          return sql`NOT (${sql.join(value.flatMap(this.processWhereLogical.bind(this)), sql.raw(' AND '))})`;
-        case '$or':
-          if (!Array.isArray(value)) {
-            return sql`0`;
-          }
-          if (value.length === 0) {
-            return sql`0`;
-          }
-          return sql`(${sql.join(value.flatMap(this.processWhereLogical.bind(this)), sql.raw(' OR '))})`;
-        case '$nor':
-          if (!Array.isArray(value)) {
-            return sql`0`;
-          }
-          if (value.length === 0) {
-            return sql`1`;
-          }
-          return sql`NOT (${sql.join(value.flatMap(this.processWhereLogical.bind(this)), sql.raw(' OR '))})`;
-        case '$not':
-          let conds: Array<SQL>;
-          if (value && typeof value === 'object' && !Array.isArray(value)) {
-            conds = this.processWhereLogical(value);
-          } else {
-            conds = this.processWhereComparison(key, value);
-          }
-          if (conds.length === 0) {
-            return sql`0`;
-          }
-          return sql`NOT (${sql.join(conds, sql.raw(' AND '))})`;
+  protected buildOrderClause<S>(columnCache: Record<string, unknown>, order?: S): SQL {
+    if (!order || !this.hasKeys(order)) return undefined as unknown as SQL;
+
+    const clauses: SQL[] = [];
+    for (const key in order) {
+      const direction = (order as Record<string, string>)[key];
+      const column = columnCache[key] as SQL;
+      if (column) {
+        clauses.push(direction?.toLowerCase() === 'desc' ? desc(column) : asc(column));
       }
-    });
+    }
+
+    return clauses.length === 0 ? (undefined as unknown as SQL) : (sql.join(clauses, sql.raw(', ')) as unknown as SQL);
   }
 
-  protected processWhereComparison(key: unknown, val: unknown): Array<SQL> {
-    const column = this.table[key as keyof A];
-    if (!column) {
-      return [sql`0`];
-    }
-    if (val === undefined) {
-      return [];
-    }
+  protected buildSelectClause<S>(columnCache: Record<string, unknown>, select?: S): InferColumn<A> {
+    if (!select || !this.hasKeys(select)) return undefined as unknown as InferColumn<A>;
 
-    const operation = val && typeof val === 'object' && !Array.isArray(val) ? val : { $eq: val };
-    return Object.entries(operation).map(([operator, operand]) => {
-      switch (operator as keyof ComparisonOperator<A>) {
-        default:
-          return sql`0`;
-        case '$eq':
-          if (operand === null) {
-            return sql`${column} IS NULL`;
-          }
-          return sql`${column} = ${sql`${operand}`}`;
-        case '$ne':
-          if (operand === null) {
-            return sql`${column} IS NOT NULL`;
-          }
-          return sql`${column} <> ${sql`${operand}`}`;
-        case '$gt':
-          if (operand === null) {
-            return sql`0`;
-          }
-          return sql`${column} > ${sql`${operand}`}`;
-        case '$gte':
-          if (operand === null) {
-            return sql`0`;
-          }
-          return sql`${column} >= ${sql`${operand}`}`;
-        case '$lt':
-          if (operand === null) {
-            return sql`0`;
-          }
-          return sql`${column} < ${sql`${operand}`}`;
-        case '$lte':
-          if (operand === null) {
-            return sql`0`;
-          }
-          return sql`${column} <= ${sql`${operand}`}`;
-        case '$like':
-          if (operand === null) {
-            return sql`0`;
-          }
-          return sql`${column} LIKE ${sql`${operand}`}`;
-        case '$nlike':
-          if (operand === null) {
-            return sql`0`;
-          }
-          return sql`${column} NOT LIKE ${sql`${operand}`}`;
-        case '$glob':
-          if (operand === null) {
-            return sql`0`;
-          }
-          return sql`${column} GLOB ${sql`${operand}`}`;
-        case '$nglob':
-          if (operand === null) {
-            return sql`0`;
-          }
-          return sql`${column} NOT GLOB ${sql`${operand}`}`;
-        case '$in':
-          if (!Array.isArray(operand) || operand.length === 0) {
-            return sql`0`;
-          }
-          return sql`${column} IN (${sql.join(operand, sql.raw(', '))})`;
-        case '$nin':
-          if (!Array.isArray(operand) || operand.length === 0) {
-            return sql`1`;
-          }
-          return sql`${column} NOT IN (${sql.join(operand, sql.raw(', '))})`;
-        case '$null':
-          return operand ? sql`${column} IS NULL` : sql`${column} IS NOT NULL`;
-        case '$not':
-          const negated = this.processWhereComparison(key, operand);
-          if (negated.length === 0) {
-            return sql`0`;
-          }
-          return sql`NOT (${sql.join(negated, sql.raw(' AND '))})`;
+    const columns: Record<string, unknown> = {};
+    let hasColumns = false;
+
+    // Handle 'id' implicitly unless explicitly disabled
+    const selectObj = select as unknown as Record<string, number>;
+    if (selectObj['id'] !== 0) {
+      const col = columnCache['id'];
+      if (col) {
+        columns['id'] = col;
+        hasColumns = true;
       }
+    }
+
+    for (const key in selectObj) {
+      if (key === 'id') continue;
+      if (selectObj[key] === 0) continue;
+
+      const column = columnCache[key];
+      if (column) {
+        columns[key] = column;
+        hasColumns = true;
+      }
+    }
+
+    return hasColumns ? (columns as InferColumn<A>) : (undefined as unknown as InferColumn<A>);
+  }
+
+  protected buildWhereLogical(filter: QueryFilter<A>): Array<SQL> {
+    const result: Array<SQL> = [];
+
+    for (const key in filter) {
+      const value = filter[key as keyof typeof filter];
+
+      if (key === '$and' || key === '$nand' || key === '$or' || key === '$nor') {
+        if (!Array.isArray(value) || value.length === 0) {
+          result.push(sql.raw(key === '$and' || key === '$nor' ? '1' : '0'));
+          continue;
+        }
+
+        const nested: SQL[] = [];
+        const values = value as QueryFilter<A>[];
+        for (let i = 0; i < values.length; i++) {
+          const sub = this.buildWhereLogical(values[i]);
+          nested.push(...sub);
+        }
+
+        if (nested.length === 0) {
+          result.push(sql.raw(key === '$and' || key === '$nor' ? '1' : '0'));
+          continue;
+        }
+
+        const joined = key === '$and' || key === '$nand' ? and(...nested) : or(...nested);
+        result.push(key === '$nand' || key === '$nor' ? not(joined!) : joined!);
+      } else if (key === '$not') {
+        let conds: SQL[];
+        if (value && typeof value === 'object' && !Array.isArray(value)) {
+          conds = this.buildWhereLogical(value as QueryFilter<A>);
+        } else {
+          conds = this.buildWhereComparison(key, value);
+        }
+        result.push(conds.length === 0 ? sql`0` : not(and(...conds)!));
+      } else {
+        const conds = this.buildWhereComparison(key, value);
+        result.push(...conds);
+      }
+    }
+
+    return result;
+  }
+
+  protected buildWhereComparison(key: unknown, val: unknown): Array<SQL> {
+    const column = this.table[key as keyof A] as unknown as SQL;
+    if (!column) return [sql`0`];
+    if (val === undefined) return [];
+
+    if (val === null || typeof val !== 'object' || Array.isArray(val)) {
+      if (val === null) return [isNull(column)];
+      return [eq(column, val as SQL)];
+    }
+
+    const operation = val as Record<string, unknown>;
+    const result: Array<SQL> = [];
+
+    for (const operator in operation) {
+      const operand = operation[operator];
+
+      if (operator === '$not') {
+        const negated = this.buildWhereComparison(key, operand);
+        result.push(negated.length === 0 ? sql`0` : not(and(...negated)!));
+        continue;
+      }
+
+      if (operand === null && operator !== '$eq' && operator !== '$ne' && operator !== '$null') {
+        result.push(sql`0`);
+        continue;
+      }
+
+      if (operator === '$eq' && operand === null) {
+        result.push(isNull(column));
+        continue;
+      }
+
+      if (operator === '$ne' && operand === null) {
+        result.push(isNotNull(column));
+        continue;
+      }
+
+      const handler = OPERATOR_MAP[operator];
+      result.push(handler ? handler(column, operand as SQL) : sql`0`);
+    }
+    return result;
+  }
+
+  protected buildColumnCache<B extends Array<Table>>(joins?: JoinClause<A, B>): Record<string, unknown> {
+    if (!joins || joins.length === 0) {
+      return this.table as unknown as Record<string, unknown>;
+    }
+
+    const cache: Record<string, unknown> = {};
+    for (let i = joins.length - 1; i >= 0; i--) {
+      Object.assign(cache, joins[i].table as unknown as Record<string, unknown>);
+    }
+    Object.assign(cache, this.table as unknown as Record<string, unknown>);
+    return cache;
+  }
+
+  protected hasKeys(obj?: object | null): obj is object {
+    if (obj == null) return false;
+    for (const _ in obj) return true;
+    return false;
+  }
+
+  protected withTrace<T>(fn: (trace: { value?: () => SQL }) => T): Result<T, Error> {
+    if (!this.trace) {
+      return Result.from(() => fn({}));
+    }
+
+    const trace: { value?: () => SQL } = {};
+    return Result.from(() => fn(trace)).mapErr((error) => {
+      if (trace.value) {
+        const query = this.dialect.sqlToQuery(trace.value());
+        Object.assign(error as Error, { query });
+      }
+      return error as Error;
     });
-  }
-
-  protected buildOrderClause<S, B extends Array<Table>>(order?: S, joins?: JoinClause<A, B>): SQL {
-    if (!order || !this.hasKeys(order)) {
-      return undefined as unknown as SQL;
-    }
-
-    const clauses = Object.entries(order)
-      .map(([key, direction]) => {
-        let column: unknown = this.table[key as keyof A];
-        if (!column && joins?.length) {
-          const join = joins.find((r) => key in r.table);
-          column = (join?.table as unknown as Record<string, unknown>)[key];
-        }
-        if (!column) {
-          return null;
-        }
-
-        const dirStr = String(direction || 'ASC').toUpperCase();
-        return sql`${column} ${sql.raw(dirStr)}`;
-      })
-      .filter((r) => r !== null);
-    if (clauses.length === 0) {
-      return undefined as unknown as SQL;
-    }
-    return sql.join(clauses, sql.raw(', '));
-  }
-
-  protected buildSelectClause<S, B extends Array<Table>>(select?: S, joins?: JoinClause<A, B>): InferColumn<A> {
-    if (!select || !this.hasKeys(select)) {
-      return undefined as unknown as InferColumn<A>;
-    }
-
-    const selection: Record<string, number> = { ...select };
-    if (!('id' in selection)) {
-      selection['id'] = 1;
-    }
-
-    const columns = Object.entries(selection)
-      .map(([key, include]) => {
-        if (include === 0) {
-          return null;
-        }
-
-        let column: unknown = this.table[key as keyof A];
-        if (!column && joins?.length) {
-          const join = joins.find((r) => key in r.table);
-          column = (join?.table as unknown as Record<string, unknown>)[key];
-        }
-        if (!column) {
-          return null;
-        }
-        return [key, column];
-      })
-      .filter((r) => r !== null);
-    if (columns.length === 0) {
-      return undefined as unknown as InferColumn<A>;
-    }
-    return Object.fromEntries(columns);
-  }
-
-  protected hasKeys(obj?: object): obj is object {
-    return !!obj && Object.keys(obj).length > 0;
   }
 }

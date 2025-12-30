@@ -578,6 +578,14 @@ describe('Adapter find()', () => {
       expect(users).toHaveLength(0);
     });
 
+    it('limit: limit below 0 should return all records', () => {
+      const result = userAdapter.find({}, { limit: -1 });
+      expect(result.isOk()).toBe(true);
+      const users = result.unwrap();
+      expectTypeOf(users).toEqualTypeOf<User[]>();
+      expect(users).toHaveLength(8);
+    });
+
     it('offset: should skip the specified number of records', () => {
       const allUsersResult = userAdapter.find({}, { order: { id: 'asc' } });
       expect(allUsersResult.isOk()).toBe(true);
@@ -1943,7 +1951,7 @@ describe('Adapter findOneAndUpdate()', () => {
       // @ts-expect-error - Expected compile error, but we also want runtime error
       const result = userAdapter.findOneAndUpdate(complexFilter, payload, { upsert: true });
       expect(result.isErr()).toBe(true);
-      expect(result.unwrapErr().message).toMatch(/Cannot use comparison operators/i);
+      expect(result.unwrapErr().message).toMatch(/Cannot use complex filter when upserting/i);
     });
   });
 });
