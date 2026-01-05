@@ -31,7 +31,7 @@
     "@types/node": "22.19.3",
     "husky": "^9.1.7",
     "lerna": "^9.0.3",
-    "npm-check-updates": "^19.2.1",
+    "npm-check-updates": "^19.3.0",
     "prettier": "^3.7.4",
     "rimraf": "^6.1.2",
     "tsup": "^8.5.1",
