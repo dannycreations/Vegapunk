@@ -341,5 +341,5 @@ export {
 
 declare module 'es-toolkit/compat' {
   function defaultsDeep<A, B extends A = A>(target: Partial<A>, ...sources: Partial<B>[]): A & B;
-  function isObjectLike<T>(value: T): value is T & object;
+  function isObjectLike<T>(value: T | unknown): value is T & object;
 }

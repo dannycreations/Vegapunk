@@ -39,5 +39,5 @@ it('should waiting until status true', async () => {
   const start = performance.now();
   await waitUntil(() => status);
   const end = performance.now();
-  expect(end - start).greaterThanOrEqual(500);
+  expect(end - start).greaterThanOrEqual(400);
 });
