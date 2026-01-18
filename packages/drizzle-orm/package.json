@@ -30,7 +30,7 @@
   "homepage": "https://github.com/dannycreations/Vegapunk",
   "dependencies": {
     "@vegapunk/utilities": "workspace:*",
-    "better-sqlite3": "^12.6.0",
+    "better-sqlite3": "^12.6.2",
     "drizzle-orm": "^0.45.1"
   },
   "devDependencies": {
